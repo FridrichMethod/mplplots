@@ -1,5 +1,7 @@
 """Demonstrate mplplots color palettes."""
 
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -14,7 +16,7 @@ from mplplots.palettes import (
     get_colors,
 )
 
-OUT = "examples"
+OUT = Path(__file__).resolve().parent
 
 # ---------------------------------------------------------------------------
 # 1. Multi-line plot using CUSTOM palette
