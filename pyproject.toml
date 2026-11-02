@@ -10,7 +10,7 @@ authors = [{ name = "Zhaoyang Li", email = "zhaoyangli@stanford.edu" }]
 license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["matplotlib",]
+dependencies = ["matplotlib"]
 
 [project.optional-dependencies]
 dev = [
