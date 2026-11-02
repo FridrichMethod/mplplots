@@ -1,9 +1,23 @@
-"""Color palettes for mplplots."""
+"""Color palettes for mplplots.
 
+Every named palette (``CUSTOM``, ``OCEAN``, ``BLUES``, ...) is a tuple of hex color strings and is
+also registered by upper-case name in :data:`PALETTES`. Use :func:`set_palette` to make a palette
+matplotlib's default color cycle.
+
+Note:
+    The ``*_CYCLE`` objects (``CUSTOM_CYCLE``, ``OCEAN_CYCLE``, ...) are kept for backward
+    compatibility. Each one is a single iterator shared by the whole process: every ``next()``
+    anywhere advances it, so the colors you get depend on what was drawn before (and on notebook
+    re-runs). Prefer ``set_palette("ocean")``, or a fresh ``itertools.cycle(OCEAN)`` per figure.
+"""
+
+from collections.abc import Mapping, Sequence
 from itertools import cycle
+from types import MappingProxyType
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
+from matplotlib.rcsetup import cycler
 
 
 def get_colors(
@@ -30,7 +44,9 @@ def get_colors(
     return tuple(mcolors.to_hex(cmap(start + step * i)) for i in range(n))
 
 
-# Raw color list for indexing/slicing; use cycle() for iterator usage
+# Each palette is a plain tuple for indexing/slicing. Its ``*_CYCLE`` companion is a shared,
+# process-wide iterator kept for backward compatibility (see the module docstring); prefer
+# ``set_palette(...)`` or a fresh ``itertools.cycle(...)`` over the tuple.
 CUSTOM: tuple[str, ...] = (
     "#BCE4F9",
     "#7BD3F2",
@@ -431,3 +447,86 @@ REDS: tuple[str, ...] = get_colors("Reds", 8, 0.3, 0.8)
 PURPLES: tuple[str, ...] = get_colors("Purples", 8, 0.3, 0.8)
 ORANGES: tuple[str, ...] = get_colors("Oranges", 8, 0.3, 0.8)
 GREYS: tuple[str, ...] = get_colors("Greys", 8, 0.25, 0.75)
+
+# ---------------------------------------------------------------------------
+# Registry and default-color-cycle helper
+# ---------------------------------------------------------------------------
+# Spelled out explicitly: identifiers are checked by mypy/ruff, and the tests check that the keys
+# match the identifiers and that no module-level palette is missing from the registry.
+PALETTES: Mapping[str, tuple[str, ...]] = MappingProxyType({
+    # Custom-style 11-color palettes
+    "CUSTOM": CUSTOM,
+    "PASTEL": PASTEL,
+    "WARM": WARM,
+    "COOL": COOL,
+    "EARTH": EARTH,
+    "OCEAN": OCEAN,
+    "ROSE": ROSE,
+    "FOREST": FOREST,
+    "LAVENDER": LAVENDER,
+    "SUNSET": SUNSET,
+    "COASTAL": COASTAL,
+    "SPRING": SPRING,
+    "SUMMER": SUMMER,
+    "AUTUMN": AUTUMN,
+    "WINTER": WINTER,
+    "DAWN": DAWN,
+    "DUSK": DUSK,
+    "CANDY": CANDY,
+    "SMOKE": SMOKE,
+    "VINTAGE": VINTAGE,
+    "NORDIC": NORDIC,
+    "MEADOW": MEADOW,
+    "CORAL": CORAL,
+    "TROPICAL": TROPICAL,
+    "POWDER": POWDER,
+    # Colormap-derived 8-color families
+    "BLUES": BLUES,
+    "GREENS": GREENS,
+    "REDS": REDS,
+    "PURPLES": PURPLES,
+    "ORANGES": ORANGES,
+    "GREYS": GREYS,
+})
+"""Read-only mapping of upper-case palette name to its tuple of hex colors."""
+
+
+def set_palette(palette: str | Sequence[str]) -> None:
+    """Set matplotlib's default color cycle (``rcParams["axes.prop_cycle"]``) to a palette.
+
+    Axes created afterwards cycle through the palette's colors for new lines, bars, etc. Only
+    ``axes.prop_cycle`` is changed, so this composes with ``plt.rc_context()`` and
+    ``plt.style.context()``: called inside such a block, the previous cycle is restored on exit.
+
+    Args:
+        palette: A palette name from :data:`PALETTES`, matched case-insensitively (``"ocean"``,
+            ``"OCEAN"`` and ``"blues"`` all work), or a non-empty sequence of colors matplotlib
+            accepts (hex strings, named colors, ...). A bare string is always treated as a
+            palette name, never as a sequence of characters.
+
+    Raises:
+        ValueError: If the name is not in :data:`PALETTES` (the message lists the valid names),
+            if the sequence is empty, or if it contains an invalid color. Cycle references such
+            as ``"C0"`` are invalid here too, because matplotlib rejects them in a color cycle.
+
+    Example:
+        >>> import matplotlib.pyplot as plt
+        >>> set_palette("ocean")
+        >>> with plt.rc_context():
+        ...     set_palette(["#1f77b4", "tab:orange"])  # only inside this block
+    """
+    if isinstance(palette, str):
+        try:
+            colors = PALETTES[palette.upper()]
+        except KeyError:
+            valid = ", ".join(sorted(PALETTES))
+            raise ValueError(f"Unknown palette {palette!r}. Valid names: {valid}.") from None
+    else:
+        colors = tuple(palette)
+        if not colors:
+            raise ValueError("A palette must contain at least one color.")
+        invalid = [c for c in colors if not mcolors.is_color_like(c)]
+        if invalid:
+            raise ValueError(f"Invalid color(s) in palette: {', '.join(map(repr, invalid))}.")
+    # matplotlib's validating cycler() also rejects cycle references such as "C0".
+    plt.rcParams["axes.prop_cycle"] = cycler(color=colors)
