@@ -1,10 +1,13 @@
 """Utility functions for mplplots."""
 
 import os
+from collections.abc import MutableMapping
 
 import matplotlib.font_manager as fm
+import matplotlib.text as mtext
 from matplotlib import ticker
 from matplotlib.axes import Axes
+from matplotlib.mathtext import MathTextParser
 
 type StrPath = str | os.PathLike[str]
 
@@ -12,11 +15,51 @@ type StrPath = str | os.PathLike[str]
 def add_custom_fonts(*paths: StrPath) -> None:
     """Add custom fonts to the font manager.
 
+    The fonts take effect immediately, even if Matplotlib has already looked up
+    (and cached) a font for the same family, e.g. when Arial is registered after a
+    figure was drawn with a fallback font. Every figure drawn after the call,
+    including one that was already drawn before it, uses the new fonts for both
+    text and mathtext.
+
     Args:
         paths (StrPath): Paths to font files to register.
+
+    Examples:
+        >>> add_custom_fonts("/path/to/Arial.ttf", "/path/to/Arial Bold.ttf")  # doctest: +SKIP
     """
     for path in paths:
         fm.fontManager.addfont(path)
+    _clear_font_caches()
+
+
+def _clear_font_caches() -> None:
+    """Forget Matplotlib's cached font choices so newly added fonts are used.
+
+    Several Matplotlib caches are keyed by font *properties* (family, weight, ...)
+    rather than by the font file they resolved to, so they keep returning the old
+    font after a new one is registered. These are private APIs, so each one is
+    looked up defensively and skipped if a Matplotlib version does not have it.
+    """
+    caches = (
+        # findfont() results; FontManager.addfont() clears this in recent versions.
+        getattr(fm.fontManager, "_findfont_cached", None),
+        # Parsed mathtext, with the fonts it resolved baked in. A renderer (and its
+        # parser) is reused when the same figure is drawn again.
+        getattr(MathTextParser, "_parse_cached", None),
+        # Text extents used for layout (older Matplotlib versions).
+        getattr(mtext, "_get_text_metrics_with_cache_impl", None),
+    )
+    for cache in caches:
+        cache_clear = getattr(cache, "cache_clear", None)
+        if callable(cache_clear):
+            cache_clear()
+
+    # Text extents used for layout (newer Matplotlib versions keep one cache per
+    # renderer in a mutable default argument).
+    metrics_function = getattr(mtext, "_get_text_metrics_function", None)
+    for default in getattr(metrics_function, "__defaults__", None) or ():
+        if isinstance(default, MutableMapping):
+            default.clear()
 
 
 def auto_ticks(  # noqa: C901
