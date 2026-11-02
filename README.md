@@ -109,9 +109,10 @@ For every setting, see the [style file](src/mplplots/styles/GraphPadPrism.mplsty
 ### Fonts
 
 The style asks for Arial, which is GraphPad Prism's default font. If Arial is not installed (common
-on Linux and HPC clusters), Matplotlib falls back to a similar sans-serif font. For the exact Prism
-look, install Arial, or register the font files at the start of your script or notebook, before
-plotting:
+on Linux and HPC clusters), it falls back without warnings to Helvetica or an Arial-compatible
+clone (Liberation Sans, Arimo, Nimbus Sans), and finally to DejaVu Sans, which ships with
+Matplotlib. Math text follows the same chain. For the exact Prism look, install Arial, or register
+the font files at the start of your script or notebook, before plotting:
 
 ```python
 from mplplots.utils import add_custom_fonts
