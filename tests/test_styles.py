@@ -1,19 +1,24 @@
 """Tests for mplplots styles."""
 
+from __future__ import annotations
+
 import json
 import os
 import re
 import subprocess
 import sys
+from typing import TYPE_CHECKING
 
 import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
-from matplotlib.typing import RcKeyType
 
 import mplplots
+
+if TYPE_CHECKING:
+    from matplotlib.typing import RcKeyType  # Matplotlib 3.10+
 
 STYLE_PATH = mplplots.STYLE_PATH
 GRAPHPAD_STYLE = str(STYLE_PATH)
@@ -117,6 +122,14 @@ class TestGraphPadPrismFonts:
         with plt.style.context(GRAPHPAD_STYLE):
             assert matplotlib.rcParams["font.sans-serif"][0] == "Arial"
             assert matplotlib.rcParams["mathtext.fontset"] == "custom"
+
+    def test_overrides_font_family_from_rc(self) -> None:
+        # A matplotlibrc (or an earlier style) may pick another family; the style still
+        # uses its sans-serif list.
+        with plt.rc_context({"font.family": ["serif"]}), plt.style.context(GRAPHPAD_STYLE):
+            assert matplotlib.rcParams["font.family"] == ["sans-serif"]
+            font = fm.get_font(fm.findfont(FontProperties()))
+            assert font.family_name in matplotlib.rcParams["font.sans-serif"]
 
     def test_sans_serif_always_resolves(self) -> None:
         with plt.style.context(GRAPHPAD_STYLE):

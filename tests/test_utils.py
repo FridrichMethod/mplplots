@@ -1,8 +1,11 @@
 """Tests for mplplots.utils."""
 
+from __future__ import annotations
+
 import uuid
 from collections.abc import Callable, Iterator
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import matplotlib
 import matplotlib.font_manager as fm
@@ -14,10 +17,12 @@ from fontTools.ttLib import TTFont
 from matplotlib import ticker
 from matplotlib.font_manager import FontProperties
 from matplotlib.text import Text
-from matplotlib.typing import RcKeyType
 
 import mplplots
 from mplplots.utils import _clear_font_caches, add_custom_fonts, auto_ticks
+
+if TYPE_CHECKING:
+    from matplotlib.typing import RcKeyType  # Matplotlib 3.10+
 
 STYLE_PATH = str(mplplots.STYLE_PATH)
 MPL_TTF_DIR = Path(matplotlib.get_data_path()) / "fonts" / "ttf"
@@ -39,6 +44,12 @@ def _ends_on_ticks(ticks: npt.ArrayLike, limits: tuple[float, float]) -> bool:
     ticks = np.asarray(ticks)
     visible = ticks[(ticks >= low - tol) & (ticks <= high + tol)]
     return bool(abs(visible[0] - low) <= tol and abs(visible[-1] - high) <= tol)
+
+
+def _is_round_step(step: float) -> bool:
+    """Whether a tick spacing is 1, 2, 2.5 or 5 times a power of 10."""
+    mantissa = step / 10 ** np.floor(np.log10(step))
+    return any(np.isclose(mantissa, m) for m in (1, 2, 2.5, 5, 10))
 
 
 @pytest.mark.filterwarnings("error::UserWarning")
@@ -66,14 +77,29 @@ class TestAutoTicks:
         assert ax.get_ylim()[0] == 0
         assert _ends_on_ticks(ax.get_yticks(), ax.get_ylim())
 
-    def test_six_major_ticks_get_one_minor_tick_between(self) -> None:
+    @pytest.mark.parametrize(
+        ("right", "visible_major", "divisions"),
+        [
+            (10, [0, 2, 4, 6, 8, 10], 2),  # six or more: halves
+            (4, [0, 1, 2, 3, 4], 4),  # five: quarters
+            (20, [0, 5, 10, 15, 20], 5),  # five spaced 5: fifths (every 1, not 1.25)
+            (12.4, [0, 2.5, 5, 7.5, 10], 5),  # five spaced 2.5: fifths (every 0.5)
+            (3.5, [0, 1, 2, 3], 5),  # four or fewer: fifths
+            (17, [0, 5, 10, 15], 5),  # four or fewer spaced 5: fifths
+            (7, [0, 2, 4, 6], 4),  # four or fewer spaced 2: quarters (every 0.5, not 0.4)
+        ],
+    )
+    def test_minor_divisions(
+        self, right: float, visible_major: list[float], divisions: int
+    ) -> None:
         _, ax = plt.subplots()
-        ax.plot([0, 10], [0, 10])
-        auto_ticks(ax, left=0, right=10)
-        assert list(ax.get_xticks()) == [0, 2, 4, 6, 8, 10]
+        ax.plot([0, right], [0, 1])
+        auto_ticks(ax, left=0, right=right)
+        visible = [tick for tick in ax.get_xticks() if 0 <= tick <= right]
+        assert visible == pytest.approx(visible_major)
         minor = ax.xaxis.get_minor_locator()
         assert isinstance(minor, ticker.AutoMinorLocator)
-        assert minor.ndivs == 2
+        assert minor.ndivs == divisions
 
     @pytest.mark.parametrize("style", ["default", STYLE_PATH])
     def test_unset_limits_end_on_ticks(self, style: str) -> None:
@@ -92,9 +118,10 @@ class TestAutoTicks:
                     (ax.get_yticks(), ax.get_ylim()),
                 ):
                     assert _ends_on_ticks(ticks, limits), (low, high, limits, ticks)
+                    assert _is_round_step(ticks[1] - ticks[0]), ticks
                 plt.close(fig)
 
-    @pytest.mark.parametrize("data", [(8.725, 482.271), (27.392, 27.616), (-91.805, -91.793)])
+    @pytest.mark.parametrize("data", [(-40.367, 10.776), (69.954, 70.886), (-4.063, -4.009)])
     def test_snap_settles_when_step_grows(self, data: tuple[float, float]) -> None:
         # Data ranges where a single snap left the axis ending between ticks.
         with plt.style.context("default"):

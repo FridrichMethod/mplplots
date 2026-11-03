@@ -31,3 +31,23 @@ jobs:
 
       - name: Run tests
         run: pytest tests/ -v
+
+  oldest-supported:
+    # The oldest versions pyproject.toml allows: Python 3.12 and Matplotlib 3.8.0, whose wheels
+    # need NumPy 1.x.
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -e ".[dev]" "matplotlib==3.8.0" "numpy<2"
+
+      - name: Run tests
+        run: pytest tests/ -v

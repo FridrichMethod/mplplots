@@ -1,10 +1,12 @@
 """Utility functions for mplplots."""
 
+import math
 import os
 from collections.abc import Callable, MutableMapping
 
 import matplotlib.font_manager as fm
 import matplotlib.text as mtext
+import numpy as np
 from matplotlib import ticker
 from matplotlib.axes import Axes
 from matplotlib.axis import Axis
@@ -76,10 +78,12 @@ def auto_ticks(
 
     How each axis is handled depends on its data and scale:
 
-    - **Linear numeric axes** get about six major ticks on round values and minor ticks
-      between them: 1 per interval with six or more major ticks, 3 with five, and 4 with
-      four or fewer. Each limit left unset moves out to a major tick, so the axis starts
-      and ends on a labelled tick. Inverted axes stay inverted.
+    - **Linear numeric axes** get about six major ticks, spaced 1, 2, 2.5 or 5 times a
+      power of 10. Minor ticks split each major interval into halves with six or more
+      visible major ticks, quarters with five (fifths if the spacing is 2.5 or 5, so minor
+      ticks stay on round values), and fifths with four or fewer. Each limit left unset
+      moves out to a major tick, so the axis starts and ends on a labelled tick. Inverted
+      axes stay inverted.
     - **Categorical axes** (string data, as in ``ax.bar(["A", "B"], ...)``) keep one tick
       per category and lose their minor ticks.
     - **Other axes** (log and other non-linear scales, dates, other units) keep
@@ -102,6 +106,10 @@ def auto_ticks(
     _auto_axis_ticks(ax.xaxis, ax.set_xlim, left, right)
     _auto_axis_ticks(ax.yaxis, ax.set_ylim, bottom, top)
 
+
+# Major tick spacings, times a power of 10. These are the steps of Matplotlib's default
+# AutoLocator; MaxNLocator's own default also allows 1.5, 3, 4, 6 and 8 (ticks like 0, 1.5, 3).
+_MAJOR_STEPS = (1, 2, 2.5, 5, 10)
 
 # Snapping a limit out to a tick can make MaxNLocator pick a larger step, which moves the
 # outermost ticks again. Each round only widens the range, so this settles within a few rounds.
@@ -132,7 +140,7 @@ def _auto_axis_ticks(
     if converter is not None or axis.get_scale() != "linear":
         return
 
-    axis.set_major_locator(ticker.MaxNLocator(nbins=6, min_n_ticks=3))
+    axis.set_major_locator(ticker.MaxNLocator(nbins=6, steps=_MAJOR_STEPS, min_n_ticks=3))
     for _ in range(_MAX_SNAP_ROUNDS):
         # Ticks are ascending; on an inverted axis the start edge holds the larger value.
         ticks = axis.get_majorticklocs()
@@ -145,9 +153,34 @@ def _auto_axis_ticks(
             break
         set_lim(new_start, new_end)
 
-    n_major = len(axis.get_majorticklocs())
-    n_divisions = 2 if n_major >= 6 else 4 if n_major == 5 else 5
-    axis.set_minor_locator(ticker.AutoMinorLocator(n_divisions))
+    axis.set_minor_locator(ticker.AutoMinorLocator(_minor_divisions(axis)))
+
+
+def _minor_divisions(axis: Axis) -> int:
+    """Return how many parts minor ticks split each major interval into.
+
+    Fewer visible major ticks get more minor ticks: halves with six or more, quarters with
+    five, and fifths with four or fewer. Quarters and fifths are swapped where needed so that
+    minor ticks land on round values: a major spacing of 2.5 or 5 (times a power of 10) is
+    split into fifths (every 1, not 1.25, between 0 and 5) and a spacing of 2 into quarters
+    (every 0.5, not 0.4, between 0 and 2).
+    """
+    low, high = sorted(axis.get_view_interval())
+    ticks = np.asarray(axis.get_majorticklocs())
+    tol = 1e-9 * (high - low)
+    n_visible = int(np.count_nonzero((ticks >= low - tol) & (ticks <= high + tol)))
+    if n_visible >= 6:
+        return 2
+    preferred = 4 if n_visible == 5 else 5
+    if len(ticks) < 2:
+        return preferred
+    step = float(ticks[1] - ticks[0])
+    mantissa = step / 10 ** math.floor(math.log10(step))
+    if any(math.isclose(mantissa, m, rel_tol=1e-6) for m in (2.5, 5)):
+        return 5
+    if math.isclose(mantissa, 2, rel_tol=1e-6):
+        return 4
+    return preferred
 
 
 def _get_converter(axis: Axis) -> object:

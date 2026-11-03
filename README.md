@@ -20,8 +20,7 @@ palettes, and a few helpers for publication-quality scientific figures.
 pip install git+https://github.com/FridrichMethod/mplplots.git
 ```
 
-mplplots is not on PyPI. It needs Python 3.12 or newer. Loading the style by package name (below)
-needs Matplotlib 3.7 or newer.
+mplplots is not on PyPI. It needs Python 3.12 or newer and Matplotlib 3.8 or newer.
 
 ## Quick start
 
@@ -41,7 +40,7 @@ ax.plot(x, np.cos(x), color=REDS[4], label="cos(x)")
 ax.set_xlabel("x")
 ax.set_ylabel("y")
 ax.legend()
-auto_ticks(ax, left=0, right=10, bottom=-1.2, top=1.2)
+auto_ticks(ax, left=0, right=10)
 fig.savefig("figure.png")
 ```
 
@@ -120,8 +119,10 @@ For every setting, see the [style file](src/mplplots/styles/GraphPadPrism.mplsty
 The style asks for Arial, which is GraphPad Prism's default font. If Arial is not installed (common
 on Linux and HPC clusters), it falls back without warnings to Helvetica or an Arial-compatible
 clone (Liberation Sans, Arimo, Nimbus Sans), and finally to DejaVu Sans, which ships with
-Matplotlib. Math text follows the same chain. For the exact Prism look, install Arial, or register
-the font files at the start of your script or notebook, before plotting:
+Matplotlib. Math text follows the same chain. The style also sets `font.family` to `sans-serif`, so
+it uses this list even if your `matplotlibrc` picks another font family. For the exact Prism look,
+install Arial, or register the font files at the start of your script or notebook, before
+plotting:
 
 ```python
 from mplplots.utils import add_custom_fonts
@@ -243,9 +244,11 @@ auto_ticks(ax, bottom=0)  # call after plotting; keep the y-axis starting at 0
 `auto_ticks(ax, left=..., right=..., bottom=..., top=...)` gives both axes Prism-like ticks. On a
 linear axis of numbers:
 
-- **Major ticks:** about six, on round values.
-- **Minor ticks:** the number of subdivisions depends on the major tick count. Six or more major
-  ticks get 1 minor tick between them, five get 3, and four or fewer get 4.
+- **Major ticks:** about six, spaced 1, 2, 2.5, or 5 times a power of 10 (the same spacings as
+  Matplotlib's default ticks).
+- **Minor ticks:** fewer major ticks get more minor ticks. Six or more visible major ticks get 1
+  minor tick halfway between. Five or fewer get 3 or 4, whichever keeps them on round values:
+  every 1 between 0 and 5, every 0.5 between 0 and 2, every 0.25 or 0.2 between 0 and 1.
 - **Limits:** any limit you leave unset moves out to a major tick, so each axis starts and ends on
   a labelled tick. Pass `left`, `right`, `bottom`, or `top` to keep that limit fixed, for example
   `bottom=0` for bar charts. Inverted axes stay inverted. The limits mean the same as in
@@ -340,7 +343,8 @@ pytest
 ```
 
 Both checks must pass before you commit. CI runs them on Python 3.12 and 3.13 for pushes and pull
-requests to `main`. Agent and contributor conventions are in [`AGENTS.md`](AGENTS.md).
+requests to `main`, and runs the tests once more against the oldest supported versions (Python
+3.12 with Matplotlib 3.8.0). Agent and contributor conventions are in [`AGENTS.md`](AGENTS.md).
 
 ## License
 
