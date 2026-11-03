@@ -110,7 +110,7 @@ the `stylelib/` folder of your Matplotlib config directory (`matplotlib.get_conf
 | Text | Arial (see [Fonts](#fonts)), bold throughout. The base size is 14 pt, axis labels are 12 pt, titles 16 pt, tick labels 10 pt, and the legend 8 pt. Math text (`$...$`) uses the same font. |
 | Axes | 1.5 pt axis lines, with the top and right spines removed. Autoscaled limits are rounded out to tick values. |
 | Ticks | 1.5 pt major and minor ticks, with minor ticks shown on both axes. |
-| Lines & markers | 2 pt lines. Markers are solid black by default (pass `markerfacecolor`/`markeredgecolor` to change them). Error bars have 3 pt caps. |
+| Lines & markers | 2 pt lines. Markers take the color of their line. Error bars have 3 pt caps. |
 | Legend | No frame, placed in the upper right. |
 
 For every setting, see the [style file](src/mplplots/styles/GraphPadPrism.mplstyle).
@@ -196,10 +196,7 @@ An unknown name raises `ValueError`. The new cycle applies to axes created after
 `set_palette` after `plt.style.use(...)`, because a style that defines its own color cycle would
 replace it.
 
-Each of the 25 hand-picked palettes also has a `<NAME>_CYCLE` object, such as `OCEAN_CYCLE`. Each
-one is a single `itertools.cycle` shared by all code that imports it. Colors drawn from it with
-`next(...)` therefore carry over between figures and notebook re-runs. Prefer `set_palette(...)`,
-or create a fresh cycle where you need one:
+To step through a palette by hand, create a cycle over it:
 
 ```python
 from itertools import cycle
@@ -221,7 +218,11 @@ from mplplots.palettes import get_colors
 get_colors("viridis", 5)  # 5 colors between 0.2 and 0.8 of viridis
 get_colors("coolwarm", 6, start=0.15, end=0.85)  # a wider range
 get_colors("Blues_r", 3)  # reversed colormaps work too
+get_colors("viridis", 5, start=0.8, end=0.2)  # or sample in reverse order
 ```
+
+`n` must be at least 1, and `start` and `end` must be between 0 and 1. Otherwise, and for an
+unknown colormap name, `get_colors` raises `ValueError`.
 
 <img src="examples/get_colors_demo.png" alt="Bar charts colored with get_colors from coolwarm, viridis, and YlGnBu" width="700">
 
@@ -239,18 +240,30 @@ ax.bar(["A", "B", "C"], [23, 45, 12])
 auto_ticks(ax, bottom=0)  # call after plotting; keep the y-axis starting at 0
 ```
 
-`auto_ticks(ax, left=..., right=..., bottom=..., top=...)` gives both axes Prism-like ticks:
+`auto_ticks(ax, left=..., right=..., bottom=..., top=...)` gives both axes Prism-like ticks. On a
+linear axis of numbers:
 
 - **Major ticks:** about six, on round values.
 - **Minor ticks:** the number of subdivisions depends on the major tick count. Six or more major
   ticks get 1 minor tick between them, five get 3, and four or fewer get 4.
-- **Limits:** any limit you leave unset moves to the first or last major tick, so each axis starts
-  and ends on a labelled tick. Pass `left`, `right`, `bottom`, or `top` to keep that limit fixed,
-  for example `bottom=0` for bar charts.
+- **Limits:** any limit you leave unset moves out to a major tick, so each axis starts and ends on
+  a labelled tick. Pass `left`, `right`, `bottom`, or `top` to keep that limit fixed, for example
+  `bottom=0` for bar charts. Inverted axes stay inverted. The limits mean the same as in
+  `ax.set_xlim(left, right)` and `ax.set_ylim(bottom, top)`, so on an inverted y-axis `bottom` is
+  the larger value.
+
+Other axes keep Matplotlib's own ticks:
+
+- **Categorical axes** (string data, such as the `"A"`, `"B"`, `"C"` above) keep one tick per
+  category. Their minor ticks are removed.
+- **Log and other non-linear scales, dates, and other units** are left as they are.
+
+A limit you pass is applied to every kind of axis.
 
 Call it **after** plotting your data, because it works from the limits the data produce. It
-replaces the major tick locators on both axes. If you set custom tick positions or labels (for
-example, the group labels of a grouped bar chart), set them after calling `auto_ticks`.
+replaces the major tick locators of linear numeric axes. If you set custom tick positions or
+labels on such an axis (for example, the group labels of a grouped bar chart with numeric bar
+positions), set them after calling `auto_ticks`.
 
 ## Gallery
 

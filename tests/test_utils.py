@@ -7,8 +7,11 @@ from pathlib import Path
 import matplotlib
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
+import numpy as np
+import numpy.typing as npt
 import pytest
 from fontTools.ttLib import TTFont
+from matplotlib import ticker
 from matplotlib.font_manager import FontProperties
 from matplotlib.text import Text
 from matplotlib.typing import RcKeyType
@@ -29,24 +32,170 @@ MATH_FONT_KEYS: tuple[RcKeyType, ...] = (
 type FontFactory = Callable[[str, str, str], Path]
 
 
+def _ends_on_ticks(ticks: npt.ArrayLike, limits: tuple[float, float]) -> bool:
+    """Whether both ends of an axis (in either order) sit on its outermost visible ticks."""
+    low, high = sorted(limits)
+    tol = 1e-9 * (high - low)
+    ticks = np.asarray(ticks)
+    visible = ticks[(ticks >= low - tol) & (ticks <= high + tol)]
+    return bool(abs(visible[0] - low) <= tol and abs(visible[-1] - high) <= tol)
+
+
+@pytest.mark.filterwarnings("error::UserWarning")
 class TestAutoTicks:
     def test_sets_ticks_on_simple_plot(self) -> None:
-        fig, ax = plt.subplots()
+        _, ax = plt.subplots()
         ax.plot([1, 2, 3], [1, 4, 9])
         auto_ticks(ax)
         assert len(ax.get_xticks()) >= 3
         assert len(ax.get_yticks()) >= 3
-        plt.close(fig)
+        assert isinstance(ax.xaxis.get_major_locator(), ticker.MaxNLocator)
+        assert isinstance(ax.xaxis.get_minor_locator(), ticker.AutoMinorLocator)
 
     def test_respects_explicit_limits(self) -> None:
-        fig, ax = plt.subplots()
+        _, ax = plt.subplots()
         ax.plot([1, 2, 3], [1, 4, 9])
         auto_ticks(ax, left=0.5, right=3.5, bottom=0, top=10)
-        assert ax.get_xlim()[0] == 0.5
-        assert ax.get_xlim()[1] == 3.5
+        assert ax.get_xlim() == (0.5, 3.5)
+        assert ax.get_ylim() == (0, 10)
+
+    def test_one_explicit_limit_other_end_on_tick(self) -> None:
+        _, ax = plt.subplots()
+        ax.bar([1, 2, 3], [23, 45, 12])
+        auto_ticks(ax, bottom=0)
         assert ax.get_ylim()[0] == 0
-        assert ax.get_ylim()[1] == 10
-        plt.close(fig)
+        assert _ends_on_ticks(ax.get_yticks(), ax.get_ylim())
+
+    def test_six_major_ticks_get_one_minor_tick_between(self) -> None:
+        _, ax = plt.subplots()
+        ax.plot([0, 10], [0, 10])
+        auto_ticks(ax, left=0, right=10)
+        assert list(ax.get_xticks()) == [0, 2, 4, 6, 8, 10]
+        minor = ax.xaxis.get_minor_locator()
+        assert isinstance(minor, ticker.AutoMinorLocator)
+        assert minor.ndivs == 2
+
+    @pytest.mark.parametrize("style", ["default", STYLE_PATH])
+    def test_unset_limits_end_on_ticks(self, style: str) -> None:
+        # Snapping a limit out to a tick can make the locator choose a larger step, so the
+        # snap has to be repeated until the ends sit on ticks.
+        rng = np.random.default_rng(0)
+        with plt.style.context(style):
+            for _ in range(200):
+                low = rng.uniform(-100, 100)
+                high = low + 10 ** rng.uniform(-2, 3)
+                fig, ax = plt.subplots()
+                ax.plot([low, high], [low, high])
+                auto_ticks(ax)
+                for ticks, limits in (
+                    (ax.get_xticks(), ax.get_xlim()),
+                    (ax.get_yticks(), ax.get_ylim()),
+                ):
+                    assert _ends_on_ticks(ticks, limits), (low, high, limits, ticks)
+                plt.close(fig)
+
+    @pytest.mark.parametrize("data", [(8.725, 482.271), (27.392, 27.616), (-91.805, -91.793)])
+    def test_snap_settles_when_step_grows(self, data: tuple[float, float]) -> None:
+        # Data ranges where a single snap left the axis ending between ticks.
+        with plt.style.context("default"):
+            _, ax = plt.subplots()
+            ax.plot(data, data)
+            auto_ticks(ax)
+        assert _ends_on_ticks(ax.get_yticks(), ax.get_ylim())
+
+    def test_repeated_call_changes_nothing(self) -> None:
+        _, ax = plt.subplots()
+        ax.plot([0.3, 47.1], [-2.2, 9.7])
+        auto_ticks(ax, bottom=-3)
+        first = (ax.get_xlim(), ax.get_ylim(), list(ax.get_xticks()), list(ax.get_yticks()))
+        auto_ticks(ax, bottom=-3)
+        second = (ax.get_xlim(), ax.get_ylim(), list(ax.get_xticks()), list(ax.get_yticks()))
+        assert first == second
+
+    def test_categorical_axis_keeps_one_tick_per_category(self) -> None:
+        fig, ax = plt.subplots()
+        ax.bar(["A", "B", "C"], [23, 45, 12])
+        xlim = ax.get_xlim()
+        auto_ticks(ax, bottom=0)
+        fig.canvas.draw()
+        assert list(ax.get_xticks()) == [0, 1, 2]
+        assert [label.get_text() for label in ax.get_xticklabels()] == ["A", "B", "C"]
+        assert ax.get_xlim() == xlim
+        assert isinstance(ax.xaxis.get_minor_locator(), ticker.NullLocator)
+        # The numeric y-axis is still handled.
+        assert ax.get_ylim()[0] == 0
+        assert _ends_on_ticks(ax.get_yticks(), ax.get_ylim())
+
+    def test_categorical_y_axis(self) -> None:
+        fig, ax = plt.subplots()
+        ax.barh(["low", "high"], [3.2, 5.1])
+        auto_ticks(ax, left=0)
+        fig.canvas.draw()
+        assert [label.get_text() for label in ax.get_yticklabels()] == ["low", "high"]
+        assert ax.get_xlim()[0] == 0
+        assert _ends_on_ticks(ax.get_xticks(), ax.get_xlim())
+
+    def test_categorical_axis_takes_explicit_limits(self) -> None:
+        _, ax = plt.subplots()
+        ax.bar(["A", "B", "C"], [23, 45, 12])
+        auto_ticks(ax, left=-1, right=3)
+        assert ax.get_xlim() == (-1, 3)
+        assert list(ax.get_xticks()) == [0, 1, 2]
+
+    @pytest.mark.parametrize("which", ["x", "y"])
+    def test_inverted_axis_stays_inverted(self, which: str) -> None:
+        _, ax = plt.subplots()
+        ax.plot([0.3, 9.7], [0.3, 9.7])
+        axis = ax.xaxis if which == "x" else ax.yaxis
+        axis.set_inverted(True)
+        auto_ticks(ax)
+        assert axis.get_inverted()
+        start, end = axis.get_view_interval()
+        assert start > end
+        assert _ends_on_ticks(axis.get_majorticklocs(), (start, end))
+
+    def test_inverted_axis_takes_explicit_limit(self) -> None:
+        _, ax = plt.subplots()
+        ax.plot([0, 1], [0.3, 9.7])
+        ax.invert_yaxis()
+        # As in ax.set_ylim(top=0): the top edge of the inverted axis shows 0.
+        auto_ticks(ax, top=0)
+        bottom, top = ax.get_ylim()
+        assert top == 0
+        assert bottom > top
+        assert _ends_on_ticks(ax.get_yticks(), (bottom, top))
+
+    def test_log_axis_unchanged(self) -> None:
+        _, ax = plt.subplots()
+        ax.plot([1, 10, 100, 1000], [1, 2, 3, 4])
+        ax.set_xscale("log")
+        xlim = ax.get_xlim()
+        major, minor = ax.xaxis.get_major_locator(), ax.xaxis.get_minor_locator()
+        auto_ticks(ax)
+        assert ax.get_xlim() == xlim
+        assert ax.xaxis.get_major_locator() is major
+        assert ax.xaxis.get_minor_locator() is minor
+        # The linear y-axis is still handled.
+        assert isinstance(ax.yaxis.get_major_locator(), ticker.MaxNLocator)
+
+    def test_log_axis_takes_explicit_limits(self) -> None:
+        _, ax = plt.subplots()
+        ax.plot([1, 10, 100, 1000], [1, 2, 3, 4])
+        ax.set_xscale("log")
+        auto_ticks(ax, left=1, right=1e4)
+        assert ax.get_xlim() == (1, 1e4)
+        assert isinstance(ax.xaxis.get_major_locator(), ticker.LogLocator)
+
+    def test_date_axis_unchanged(self) -> None:
+        _, ax = plt.subplots()
+        dates = np.array(["2024-01-01", "2024-02-15", "2024-03-01"], dtype="datetime64[D]")
+        ax.plot(dates, [1, 3, 2])
+        xlim = ax.get_xlim()
+        major, minor = ax.xaxis.get_major_locator(), ax.xaxis.get_minor_locator()
+        auto_ticks(ax)
+        assert ax.get_xlim() == xlim
+        assert ax.xaxis.get_major_locator() is major
+        assert ax.xaxis.get_minor_locator() is minor
 
 
 @pytest.fixture

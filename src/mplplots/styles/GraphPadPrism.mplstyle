@@ -29,8 +29,6 @@ legend.frameon: False
 legend.loc: upper right
 
 lines.linewidth: 2
-lines.markeredgecolor: black
-lines.markerfacecolor: black
 
 # "sans" resolves through font.sans-serif, so math uses the same font as the text
 # (Arial when installed).

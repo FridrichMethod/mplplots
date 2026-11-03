@@ -1,12 +1,14 @@
 """Utility functions for mplplots."""
 
 import os
-from collections.abc import MutableMapping
+from collections.abc import Callable, MutableMapping
 
 import matplotlib.font_manager as fm
 import matplotlib.text as mtext
 from matplotlib import ticker
 from matplotlib.axes import Axes
+from matplotlib.axis import Axis
+from matplotlib.category import StrCategoryConverter
 from matplotlib.mathtext import MathTextParser
 
 type StrPath = str | os.PathLike[str]
@@ -62,7 +64,7 @@ def _clear_font_caches() -> None:
             default.clear()
 
 
-def auto_ticks(  # noqa: C901
+def auto_ticks(
     ax: Axes,
     *,
     left: float | None = None,
@@ -70,56 +72,90 @@ def auto_ticks(  # noqa: C901
     top: float | None = None,
     bottom: float | None = None,
 ) -> None:
-    """Set the major and minor ticks of an axis automatically.
+    """Give both axes of a plot Prism-like ticks.
+
+    How each axis is handled depends on its data and scale:
+
+    - **Linear numeric axes** get about six major ticks on round values and minor ticks
+      between them: 1 per interval with six or more major ticks, 3 with five, and 4 with
+      four or fewer. Each limit left unset moves out to a major tick, so the axis starts
+      and ends on a labelled tick. Inverted axes stay inverted.
+    - **Categorical axes** (string data, as in ``ax.bar(["A", "B"], ...)``) keep one tick
+      per category and lose their minor ticks.
+    - **Other axes** (log and other non-linear scales, dates, other units) keep
+      Matplotlib's own ticks and limits.
+
+    A limit you pass is applied on every kind of axis.
 
     Args:
-        ax (Axes): The axis to set ticks for.
-        left (float | None, optional): The left limit of the x-axis. Defaults to None.
-        right (float | None, optional): The right limit of the x-axis. Defaults to None.
-        bottom (float | None, optional): The bottom limit of the y-axis. Defaults to None.
-        top (float | None, optional): The top limit of the y-axis. Defaults to None.
+        ax: The axes to set ticks for.
+        left: Value at the left edge of the x-axis. If None, it moves to a major tick.
+        right: Value at the right edge of the x-axis. If None, it moves to a major tick.
+        top: Value at the top edge of the y-axis. If None, it moves to a major tick.
+        bottom: Value at the bottom edge of the y-axis. If None, it moves to a major tick.
 
     Notes:
-        Put this function after the data are passed to the axis.
+        Call this after plotting, because it works from the limits the data produce.
+        The limits mean the same as in ``ax.set_xlim(left, right)`` and
+        ``ax.set_ylim(bottom, top)``: on an inverted y-axis, ``bottom`` is the larger value.
     """
-    # Set the major and minor ticks of the x-axis
-    if left is not None:
-        ax.set_xlim(left=left)
-    if right is not None:
-        ax.set_xlim(right=right)
+    _auto_axis_ticks(ax.xaxis, ax.set_xlim, left, right)
+    _auto_axis_ticks(ax.yaxis, ax.set_ylim, bottom, top)
 
-    ax.xaxis.set_major_locator(ticker.MaxNLocator(nbins=6, min_n_ticks=3))
-    x_tick_num = len(ax.get_xticks())
-    if x_tick_num >= 6:
-        ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    elif x_tick_num >= 5:
-        ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(4))
-    else:
-        ax.xaxis.set_minor_locator(ticker.AutoMinorLocator(5))
 
-    # For viewing incomplete ticks
-    if left is None and (ax.get_xticks()[0] != ax.get_xlim()[0]):
-        ax.set_xlim(left=ax.get_xticks()[0])
-    if right is None and (ax.get_xticks()[-1] != ax.get_xlim()[-1]):
-        ax.set_xlim(right=ax.get_xticks()[-1])
+# Snapping a limit out to a tick can make MaxNLocator pick a larger step, which moves the
+# outermost ticks again. Each round only widens the range, so this settles within a few rounds.
+_MAX_SNAP_ROUNDS = 10
 
-    # Set the major and minor ticks of the y-axis
-    if bottom is not None:
-        ax.set_ylim(bottom=bottom)
-    if top is not None:
-        ax.set_ylim(top=top)
 
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(nbins=6, min_n_ticks=3))
-    y_tick_num = len(ax.get_yticks())
-    if y_tick_num >= 6:
-        ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(2))
-    elif y_tick_num >= 5:
-        ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(4))
-    else:
-        ax.yaxis.set_minor_locator(ticker.AutoMinorLocator(5))
+def _auto_axis_ticks(
+    axis: Axis,
+    set_lim: Callable[[float | None, float | None], object],
+    start: float | None,
+    end: float | None,
+) -> None:
+    """Apply :func:`auto_ticks` to one axis.
 
-    # For viewing incomplete ticks
-    if bottom is None and (ax.get_yticks()[0] != ax.get_ylim()[0]):
-        ax.set_ylim(bottom=ax.get_yticks()[0])
-    if top is None and (ax.get_yticks()[-1] != ax.get_ylim()[-1]):
-        ax.set_ylim(top=ax.get_yticks()[-1])
+    Args:
+        axis: The axis to set ticks for.
+        set_lim: ``ax.set_xlim`` or ``ax.set_ylim``, taking the (start, end) limits.
+        start: Fixed limit at the start (left or bottom) edge, or None to snap it to a tick.
+        end: Fixed limit at the end (right or top) edge, or None to snap it to a tick.
+    """
+    if start is not None or end is not None:
+        set_lim(start, end)
+
+    converter = _get_converter(axis)
+    if isinstance(converter, StrCategoryConverter):
+        axis.set_minor_locator(ticker.NullLocator())
+        return
+    if converter is not None or axis.get_scale() != "linear":
+        return
+
+    axis.set_major_locator(ticker.MaxNLocator(nbins=6, min_n_ticks=3))
+    for _ in range(_MAX_SNAP_ROUNDS):
+        # Ticks are ascending; on an inverted axis the start edge holds the larger value.
+        ticks = axis.get_majorticklocs()
+        view_start, view_end = axis.get_view_interval()
+        inverted = view_start > view_end
+        start_tick, end_tick = (ticks[-1], ticks[0]) if inverted else (ticks[0], ticks[-1])
+        new_start = view_start if start is not None else float(start_tick)
+        new_end = view_end if end is not None else float(end_tick)
+        if new_start == view_start and new_end == view_end:
+            break
+        set_lim(new_start, new_end)
+
+    n_major = len(axis.get_majorticklocs())
+    n_divisions = 2 if n_major >= 6 else 4 if n_major == 5 else 5
+    axis.set_minor_locator(ticker.AutoMinorLocator(n_divisions))
+
+
+def _get_converter(axis: Axis) -> object:
+    """Return the axis' unit converter, or None for plain numbers.
+
+    ``Axis.get_converter()`` is new in Matplotlib 3.10, which deprecated ``Axis.converter``.
+    """
+    get_converter = getattr(axis, "get_converter", None)
+    if callable(get_converter):
+        return get_converter()
+    return getattr(axis, "converter", None)

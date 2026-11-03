@@ -3,20 +3,13 @@
 Every named palette (``CUSTOM``, ``OCEAN``, ``BLUES``, ...) is a tuple of hex color strings and is
 also registered by upper-case name in :data:`PALETTES`. Use :func:`set_palette` to make a palette
 matplotlib's default color cycle.
-
-Note:
-    The ``*_CYCLE`` objects (``CUSTOM_CYCLE``, ``OCEAN_CYCLE``, ...) are kept for backward
-    compatibility. Each one is a single iterator shared by the whole process: every ``next()``
-    anywhere advances it, so the colors you get depend on what was drawn before (and on notebook
-    re-runs). Prefer ``set_palette("ocean")``, or a fresh ``itertools.cycle(OCEAN)`` per figure.
 """
 
 from collections.abc import Mapping, Sequence
-from itertools import cycle
 from types import MappingProxyType
 
+import matplotlib as mpl
 import matplotlib.colors as mcolors
-import matplotlib.pyplot as plt
 from matplotlib.rcsetup import cycler
 
 
@@ -30,23 +23,32 @@ def get_colors(
 
     Args:
         name: Colormap name (e.g. "Blues", "Set2", "viridis").
-        n: Number of colors to sample.
-        start: Start position in the colormap (0-1).
-        end: End position in the colormap (0-1).
+        n: Number of colors to sample, at least 1.
+        start: Start position in the colormap, between 0 and 1.
+        end: End position in the colormap, between 0 and 1. It may be smaller than ``start``
+            to sample the colormap in reverse.
 
     Returns:
         Tuple of hex color strings.
+
+    Raises:
+        ValueError: If ``n`` is less than 1, if ``start`` or ``end`` is outside [0, 1], or if
+            no colormap is registered under ``name``.
     """
-    cmap = plt.get_cmap(name)
+    if n < 1:
+        raise ValueError(f"n must be at least 1, got {n}.")
+    for label, position in (("start", start), ("end", end)):
+        if not 0 <= position <= 1:
+            raise ValueError(f"{label} must be between 0 and 1, got {position}.")
+    cmap = mpl.colormaps.get_cmap(name)
     if n == 1:
         return (mcolors.to_hex(cmap((start + end) / 2)),)
     step = (end - start) / (n - 1)
     return tuple(mcolors.to_hex(cmap(start + step * i)) for i in range(n))
 
 
-# Each palette is a plain tuple for indexing/slicing. Its ``*_CYCLE`` companion is a shared,
-# process-wide iterator kept for backward compatibility (see the module docstring); prefer
-# ``set_palette(...)`` or a fresh ``itertools.cycle(...)`` over the tuple.
+# Each palette is a plain tuple, so it can be indexed and sliced. Use ``set_palette(...)`` to make
+# one the default color cycle, or ``itertools.cycle(...)`` over the tuple to step through it.
 CUSTOM: tuple[str, ...] = (
     "#BCE4F9",
     "#7BD3F2",
@@ -60,7 +62,6 @@ CUSTOM: tuple[str, ...] = (
     "#F0CEA4",
     "#F8A450",
 )
-CUSTOM_CYCLE = cycle(CUSTOM)
 
 PASTEL: tuple[str, ...] = (
     "#A8D8EA",
@@ -75,7 +76,6 @@ PASTEL: tuple[str, ...] = (
     "#D8C0D8",
     "#B0D4E8",
 )
-PASTEL_CYCLE = cycle(PASTEL)
 
 WARM: tuple[str, ...] = (
     "#F0C8A4",
@@ -90,7 +90,6 @@ WARM: tuple[str, ...] = (
     "#E0B4C4",
     "#ECBCA0",
 )
-WARM_CYCLE = cycle(WARM)
 
 COOL: tuple[str, ...] = (
     "#A4CCE0",
@@ -105,7 +104,6 @@ COOL: tuple[str, ...] = (
     "#B4A8CC",
     "#8CBCD4",
 )
-COOL_CYCLE = cycle(COOL)
 
 EARTH: tuple[str, ...] = (
     "#BCCCAA",
@@ -120,7 +118,6 @@ EARTH: tuple[str, ...] = (
     "#ACB8A8",
     "#C4B4AC",
 )
-EARTH_CYCLE = cycle(EARTH)
 
 # ---------------------------------------------------------------------------
 # Single-family palettes (derived from CUSTOM's color families)
@@ -139,7 +136,6 @@ OCEAN: tuple[str, ...] = (
     "#A8CCE0",
     "#80BCCC",
 )
-OCEAN_CYCLE = cycle(OCEAN)
 
 ROSE: tuple[str, ...] = (
     "#F4C4D4",
@@ -154,7 +150,6 @@ ROSE: tuple[str, ...] = (
     "#F0C0D0",
     "#E4A4B4",
 )
-ROSE_CYCLE = cycle(ROSE)
 
 FOREST: tuple[str, ...] = (
     "#C8E0B8",
@@ -169,7 +164,6 @@ FOREST: tuple[str, ...] = (
     "#B4D4B8",
     "#A0CCAC",
 )
-FOREST_CYCLE = cycle(FOREST)
 
 LAVENDER: tuple[str, ...] = (
     "#D4CCE8",
@@ -184,7 +178,6 @@ LAVENDER: tuple[str, ...] = (
     "#C8C0DC",
     "#B4A8D0",
 )
-LAVENDER_CYCLE = cycle(LAVENDER)
 
 SUNSET: tuple[str, ...] = (
     "#F4D4B0",
@@ -199,7 +192,6 @@ SUNSET: tuple[str, ...] = (
     "#F0CCA8",
     "#E8B894",
 )
-SUNSET_CYCLE = cycle(SUNSET)
 
 COASTAL: tuple[str, ...] = (
     "#B8D8D4",
@@ -214,7 +206,6 @@ COASTAL: tuple[str, ...] = (
     "#CCC8B8",
     "#A0C0C0",
 )
-COASTAL_CYCLE = cycle(COASTAL)
 
 # ---------------------------------------------------------------------------
 # Seasonal palettes (CUSTOM hue mix shifted by season)
@@ -233,7 +224,6 @@ SPRING: tuple[str, ...] = (
     "#D0E4C0",
     "#E8D4BC",
 )
-SPRING_CYCLE = cycle(SPRING)
 
 SUMMER: tuple[str, ...] = (
     "#E0D0A8",
@@ -248,7 +238,6 @@ SUMMER: tuple[str, ...] = (
     "#C8D4C4",
     "#DCC8AC",
 )
-SUMMER_CYCLE = cycle(SUMMER)
 
 AUTUMN: tuple[str, ...] = (
     "#D4B898",
@@ -263,7 +252,6 @@ AUTUMN: tuple[str, ...] = (
     "#CCB4A0",
     "#BCA08C",
 )
-AUTUMN_CYCLE = cycle(AUTUMN)
 
 WINTER: tuple[str, ...] = (
     "#C8D8E8",
@@ -278,7 +266,6 @@ WINTER: tuple[str, ...] = (
     "#C4CCD4",
     "#B0BCC8",
 )
-WINTER_CYCLE = cycle(WINTER)
 
 # ---------------------------------------------------------------------------
 # Time-of-day palettes
@@ -297,7 +284,6 @@ DAWN: tuple[str, ...] = (
     "#E8D0C4",
     "#D0CCE0",
 )
-DAWN_CYCLE = cycle(DAWN)
 
 DUSK: tuple[str, ...] = (
     "#B4A8C8",
@@ -312,7 +298,6 @@ DUSK: tuple[str, ...] = (
     "#B4A8C0",
     "#A0A8BC",
 )
-DUSK_CYCLE = cycle(DUSK)
 
 # ---------------------------------------------------------------------------
 # Thematic palettes
@@ -331,7 +316,6 @@ CANDY: tuple[str, ...] = (
     "#E4D0E4",
     "#C0DCE8",
 )
-CANDY_CYCLE = cycle(CANDY)
 
 SMOKE: tuple[str, ...] = (
     "#B8C0C8",
@@ -346,7 +330,6 @@ SMOKE: tuple[str, ...] = (
     "#C4BCBC",
     "#B8BCBC",
 )
-SMOKE_CYCLE = cycle(SMOKE)
 
 VINTAGE: tuple[str, ...] = (
     "#C8D0BC",
@@ -361,7 +344,6 @@ VINTAGE: tuple[str, ...] = (
     "#D0C8BC",
     "#C0BCC0",
 )
-VINTAGE_CYCLE = cycle(VINTAGE)
 
 NORDIC: tuple[str, ...] = (
     "#B4C8D0",
@@ -376,7 +358,6 @@ NORDIC: tuple[str, ...] = (
     "#C0C8C0",
     "#ACC0C4",
 )
-NORDIC_CYCLE = cycle(NORDIC)
 
 MEADOW: tuple[str, ...] = (
     "#C8DCA8",
@@ -391,7 +372,6 @@ MEADOW: tuple[str, ...] = (
     "#C4D8B4",
     "#D4C0BC",
 )
-MEADOW_CYCLE = cycle(MEADOW)
 
 CORAL: tuple[str, ...] = (
     "#F0C0B8",
@@ -406,7 +386,6 @@ CORAL: tuple[str, ...] = (
     "#A8CCC4",
     "#E8C4B4",
 )
-CORAL_CYCLE = cycle(CORAL)
 
 TROPICAL: tuple[str, ...] = (
     "#A0D8D0",
@@ -421,7 +400,6 @@ TROPICAL: tuple[str, ...] = (
     "#D8C0D0",
     "#A4CCD4",
 )
-TROPICAL_CYCLE = cycle(TROPICAL)
 
 POWDER: tuple[str, ...] = (
     "#D8E8F0",
@@ -436,7 +414,6 @@ POWDER: tuple[str, ...] = (
     "#E4D4E0",
     "#D0E0E8",
 )
-POWDER_CYCLE = cycle(POWDER)
 
 # ---------------------------------------------------------------------------
 # Pre-generated color families (muted range, avoids extremes)
@@ -529,4 +506,4 @@ def set_palette(palette: str | Sequence[str]) -> None:
         if invalid:
             raise ValueError(f"Invalid color(s) in palette: {', '.join(map(repr, invalid))}.")
     # matplotlib's validating cycler() also rejects cycle references such as "C0".
-    plt.rcParams["axes.prop_cycle"] = cycler(color=colors)
+    mpl.rcParams["axes.prop_cycle"] = cycler(color=colors)
