@@ -56,6 +56,15 @@ import matplotlib.pyplot as plt
 plt.style.use("mplplots.styles.GraphPadPrism")  # for the rest of the session
 ```
 
+The package also has a shortcut and the path to the file:
+
+```python
+import mplplots
+
+mplplots.prism_style()  # same as plt.style.use(mplplots.STYLE_PATH)
+mplplots.STYLE_PATH  # pathlib.Path to the bundled GraphPadPrism.mplstyle
+```
+
 To apply it to a single block of code only:
 
 ```python

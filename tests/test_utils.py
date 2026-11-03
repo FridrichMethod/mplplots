@@ -13,10 +13,10 @@ from matplotlib.font_manager import FontProperties
 from matplotlib.text import Text
 from matplotlib.typing import RcKeyType
 
+import mplplots
 from mplplots.utils import _clear_font_caches, add_custom_fonts, auto_ticks
 
-STYLES_DIR = Path(__file__).resolve().parent.parent / "src" / "mplplots" / "styles"
-STYLE_PATH = str(STYLES_DIR / "GraphPadPrism.mplstyle")
+STYLE_PATH = str(mplplots.STYLE_PATH)
 MPL_TTF_DIR = Path(matplotlib.get_data_path()) / "fonts" / "ttf"
 MATH_FONT_KEYS: tuple[RcKeyType, ...] = (
     "mathtext.rm",

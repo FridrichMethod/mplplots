@@ -5,7 +5,6 @@ from pathlib import Path
 
 from matplotlib import style
 
-EXPORTS = ["prism_style"]
 __all__ = ["STYLE_PATH", "prism_style"]
 
 
