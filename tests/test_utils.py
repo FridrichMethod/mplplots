@@ -78,24 +78,34 @@ class TestAutoTicks:
         assert _ends_on_ticks(ax.get_yticks(), ax.get_ylim())
 
     @pytest.mark.parametrize(
-        ("right", "visible_major", "divisions"),
+        ("data", "limits", "visible_major", "divisions"),
         [
-            (10, [0, 2, 4, 6, 8, 10], 2),  # six or more: halves
-            (4, [0, 1, 2, 3, 4], 4),  # five: quarters
-            (20, [0, 5, 10, 15, 20], 5),  # five spaced 5: fifths (every 1, not 1.25)
-            (12.4, [0, 2.5, 5, 7.5, 10], 5),  # five spaced 2.5: fifths (every 0.5)
-            (3.5, [0, 1, 2, 3], 5),  # four or fewer: fifths
-            (17, [0, 5, 10, 15], 5),  # four or fewer spaced 5: fifths
-            (7, [0, 2, 4, 6], 4),  # four or fewer spaced 2: quarters (every 0.5, not 0.4)
+            # Six or more major ticks: halves.
+            ((0, 10), {"left": 0, "right": 10}, [0, 2, 4, 6, 8, 10], 2),
+            # Five: quarters, or fifths when spaced 2.5 or 5 (every 1, not 1.25).
+            ((0, 4), {"left": 0, "right": 4}, [0, 1, 2, 3, 4], 4),
+            ((0, 20), {"left": 0, "right": 20}, [0, 5, 10, 15, 20], 5),
+            # 12.4 is on no round spacing, so it stays between ticks.
+            ((0, 12.4), {"left": 0, "right": 12.4}, [0, 2.5, 5, 7.5, 10], 5),
+            # Four or fewer: fifths, or quarters when spaced 2 (every 0.5, not 0.4).
+            ((22.92, 23.15), {}, [22.9, 23.0, 23.1, 23.2], 5),
+            ((9.92, 10.04), {}, [9.9, 9.95, 10.0, 10.05], 5),
+            ((-0.68, -0.26), {}, [-0.8, -0.6, -0.4, -0.2], 4),
         ],
     )
     def test_minor_divisions(
-        self, right: float, visible_major: list[float], divisions: int
+        self,
+        data: tuple[float, float],
+        limits: dict[str, float],
+        visible_major: list[float],
+        divisions: int,
     ) -> None:
-        _, ax = plt.subplots()
-        ax.plot([0, right], [0, 1])
-        auto_ticks(ax, left=0, right=right)
-        visible = [tick for tick in ax.get_xticks() if 0 <= tick <= right]
+        with plt.style.context("default"):
+            _, ax = plt.subplots()
+            ax.plot(data, [0, 1])
+            auto_ticks(ax, **limits)
+        low, high = ax.get_xlim()
+        visible = [tick for tick in ax.get_xticks() if low - 1e-9 <= tick <= high + 1e-9]
         assert visible == pytest.approx(visible_major)
         minor = ax.xaxis.get_minor_locator()
         assert isinstance(minor, ticker.AutoMinorLocator)
@@ -192,18 +202,27 @@ class TestAutoTicks:
         assert bottom > top
         assert _ends_on_ticks(ax.get_yticks(), (bottom, top))
 
-    def test_log_axis_unchanged(self) -> None:
+    @pytest.mark.parametrize("inverted", [False, True])
+    def test_log_axis_keeps_its_ticks_and_ends_on_decades(self, inverted: bool) -> None:
         _, ax = plt.subplots()
-        ax.plot([1, 10, 100, 1000], [1, 2, 3, 4])
+        ax.plot([2, 10, 100, 700], [1, 2, 3, 4])
         ax.set_xscale("log")
-        xlim = ax.get_xlim()
+        ax.xaxis.set_inverted(inverted)
         major, minor = ax.xaxis.get_major_locator(), ax.xaxis.get_minor_locator()
         auto_ticks(ax)
-        assert ax.get_xlim() == xlim
+        expected = (1, 1000)
+        assert ax.get_xlim() == pytest.approx(expected[::-1] if inverted else expected)
         assert ax.xaxis.get_major_locator() is major
         assert ax.xaxis.get_minor_locator() is minor
         # The linear y-axis is still handled.
         assert isinstance(ax.yaxis.get_major_locator(), ticker.MaxNLocator)
+
+    def test_log_axis_fixed_limit_off_decade_stays(self) -> None:
+        _, ax = plt.subplots()
+        ax.plot([2, 10, 100, 700], [1, 2, 3, 4])
+        ax.set_xscale("log")
+        auto_ticks(ax, left=2)
+        assert ax.get_xlim() == pytest.approx((2, 1000))
 
     def test_log_axis_takes_explicit_limits(self) -> None:
         _, ax = plt.subplots()
@@ -213,16 +232,70 @@ class TestAutoTicks:
         assert ax.get_xlim() == (1, 1e4)
         assert isinstance(ax.xaxis.get_major_locator(), ticker.LogLocator)
 
-    def test_date_axis_unchanged(self) -> None:
+    @pytest.mark.parametrize(
+        "dates",
+        [
+            ["2024-01-03", "2024-02-15", "2024-03-01"],
+            ["2024-01-03", "2024-01-10", "2024-01-20"],
+            ["2020-05-01", "2022-02-15", "2024-02-01"],
+        ],
+    )
+    def test_date_axis_keeps_its_ticks_and_ends_on_them(self, dates: list[str]) -> None:
         _, ax = plt.subplots()
-        dates = np.array(["2024-01-01", "2024-02-15", "2024-03-01"], dtype="datetime64[D]")
-        ax.plot(dates, [1, 3, 2])
-        xlim = ax.get_xlim()
+        values = np.array(dates, dtype="datetime64[D]")
+        ax.plot(values, [1, 3, 2])
+        data_low, data_high = ax.xaxis.get_data_interval()
         major, minor = ax.xaxis.get_major_locator(), ax.xaxis.get_minor_locator()
         auto_ticks(ax)
-        assert ax.get_xlim() == xlim
+        low, high = ax.get_xlim()
+        assert _ends_on_ticks(ax.get_xticks(), (low, high))
+        assert low <= data_low
+        assert high >= data_high
         assert ax.xaxis.get_major_locator() is major
         assert ax.xaxis.get_minor_locator() is minor
+
+    def test_fixed_limit_gets_a_spacing_that_puts_it_on_a_tick(self) -> None:
+        # The default spacing for 0 to 7 is 2, which would leave 7 between ticks.
+        _, ax = plt.subplots()
+        ax.plot([0.2, 6.6], [0, 1])
+        auto_ticks(ax, left=0, right=7)
+        assert ax.get_xlim() == (0, 7)
+        visible = [tick for tick in ax.get_xticks() if 0 <= tick <= 7]
+        assert visible == pytest.approx(list(range(8)))
+
+    def test_one_fixed_limit_other_snaps_to_the_new_spacing(self) -> None:
+        _, ax = plt.subplots()
+        ax.plot([0, 1], [3.1, 33.4])
+        auto_ticks(ax, top=35)
+        bottom, top = ax.get_ylim()
+        assert top == 35
+        assert _ends_on_ticks(ax.get_yticks(), (bottom, top))
+        assert ax.get_yticks()[1] - ax.get_yticks()[0] == pytest.approx(5)
+
+    def test_fixed_limit_without_round_spacing_stays_between_ticks(self) -> None:
+        _, ax = plt.subplots()
+        x = np.linspace(0, 10, 50)
+        ax.plot(x, np.sin(x))
+        auto_ticks(ax, bottom=-1.2, top=1.2)
+        assert ax.get_ylim() == (-1.2, 1.2)
+        visible = [tick for tick in ax.get_yticks() if -1.2 <= tick <= 1.2]
+        assert visible == pytest.approx([-1, -0.5, 0, 0.5, 1])
+
+    def test_fixed_whole_number_limit_always_on_a_tick(self) -> None:
+        # Spacing 1 puts any whole number on a tick, so with at most 10 units of range
+        # a whole-number limit must end up on one.
+        rng = np.random.default_rng(1)
+        for _ in range(200):
+            low = rng.uniform(-50, 50)
+            high = low + rng.uniform(0.5, 8)
+            fixed = float(np.floor(low))
+            fig, ax = plt.subplots()
+            ax.plot([0, 1], [low, high])
+            auto_ticks(ax, bottom=fixed)
+            limits = ax.get_ylim()
+            assert limits[0] == fixed
+            assert _ends_on_ticks(ax.get_yticks(), limits), (low, high, limits)
+            plt.close(fig)
 
 
 @pytest.fixture

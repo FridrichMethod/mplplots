@@ -7,11 +7,13 @@ from collections.abc import Callable, MutableMapping
 import matplotlib.font_manager as fm
 import matplotlib.text as mtext
 import numpy as np
+import numpy.typing as npt
 from matplotlib import ticker
 from matplotlib.axes import Axes
 from matplotlib.axis import Axis
 from matplotlib.category import StrCategoryConverter
 from matplotlib.mathtext import MathTextParser
+from matplotlib.transforms import Transform
 
 type StrPath = str | os.PathLike[str]
 
@@ -74,22 +76,25 @@ def auto_ticks(
     top: float | None = None,
     bottom: float | None = None,
 ) -> None:
-    """Give both axes of a plot Prism-like ticks.
+    """Give both axes of a plot Prism-like ticks, ending each axis on a major tick.
 
     How each axis is handled depends on its data and scale:
 
     - **Linear numeric axes** get about six major ticks, spaced 1, 2, 2.5 or 5 times a
       power of 10. Minor ticks split each major interval into halves with six or more
       visible major ticks, quarters with five (fifths if the spacing is 2.5 or 5, so minor
-      ticks stay on round values), and fifths with four or fewer. Each limit left unset
-      moves out to a major tick, so the axis starts and ends on a labelled tick. Inverted
-      axes stay inverted.
+      ticks stay on round values), and fifths with four or fewer.
+    - **Log and other non-linear scales, dates and other units** keep Matplotlib's own
+      ticks.
     - **Categorical axes** (string data, as in ``ax.bar(["A", "B"], ...)``) keep one tick
-      per category and lose their minor ticks.
-    - **Other axes** (log and other non-linear scales, dates, other units) keep
-      Matplotlib's own ticks and limits.
+      per category and lose their minor ticks. Their limits are not changed.
 
-    A limit you pass is applied on every kind of axis.
+    On every axis except categorical ones, each limit left unset moves out to the nearest
+    major tick, so the axis starts and ends on a tick. A limit you pass is kept as given. On
+    a linear axis the tick spacing is then chosen so that this limit is a major tick too
+    (``right=7`` gives a tick every 1), if a round spacing with at most 10 intervals allows
+    it; otherwise that end stays between ticks (for example ``bottom=-1.2``). Inverted axes
+    stay inverted.
 
     Args:
         ax: The axes to set ticks for.
@@ -111,17 +116,22 @@ def auto_ticks(
 # AutoLocator; MaxNLocator's own default also allows 1.5, 3, 4, 6 and 8 (ticks like 0, 1.5, 3).
 _MAJOR_STEPS = (1, 2, 2.5, 5, 10)
 
-# Snapping a limit out to a tick can make MaxNLocator pick a larger step, which moves the
-# outermost ticks again. Each round only widens the range, so this settles within a few rounds.
+# Major intervals wanted on a linear axis: MaxNLocator(nbins=6) gives up to 6. A spacing chosen
+# to put a fixed limit on a tick may give up to _MAX_INTERVALS when no spacing gives 6 or fewer.
+_NBINS = 6
+_MAX_INTERVALS = 10
+
+# Snapping a limit out to a tick can change the ticks (MaxNLocator may pick a larger step for
+# the wider range), so snapping repeats until the ends sit on ticks.
 _MAX_SNAP_ROUNDS = 10
 
+# Times a view is widened while looking for a tick beyond one of its ends.
+_MAX_PROBES = 5
 
-def _auto_axis_ticks(
-    axis: Axis,
-    set_lim: Callable[[float | None, float | None], object],
-    start: float | None,
-    end: float | None,
-) -> None:
+type _SetLim = Callable[[float | None, float | None], object]
+
+
+def _auto_axis_ticks(axis: Axis, set_lim: _SetLim, start: float | None, end: float | None) -> None:
     """Apply :func:`auto_ticks` to one axis.
 
     Args:
@@ -138,22 +148,164 @@ def _auto_axis_ticks(
         axis.set_minor_locator(ticker.NullLocator())
         return
     if converter is not None or axis.get_scale() != "linear":
+        _snap_ends(axis, set_lim, start, end)
         return
 
-    axis.set_major_locator(ticker.MaxNLocator(nbins=6, steps=_MAJOR_STEPS, min_n_ticks=3))
+    # Each pass only widens the axis. Repeating until nothing changes makes the result a fixed
+    # point, so calling auto_ticks again leaves the axis as it is.
     for _ in range(_MAX_SNAP_ROUNDS):
-        # Ticks are ascending; on an inverted axis the start edge holds the larger value.
-        ticks = axis.get_majorticklocs()
-        view_start, view_end = axis.get_view_interval()
-        inverted = view_start > view_end
-        start_tick, end_tick = (ticks[-1], ticks[0]) if inverted else (ticks[0], ticks[-1])
-        new_start = view_start if start is not None else float(start_tick)
-        new_end = view_end if end is not None else float(end_tick)
-        if new_start == view_start and new_end == view_end:
+        view = _view_interval(axis)
+        _set_linear_ticks(axis, set_lim, start, end)
+        if _view_interval(axis) == view:
             break
-        set_lim(new_start, new_end)
-
     axis.set_minor_locator(ticker.AutoMinorLocator(_minor_divisions(axis)))
+
+
+def _set_linear_ticks(axis: Axis, set_lim: _SetLim, start: float | None, end: float | None) -> None:
+    """Set the major locator of a linear numeric axis and snap its unset ends to ticks.
+
+    With a fixed limit, the spacing is chosen so that the limit is a tick. If no round
+    spacing does that, the default ticks are used and the fixed end stays between ticks.
+    """
+    step = None
+    if start is not None or end is not None:
+        step = _step_through_fixed_ends(_view_interval(axis), start, end)
+    if step is None:
+        locator: ticker.Locator = ticker.MaxNLocator(
+            nbins=_NBINS, steps=_MAJOR_STEPS, min_n_ticks=3
+        )
+    else:
+        locator = ticker.MultipleLocator(step)
+    axis.set_major_locator(locator)
+    _snap_ends(axis, set_lim, start, end)
+
+
+def _view_interval(axis: Axis) -> tuple[float, float]:
+    """Return the axis' (start, end) view limits; start > end on an inverted axis."""
+    view_start, view_end = axis.get_view_interval()
+    return float(view_start), float(view_end)
+
+
+def _snap_ends(axis: Axis, set_lim: _SetLim, start: float | None, end: float | None) -> None:
+    """Move each unset end of the axis out to the nearest major tick at or beyond it.
+
+    If the ends do not settle on ticks, the limits are left as they were.
+    """
+    if start is not None and end is not None:
+        return
+    before = _view_interval(axis)
+    for _ in range(_MAX_SNAP_ROUNDS):
+        view_start, view_end = _view_interval(axis)
+        tick_start, tick_end = _outer_ticks(axis, view_start, view_end)
+        new_start = view_start if start is not None or tick_start is None else tick_start
+        new_end = view_end if end is not None or tick_end is None else tick_end
+        if new_start == view_start and new_end == view_end:
+            return
+        set_lim(new_start, new_end)
+    set_lim(*before)
+
+
+def _outer_ticks(
+    axis: Axis, view_start: float, view_end: float
+) -> tuple[float | None, float | None]:
+    """Return where each (start, end) end of the view should move to reach a major tick.
+
+    An end that is already on one of the view's ticks (up to rounding error) is returned
+    unchanged. Otherwise the nearest tick beyond it is returned, or None if none is found.
+    """
+    transform = axis.get_transform()
+    low, high = sorted((view_start, view_end))
+    t_low, t_high = (float(v) for v in transform.transform(np.array([low, high])))
+    tol = 1e-9 * (t_high - t_low)
+
+    # Whether an end is on a tick is decided by the ticks of the view itself.
+    ticks, scaled = _scaled_major_ticks(axis, transform, low, high)
+    tick_low = low if np.any(np.abs(scaled - t_low) <= tol) else None
+    tick_high = high if np.any(np.abs(scaled - t_high) <= tol) else None
+
+    # Otherwise look for the nearest tick beyond the end. MaxNLocator and LogLocator return
+    # ticks beyond the view; other locators (the date locators, for example) do not, so
+    # widen the view by a tick spacing at a time and ask again.
+    probe_low, probe_high = t_low, t_high
+    for _ in range(_MAX_PROBES):
+        if tick_low is None and np.any(below := scaled < t_low - tol):
+            tick_low = float(ticks[int(np.argmax(np.where(below, scaled, -np.inf)))])
+        if tick_high is None and np.any(above := scaled > t_high + tol):
+            tick_high = float(ticks[int(np.argmin(np.where(above, scaled, np.inf)))])
+        if tick_low is not None and tick_high is not None:
+            break
+        spacing = float(np.max(np.diff(np.sort(scaled)))) if scaled.size >= 2 else t_high - t_low
+        probe_low, probe_high = probe_low - spacing, probe_high + spacing
+        wider = transform.inverted().transform(np.array([probe_low, probe_high]))
+        ticks, scaled = _scaled_major_ticks(axis, transform, float(wider[0]), float(wider[1]))
+    if view_start > view_end:
+        return tick_high, tick_low
+    return tick_low, tick_high
+
+
+def _scaled_major_ticks(
+    axis: Axis, transform: Transform, low: float, high: float
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    """Return the major ticks for a view of (low, high), and the same ticks in scale space."""
+    ticks = _major_ticks_for_view(axis, low, high)
+    scaled = np.asarray(transform.transform(ticks), dtype=float)
+    finite = np.isfinite(scaled)
+    return ticks[finite], scaled[finite]
+
+
+def _major_ticks_for_view(axis: Axis, low: float, high: float) -> npt.NDArray[np.float64]:
+    """Return the major tick locations the axis' locator gives for a view of (low, high)."""
+    saved = _view_interval(axis)
+    axis.set_view_interval(low, high, ignore=True)
+    try:
+        return np.asarray(axis.get_majorticklocs(), dtype=float)
+    finally:
+        axis.set_view_interval(*saved, ignore=True)
+
+
+def _step_through_fixed_ends(
+    view: tuple[float, float], start: float | None, end: float | None
+) -> float | None:
+    """Return a round tick spacing that puts every fixed end on a tick, or None.
+
+    The spacing is 1, 2, 2.5 or 5 times a power of 10. Unset ends move out to a multiple of
+    it, and the axis must get 2 to ``_MAX_INTERVALS`` major intervals. Like MaxNLocator, the
+    smallest spacing with at most ``_NBINS`` intervals wins; if every spacing gives more,
+    the one with the fewest intervals wins.
+    """
+    view_start, view_end = view
+    inverted = view_start > view_end
+    low, high = sorted(view)
+    low_fixed = (end if inverted else start) is not None
+    high_fixed = (start if inverted else end) is not None
+    span = high - low
+    if span <= 0:
+        return None
+    best: float | None = None
+    best_key: tuple[bool, int, float] | None = None
+    first_exponent = math.floor(math.log10(span / _MAX_INTERVALS)) - 1
+    for exponent in range(first_exponent, math.ceil(math.log10(span)) + 1):
+        for mantissa in _MAJOR_STEPS[:-1]:
+            step = mantissa * 10.0**exponent
+            if (low_fixed and not _is_multiple(low, step)) or (
+                high_fixed and not _is_multiple(high, step)
+            ):
+                continue
+            lo = low if low_fixed else math.floor(low / step + 1e-9) * step
+            hi = high if high_fixed else math.ceil(high / step - 1e-9) * step
+            n_intervals = round((hi - lo) / step)
+            if not 2 <= n_intervals <= _MAX_INTERVALS:
+                continue
+            key = (n_intervals > _NBINS, abs(n_intervals - _NBINS), -step)
+            if best_key is None or key < best_key:
+                best, best_key = step, key
+    return best
+
+
+def _is_multiple(value: float, step: float) -> bool:
+    """Whether value is a whole multiple of step, up to rounding error."""
+    k = value / step
+    return abs(k - round(k)) <= 1e-9 * max(1.0, abs(k))
 
 
 def _minor_divisions(axis: Axis) -> int:

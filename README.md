@@ -249,17 +249,22 @@ linear axis of numbers:
 - **Minor ticks:** fewer major ticks get more minor ticks. Six or more visible major ticks get 1
   minor tick halfway between. Five or fewer get 3 or 4, whichever keeps them on round values:
   every 1 between 0 and 5, every 0.5 between 0 and 2, every 0.25 or 0.2 between 0 and 1.
-- **Limits:** any limit you leave unset moves out to a major tick, so each axis starts and ends on
-  a labelled tick. Pass `left`, `right`, `bottom`, or `top` to keep that limit fixed, for example
-  `bottom=0` for bar charts. Inverted axes stay inverted. The limits mean the same as in
-  `ax.set_xlim(left, right)` and `ax.set_ylim(bottom, top)`, so on an inverted y-axis `bottom` is
-  the larger value.
+- **Limits:** each axis starts and ends on a major tick, never on a bare stretch of axis line.
+  - A limit you leave unset moves out to the nearest major tick.
+  - A limit you pass (`left`, `right`, `bottom`, or `top`, for example `bottom=0` for bar charts)
+    is kept exactly, and the tick spacing is chosen so that it is a major tick too: `right=7`
+    gives a tick every 1. If no round spacing with at most 10 intervals fits (for example
+    `bottom=-1.2`), that end stays between ticks.
+  - Inverted axes stay inverted. The limits mean the same as in `ax.set_xlim(left, right)` and
+    `ax.set_ylim(bottom, top)`, so on an inverted y-axis `bottom` is the larger value.
 
-Other axes keep Matplotlib's own ticks:
+Other axes keep Matplotlib's own tick positions:
 
+- **Log and other non-linear scales, dates, and other units:** unset limits also move out to the
+  nearest major tick, so a log axis runs from one labelled decade to another.
 - **Categorical axes** (string data, such as the `"A"`, `"B"`, `"C"` above) keep one tick per
-  category. Their minor ticks are removed.
-- **Log and other non-linear scales, dates, and other units** are left as they are.
+  category and lose their minor ticks. Their limits are not changed, so the axis line extends
+  half a category past the outer bars.
 
 A limit you pass is applied to every kind of axis.
 
