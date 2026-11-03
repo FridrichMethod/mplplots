@@ -5,7 +5,6 @@ import os
 import re
 import subprocess
 import sys
-from pathlib import Path
 
 import matplotlib
 import matplotlib.font_manager as fm
@@ -13,8 +12,10 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from matplotlib.typing import RcKeyType
 
-STYLES_DIR = Path(__file__).resolve().parent.parent / "src" / "mplplots" / "styles"
-GRAPHPAD_STYLE = str(STYLES_DIR / "GraphPadPrism.mplstyle")
+import mplplots
+
+STYLE_PATH = mplplots.STYLE_PATH
+GRAPHPAD_STYLE = str(STYLE_PATH)
 MATH_FONT_KEYS: tuple[RcKeyType, ...] = (
     "mathtext.rm",
     "mathtext.it",
@@ -76,25 +77,23 @@ WEIGHT_NOTICE = re.compile(r"findfont: Failed to find font weight \S+ for (?P<fo
 
 class TestGraphPadPrismStyle:
     def test_style_file_exists(self) -> None:
-        assert (STYLES_DIR / "GraphPadPrism.mplstyle").is_file()
+        assert (STYLE_PATH).is_file()
 
     def test_style_is_loadable(self) -> None:
-        style_path = str(STYLES_DIR / "GraphPadPrism.mplstyle")
+        style_path = str(STYLE_PATH)
         plt.style.use(style_path)
 
     def test_style_sets_dpi(self) -> None:
-        style_path = str(STYLES_DIR / "GraphPadPrism.mplstyle")
-        plt.style.use(style_path)
+        mplplots.prism_style()
         assert matplotlib.rcParams["figure.dpi"] == 300
 
     def test_style_hides_top_right_spines(self) -> None:
-        style_path = str(STYLES_DIR / "GraphPadPrism.mplstyle")
-        plt.style.use(style_path)
+        mplplots.prism_style()
         assert matplotlib.rcParams["axes.spines.top"] is False
         assert matplotlib.rcParams["axes.spines.right"] is False
 
     def test_style_applies_to_plot(self) -> None:
-        style_path = str(STYLES_DIR / "GraphPadPrism.mplstyle")
+        style_path = str(STYLE_PATH)
         with plt.style.context(style_path):
             fig, ax = plt.subplots()
             ax.plot([1, 2, 3], [1, 4, 9])
