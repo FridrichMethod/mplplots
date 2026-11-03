@@ -4,6 +4,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import ticker
 
 import mplplots.palettes as palettes
 from mplplots.palettes import BLUES, REDS
@@ -83,9 +84,11 @@ with plt.style.context(STYLE):
         rng = np.random.default_rng(i + 10)
         vals = rng.integers(20, 80, len(groups))
         ax.bar(x_pos + i * width, vals, width, color=autumn[i * 3], label=label)
-    ax.set_xticks(x_pos + width)
-    ax.set_xticklabels(groups)
     auto_ticks(ax, bottom=0, top=100)
+    # Set the group labels after auto_ticks, which replaces the major tick locators.
+    ax.set_xticks(x_pos + width, groups)
+    ax.xaxis.set_minor_locator(ticker.NullLocator())
+    ax.set_xlim(x_pos[0] + width - 0.5, x_pos[-1] + width + 0.5)
     ax.set_ylabel("Value")
     ax.set_title("AUTUMN palette — grouped bar chart")
     ax.legend()
