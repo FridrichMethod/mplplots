@@ -13,7 +13,14 @@ figure.dpi: 300
 figure.figsize: 4.5, 3
 figure.frameon: False
 
-font.sans-serif: Arial, sans-serif
+# Matplotlib's default cursive fonts (used for \mathcal), plus DejaVu Sans, the font
+# Matplotlib falls back to anyway, so that a missing cursive font does not warn.
+font.cursive: Apple Chancery, Textile, Zapf Chancery, Sand, Script MT, Felipa, Comic Neue, Comic Sans MS, DejaVu Sans, cursive
+# Arial is used whenever it is installed. Otherwise fall back, without warnings, to
+# Helvetica or an Arial metric-compatible clone, and finally to DejaVu Sans, which
+# ships with Matplotlib and therefore always resolves. To get Arial on a machine
+# that lacks it, register the font files with mplplots.utils.add_custom_fonts().
+font.sans-serif: Arial, Helvetica, Liberation Sans, Arimo, Nimbus Sans, DejaVu Sans, sans-serif
 font.size: 14
 font.weight: bold
 
@@ -25,12 +32,14 @@ lines.linewidth: 2
 lines.markeredgecolor: black
 lines.markerfacecolor: black
 
-mathtext.bf: Arial:bold
-mathtext.bfit: Arial:italic:bold
+# "sans" resolves through font.sans-serif, so math uses the same font as the text
+# (Arial when installed).
+mathtext.bf: sans:bold
+mathtext.bfit: sans:italic:bold
 mathtext.fontset: custom
-mathtext.it: Arial:italic
-mathtext.rm: Arial
-mathtext.sf: Arial
+mathtext.it: sans:italic
+mathtext.rm: sans
+mathtext.sf: sans
 
 savefig.bbox: tight
 

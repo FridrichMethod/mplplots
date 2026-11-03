@@ -9,9 +9,8 @@ import mplplots.palettes as palettes
 from mplplots.palettes import BLUES, REDS
 from mplplots.utils import auto_ticks
 
-STYLES_DIR = Path(__file__).resolve().parent.parent / "src" / "mplplots" / "styles"
-STYLE = str(STYLES_DIR / "GraphPadPrism.mplstyle")
-OUT = "examples"
+STYLE = "mplplots.styles.GraphPadPrism"
+OUT = Path(__file__).resolve().parent
 
 x = np.linspace(0, 10, 50)
 

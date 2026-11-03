@@ -1,15 +1,24 @@
 """Tests for mplplots.palettes."""
 
 import re
+from collections.abc import Iterator, Sequence
 from itertools import cycle
 
+import matplotlib as mpl
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
 import pytest
 
 import mplplots.palettes as palettes
 from mplplots.palettes import (
+    BLUES,
     CUSTOM,
     CUSTOM_CYCLE,
+    OCEAN,
+    PALETTES,
+    ROSE,
     get_colors,
+    set_palette,
 )
 
 HEX_RE = re.compile(r"^#[0-9a-f]{6}$")
@@ -183,3 +192,147 @@ class TestCustomPalette:
     def test_custom_cycle_yields_colors(self) -> None:
         first = next(CUSTOM_CYCLE)
         assert first.startswith("#")
+
+
+# ---------------------------------------------------------------------------
+# PALETTES registry
+# ---------------------------------------------------------------------------
+ALL_PALETTES = CUSTOM_STYLE_PALETTES + FAMILY_PALETTES
+
+
+class TestPalettesRegistry:
+    def test_has_exactly_all_named_palettes(self) -> None:
+        assert set(PALETTES) == set(ALL_PALETTES)
+        assert len(PALETTES) == 31
+
+    @pytest.mark.parametrize("name", ALL_PALETTES)
+    def test_value_equals_module_constant(self, name: str) -> None:
+        assert PALETTES[name] == getattr(palettes, name)
+        assert isinstance(PALETTES[name], tuple)
+
+    def test_covers_every_module_level_palette(self) -> None:
+        # Guards against a palette being added to the module but not to the registry.
+        module_palettes = {
+            name
+            for name, value in vars(palettes).items()
+            if name.isupper()
+            and isinstance(value, tuple)
+            and all(isinstance(c, str) for c in value)
+        }
+        assert module_palettes == set(PALETTES)
+
+    def test_keys_are_upper_case(self) -> None:
+        for name in PALETTES:
+            assert name == name.upper()
+
+    def test_is_read_only(self) -> None:
+        with pytest.raises(TypeError):
+            PALETTES["NEW"] = ("#000000",)  # type: ignore[index]
+        with pytest.raises(TypeError):
+            del PALETTES["OCEAN"]  # type: ignore[attr-defined]
+        assert PALETTES["OCEAN"] == OCEAN
+
+
+# ---------------------------------------------------------------------------
+# set_palette()
+# ---------------------------------------------------------------------------
+def _cycle_colors() -> list[str]:
+    return list(plt.rcParams["axes.prop_cycle"].by_key()["color"])
+
+
+class TestSetPalette:
+    @pytest.fixture(autouse=True)
+    def _restore_rcparams(self) -> Iterator[None]:
+        with plt.rc_context():
+            yield
+        plt.close("all")
+
+    @pytest.mark.parametrize("name", ["ocean", "OCEAN", "Ocean", "oCeAn"])
+    def test_by_name_any_case(self, name: str) -> None:
+        set_palette(name)
+        assert _cycle_colors() == list(OCEAN)
+
+    @pytest.mark.parametrize("name", ["blues", "BLUES", "Blues"])
+    def test_family_by_name(self, name: str) -> None:
+        set_palette(name)
+        assert _cycle_colors() == list(BLUES)
+
+    @pytest.mark.parametrize("name", ALL_PALETTES)
+    def test_every_registered_name(self, name: str) -> None:
+        set_palette(name.lower())
+        assert _cycle_colors() == list(PALETTES[name])
+
+    def test_by_explicit_list(self) -> None:
+        colors = ["#112233", "red", "tab:orange", "0.5"]
+        set_palette(colors)
+        assert _cycle_colors() == colors
+
+    def test_by_palette_tuple(self) -> None:
+        set_palette(ROSE)
+        assert _cycle_colors() == list(ROSE)
+
+    def test_only_touches_prop_cycle(self) -> None:
+        before = mpl.rcParams.copy()
+        set_palette("ocean")
+        after = mpl.rcParams.copy()
+        changed = {key for key in after if after[key] != before[key]}
+        assert changed == {"axes.prop_cycle"}
+
+    def test_restored_after_rc_context(self) -> None:
+        before = _cycle_colors()
+        with plt.rc_context():
+            set_palette("ocean")
+            assert _cycle_colors() == list(OCEAN)
+        assert _cycle_colors() == before
+
+    def test_restored_after_style_context(self) -> None:
+        set_palette("rose")
+        with plt.style.context("default"):
+            set_palette("ocean")
+            assert _cycle_colors() == list(OCEAN)
+        assert _cycle_colors() == list(ROSE)
+
+    def test_new_plot_uses_palette(self) -> None:
+        set_palette("ocean")
+        _, ax = plt.subplots()
+        first, second = ax.plot([0, 1]), ax.plot([1, 0])
+        assert mcolors.same_color(first[0].get_color(), OCEAN[0])
+        assert mcolors.same_color(second[0].get_color(), OCEAN[1])
+
+    def test_every_new_figure_starts_at_first_color(self) -> None:
+        # Unlike the shared *_CYCLE iterators, colors don't depend on what was drawn before.
+        set_palette("ocean")
+        for _ in range(2):
+            _, ax = plt.subplots()
+            (line,) = ax.plot([0, 1])
+            assert mcolors.same_color(line.get_color(), OCEAN[0])
+
+    def test_unknown_name_lists_valid_names(self) -> None:
+        with pytest.raises(ValueError, match="Unknown palette 'nope'") as exc_info:
+            set_palette("nope")
+        for name in PALETTES:
+            assert name in str(exc_info.value)
+
+    def test_bare_color_string_is_a_name_not_a_sequence(self) -> None:
+        with pytest.raises(ValueError, match="Unknown palette 'red'"):
+            set_palette("red")
+
+    @pytest.mark.parametrize("empty", [[], ()])
+    def test_empty_sequence(self, empty: Sequence[str]) -> None:
+        with pytest.raises(ValueError, match="at least one color"):
+            set_palette(empty)
+
+    def test_invalid_color(self) -> None:
+        with pytest.raises(ValueError, match="'notacolor'"):
+            set_palette(["#BCE4F9", "notacolor"])
+
+    def test_cycle_reference_rejected(self) -> None:
+        with pytest.raises(ValueError):
+            set_palette(["C0", "C1"])
+
+    @pytest.mark.parametrize("bad", ["nope", [], ["notacolor"], ["C0"]])
+    def test_error_leaves_rcparams_unchanged(self, bad: str | Sequence[str]) -> None:
+        set_palette("rose")
+        with pytest.raises(ValueError):
+            set_palette(bad)
+        assert _cycle_colors() == list(ROSE)
