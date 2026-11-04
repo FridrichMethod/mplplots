@@ -16,6 +16,8 @@ figure.frameon: False
 # Matplotlib's default cursive fonts (used for \mathcal), plus DejaVu Sans, the font
 # Matplotlib falls back to anyway, so that a missing cursive font does not warn.
 font.cursive: Apple Chancery, Textile, Zapf Chancery, Sand, Script MT, Felipa, Comic Neue, Comic Sans MS, DejaVu Sans, cursive
+# Use the sans-serif list below even when a matplotlibrc sets another font.family.
+font.family: sans-serif
 # Arial is used whenever it is installed. Otherwise fall back, without warnings, to
 # Helvetica or an Arial metric-compatible clone, and finally to DejaVu Sans, which
 # ships with Matplotlib and therefore always resolves. To get Arial on a machine
@@ -29,8 +31,6 @@ legend.frameon: False
 legend.loc: upper right
 
 lines.linewidth: 2
-lines.markeredgecolor: black
-lines.markerfacecolor: black
 
 # "sans" resolves through font.sans-serif, so math uses the same font as the text
 # (Arial when installed).

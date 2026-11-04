@@ -1,8 +1,9 @@
 """Tests for mplplots.palettes."""
 
 import re
+import subprocess
+import sys
 from collections.abc import Iterator, Sequence
-from itertools import cycle
 
 import matplotlib as mpl
 import matplotlib.colors as mcolors
@@ -13,7 +14,6 @@ import mplplots.palettes as palettes
 from mplplots.palettes import (
     BLUES,
     CUSTOM,
-    CUSTOM_CYCLE,
     OCEAN,
     PALETTES,
     ROSE,
@@ -23,7 +23,7 @@ from mplplots.palettes import (
 
 HEX_RE = re.compile(r"^#[0-9a-f]{6}$")
 
-# Every hand-picked 11-color palette and its cycle
+# Every hand-picked 11-color palette
 CUSTOM_STYLE_PALETTES = [
     "CUSTOM",
     "PASTEL",
@@ -102,6 +102,35 @@ class TestGetColors:
         assert len(colors) == 50
         assert len(set(colors)) == 50
 
+    def test_reversed_range(self) -> None:
+        assert get_colors("viridis", 5, start=0.8, end=0.2) == get_colors("viridis", 5)[::-1]
+
+    @pytest.mark.parametrize("n", [0, -1])
+    def test_n_below_one(self, n: int) -> None:
+        with pytest.raises(ValueError, match=f"n must be at least 1, got {n}"):
+            get_colors("viridis", n)
+
+    @pytest.mark.parametrize(
+        ("start", "end", "label"),
+        [(-0.1, 0.8, "start"), (0.2, 1.5, "end"), (float("nan"), 0.8, "start")],
+    )
+    def test_position_outside_unit_range(self, start: float, end: float, label: str) -> None:
+        with pytest.raises(ValueError, match=f"{label} must be between 0 and 1"):
+            get_colors("viridis", 3, start=start, end=end)
+
+    def test_unknown_colormap(self) -> None:
+        with pytest.raises(ValueError, match="not_a_colormap"):
+            get_colors("not_a_colormap", 3)
+
+
+def test_import_does_not_load_pyplot() -> None:
+    # pyplot picks a GUI backend on import, which a library should leave to the caller.
+    code = "import sys, mplplots.palettes; print('matplotlib.pyplot' in sys.modules)"
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=True, timeout=120
+    )
+    assert result.stdout.strip() == "False"
+
 
 # ---------------------------------------------------------------------------
 # Custom-style 11-color palettes
@@ -130,18 +159,6 @@ class TestCustomStylePalettes:
         pal = getattr(palettes, name)
         lower = [c.lower() for c in pal]
         assert len(set(lower)) == len(lower), f"{name} has duplicate colors"
-
-    @pytest.mark.parametrize("name", CUSTOM_STYLE_PALETTES)
-    def test_cycle_exists(self, name: str) -> None:
-        cycle_obj = getattr(palettes, f"{name}_CYCLE")
-        assert type(cycle_obj) is type(cycle(""))
-
-    @pytest.mark.parametrize("name", CUSTOM_STYLE_PALETTES)
-    def test_cycle_yields_from_palette(self, name: str) -> None:
-        pal = getattr(palettes, name)
-        cycle_obj = getattr(palettes, f"{name}_CYCLE")
-        first = next(cycle_obj)
-        assert first in pal
 
     def test_palettes_are_distinct(self) -> None:
         seen: set[tuple[str, ...]] = set()
@@ -185,13 +202,6 @@ class TestCustomPalette:
     def test_custom_hex_format(self) -> None:
         for c in CUSTOM:
             assert HEX_RE.match(c.lower()), f"{c} is not a valid hex color"
-
-    def test_custom_cycle_is_cycle(self) -> None:
-        assert type(CUSTOM_CYCLE) is type(cycle(""))
-
-    def test_custom_cycle_yields_colors(self) -> None:
-        first = next(CUSTOM_CYCLE)
-        assert first.startswith("#")
 
 
 # ---------------------------------------------------------------------------
@@ -300,7 +310,7 @@ class TestSetPalette:
         assert mcolors.same_color(second[0].get_color(), OCEAN[1])
 
     def test_every_new_figure_starts_at_first_color(self) -> None:
-        # Unlike the shared *_CYCLE iterators, colors don't depend on what was drawn before.
+        # Colors don't depend on what was drawn before.
         set_palette("ocean")
         for _ in range(2):
             _, ax = plt.subplots()

@@ -32,7 +32,7 @@ with plt.style.context(STYLE):
     fig, ax = plt.subplots()
     ax.plot(x, np.sin(x), color=BLUES[4], linewidth=2, label="sin(x)")
     ax.plot(x, np.cos(x), color=REDS[4], linewidth=2, label="cos(x)")
-    auto_ticks(ax, left=0, right=10, bottom=-1.2, top=1.2)
+    auto_ticks(ax, left=0, right=10)
     ax.set_title("GraphPadPrism + auto_ticks")
     ax.set_xlabel("x")
     ax.set_ylabel("y")
@@ -120,7 +120,7 @@ with plt.style.context(STYLE):
     ax.set_xlabel("X measure")
     ax.set_ylabel("Y measure")
     ax.set_title("CORAL palette — error bars")
-    ax.legend(fontsize=7)
+    ax.legend(fontsize=7, loc="lower right")
     fig.savefig(f"{OUT}/graphpadprism_errorbar.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 

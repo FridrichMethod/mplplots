@@ -1,18 +1,24 @@
 """Tests for mplplots styles."""
 
+from __future__ import annotations
+
 import json
 import os
 import re
 import subprocess
 import sys
+from typing import TYPE_CHECKING
 
 import matplotlib
+import matplotlib.colors as mcolors
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
-from matplotlib.typing import RcKeyType
 
 import mplplots
+
+if TYPE_CHECKING:
+    from matplotlib.typing import RcKeyType  # Matplotlib 3.10+
 
 STYLE_PATH = mplplots.STYLE_PATH
 GRAPHPAD_STYLE = str(STYLE_PATH)
@@ -101,12 +107,29 @@ class TestGraphPadPrismStyle:
             assert ax.spines["right"].get_visible() is False
             plt.close(fig)
 
+    def test_markers_follow_line_color(self) -> None:
+        with plt.style.context(GRAPHPAD_STYLE):
+            _, ax = plt.subplots()
+            (line,) = ax.plot([1, 2], [1, 2], "o-", color="#5CA8C4")
+            errorbar = ax.errorbar([1], [1], yerr=[0.1], fmt="s", color="#E88791")
+        for artist, color in ((line, "#5CA8C4"), (errorbar.lines[0], "#E88791")):
+            assert mcolors.same_color(artist.get_markerfacecolor(), color)
+            assert mcolors.same_color(artist.get_markeredgecolor(), color)
+
 
 class TestGraphPadPrismFonts:
     def test_arial_is_first_choice(self) -> None:
         with plt.style.context(GRAPHPAD_STYLE):
             assert matplotlib.rcParams["font.sans-serif"][0] == "Arial"
             assert matplotlib.rcParams["mathtext.fontset"] == "custom"
+
+    def test_overrides_font_family_from_rc(self) -> None:
+        # A matplotlibrc (or an earlier style) may pick another family; the style still
+        # uses its sans-serif list.
+        with plt.rc_context({"font.family": ["serif"]}), plt.style.context(GRAPHPAD_STYLE):
+            assert matplotlib.rcParams["font.family"] == ["sans-serif"]
+            font = fm.get_font(fm.findfont(FontProperties()))
+            assert font.family_name in matplotlib.rcParams["font.sans-serif"]
 
     def test_sans_serif_always_resolves(self) -> None:
         with plt.style.context(GRAPHPAD_STYLE):
