@@ -108,9 +108,9 @@ the `stylelib/` folder of your Matplotlib config directory (`matplotlib.get_conf
 | Figure | No figure size is set. Saved at 600 dpi and shown on screen at 300 dpi. Saved files are not cropped, so they keep the figure's size; pass `bbox_inches="tight"` to `savefig` to crop to the drawn content. |
 | Text | Arial Regular 8 pt (see [Fonts](#fonts)) for every text element: tick labels, axis labels, axes and figure titles, and the legend and its title. Math text (`$...$`) uses the same font. |
 | Vector output | PDF and PostScript embed fonts as TrueType (Type 42), so text stays editable and passes journal checks that reject Type 3 fonts. SVG stores glyphs as paths. |
-| Axes | 1.5 pt axis lines, with the top and right spines removed. Autoscaled limits are rounded out to tick values. |
-| Ticks | 1.5 pt major and minor ticks, with minor ticks shown on both axes. |
-| Lines & markers | 2 pt lines. Markers take the color of their line. Error bars have 3 pt caps. |
+| Axes | 1 pt axis lines, with the top and right spines removed. Autoscaled limits are rounded out to tick values. |
+| Ticks | 1 pt major and minor ticks, with minor ticks shown on both axes. |
+| Lines & markers | 1 pt lines, also used for error bars. Markers take the color of their line. Error bars have 3 pt caps. |
 | Legend | No frame, placed in the upper right. |
 
 For every setting, see the [style file](src/mplplots/styles/GraphPadPrism.mplstyle).

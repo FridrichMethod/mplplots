@@ -155,6 +155,21 @@ class TestGraphPadPrismStyle:
         assert matplotlib.rcParams["axes.spines.top"] is False
         assert matplotlib.rcParams["axes.spines.right"] is False
 
+    def test_axis_lines_ticks_and_data_lines_are_1pt(self) -> None:
+        with plt.style.context(GRAPHPAD_STYLE):
+            _, ax = plt.subplots()
+            (data,) = ax.plot([1, 2], [1, 2])
+            spines = [ax.spines["left"], ax.spines["bottom"]]
+            ticks = [
+                tick.tick1line
+                for axis in (ax.xaxis, ax.yaxis)
+                for tick in axis.get_major_ticks() + axis.get_minor_ticks()
+            ]
+            widths = {spine.get_linewidth() for spine in spines}
+            widths |= {line.get_markeredgewidth() for line in ticks}
+            widths.add(data.get_linewidth())
+        assert widths == {1}
+
     def test_style_applies_to_plot(self) -> None:
         style_path = str(STYLE_PATH)
         with plt.style.context(style_path):
