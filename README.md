@@ -20,7 +20,9 @@ palettes, and a few helpers for publication-quality scientific figures.
 pip install git+https://github.com/FridrichMethod/mplplots.git
 ```
 
-mplplots is not on PyPI. It needs Python 3.12 or newer and Matplotlib 3.8 or newer.
+mplplots is not on PyPI. It needs Python 3.12 or newer and Matplotlib 3.8 or newer. To install a
+release, append its tag, such as `...mplplots.git@v0.2.0`; [`CHANGELOG.md`](CHANGELOG.md) lists
+what each release changed.
 
 ## Quick start
 
