@@ -50,8 +50,8 @@ Do not commit or push if either fails. Fix issues first.
   them use the GraphPadPrism style except `default_style`, which shows Matplotlib's defaults.
 - Lay figures out in round inches: the figure size, each axes' position and size (the axis
   lengths), and the anchors of legends and figure titles are multiples of 0.1, 0.25, 0.5 or 1 in.
-  Place them with `add_axes`, `legend` and `suptitle` from `examples/_common.py`, not with
-  `tight_layout`, `subplots_adjust` or a tight bounding box.
+  Place them with `add_axes_inches`, `legend_inches` and `suptitle_inches` from
+  `mplplots.utils`, not with `tight_layout`, `subplots_adjust` or a tight bounding box.
 - Keep the style's text: pass no `fontsize` or `fontweight`.
 - Render every figure in three formats with `save()` from `examples/_common.py`: PNG at 600 dpi,
   SVG and PDF, side by side in `examples/`, uncropped and without timestamps, so rerunning an

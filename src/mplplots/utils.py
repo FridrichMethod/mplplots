@@ -3,6 +3,7 @@
 import math
 import os
 from collections.abc import Callable, MutableMapping
+from typing import Any, Literal
 
 import matplotlib.font_manager as fm
 import matplotlib.text as mtext
@@ -12,8 +13,11 @@ from matplotlib import ticker
 from matplotlib.axes import Axes
 from matplotlib.axis import Axis
 from matplotlib.category import StrCategoryConverter
+from matplotlib.figure import Figure
+from matplotlib.legend import Legend
 from matplotlib.mathtext import MathTextParser
-from matplotlib.transforms import Transform
+from matplotlib.text import Text
+from matplotlib.transforms import Bbox, ScaledTranslation, Transform
 
 type StrPath = str | os.PathLike[str]
 
@@ -66,6 +70,132 @@ def _clear_font_caches() -> None:
     for default in getattr(metrics_function, "__defaults__", None) or ():
         if isinstance(default, MutableMapping):
             default.clear()
+
+
+# Where a legend's anchor point sits on the legend: a corner, the middle of an edge, or the center.
+type LegendCorner = Literal[
+    "upper left",
+    "upper center",
+    "upper right",
+    "center left",
+    "center",
+    "center right",
+    "lower left",
+    "lower center",
+    "lower right",
+]
+
+
+def add_axes_inches(
+    fig: Figure, left: float, bottom: float, width: float, height: float, **kwargs: Any
+) -> Axes:
+    """Add axes whose position and axis lengths are given in inches, as in GraphPad Prism.
+
+    Prism sets the length of each axis directly instead of deriving it from the figure
+    size and margins. Here ``width`` is the length of the x-axis and ``height`` the length
+    of the y-axis, and ``(left, bottom)`` is where they meet, measured from the figure's
+    lower-left corner. The axes keep this position and size when the figure is resized and
+    at any dpi, so a figure saved without cropping has exactly these dimensions.
+
+    Args:
+        fig: The figure to add the axes to.
+        left: Distance from the figure's left edge to the y-axis, in inches.
+        bottom: Distance from the figure's bottom edge to the x-axis, in inches.
+        width: Length of the x-axis (the width of the axes), in inches.
+        height: Length of the y-axis (the height of the axes), in inches.
+        **kwargs: Passed on to ``fig.add_axes``, e.g. ``projection`` or ``sharex``.
+
+    Returns:
+        The new axes.
+
+    Raises:
+        ValueError: If ``width`` or ``height`` is not positive.
+
+    Notes:
+        An axes locator keeps the position, so it overrides anything that moves the axes
+        later: ``ax.set_position``, ``tight_layout``, constrained layout, and the space
+        ``fig.colorbar(..., ax=ax)`` would take. For a colorbar, add its axes with
+        ``add_axes_inches`` and pass them as ``cax``. Axes with a fixed aspect ratio
+        (``ax.set_aspect("equal")``, pie charts) shrink to fit inside the box.
+
+    Examples:
+        >>> import matplotlib.pyplot as plt
+        >>> fig = plt.figure(figsize=(3, 2.25))
+        >>> ax = add_axes_inches(fig, left=0.5, bottom=0.4, width=2.25, height=1.5)
+    """
+    if not (width > 0 and height > 0):
+        raise ValueError(f"width and height must be positive, got {width} and {height}")
+
+    def locate(_ax: object, _renderer: object) -> Bbox:
+        """Return the axes' box in figure coordinates for the figure's current size."""
+        fig_width, fig_height = fig.get_size_inches()
+        return Bbox.from_bounds(
+            left / fig_width, bottom / fig_height, width / fig_width, height / fig_height
+        )
+
+    ax = fig.add_axes(locate(None, None).bounds, **kwargs)
+    ax.set_axes_locator(locate)
+    return ax
+
+
+def legend_inches(
+    ax: Axes, x: float, y: float, loc: LegendCorner = "upper left", **kwargs: Any
+) -> Legend:
+    """Add a legend for ax whose ``loc`` point is at (x, y) inches on the figure.
+
+    ``loc`` names the point of the legend box that is placed at (x, y), measured from the
+    figure's lower-left corner: ``"upper left"`` puts the legend's upper-left corner there,
+    so the legend extends right and down from it. The legend stays at that point when the
+    figure is resized and at any dpi.
+
+    Args:
+        ax: The axes whose labelled artists the legend lists.
+        x: Distance from the figure's left edge to the ``loc`` point, in inches.
+        y: Distance from the figure's bottom edge to the ``loc`` point, in inches.
+        loc: The corner, edge midpoint, or center of the legend box that sits at (x, y).
+        **kwargs: Passed on to ``ax.legend``, e.g. ``ncols`` or ``title``.
+
+    Returns:
+        The new legend.
+
+    Raises:
+        ValueError: If ``ax`` is not in a figure.
+
+    Examples:
+        >>> import matplotlib.pyplot as plt
+        >>> fig = plt.figure(figsize=(4, 2.25))
+        >>> ax = add_axes_inches(fig, 0.5, 0.4, 2.5, 1.5)
+        >>> _ = ax.plot([0, 1], [0, 1], label="data")
+        >>> legend = legend_inches(ax, 3.1, 1.9)  # to the right of the axes, top-aligned
+    """
+    fig = ax.get_figure()
+    if fig is None:
+        raise ValueError("ax is not in a figure")
+    options: dict[str, Any] = {"borderaxespad": 0, **kwargs}
+    return ax.legend(loc=loc, bbox_to_anchor=(x, y), bbox_transform=fig.dpi_scale_trans, **options)
+
+
+def suptitle_inches(fig: Figure, t: str, top: float = 0.1, **kwargs: Any) -> Text:
+    """Add a centered figure title whose top edge is ``top`` inches below the figure's top.
+
+    The title stays that far below the top edge when the figure is resized and at any dpi.
+
+    Args:
+        fig: The figure to title.
+        t: The title text.
+        top: Distance from the figure's top edge to the title's top edge, in inches.
+        **kwargs: Passed on to ``fig.suptitle``, e.g. ``color``.
+
+    Returns:
+        The title.
+
+    Examples:
+        >>> import matplotlib.pyplot as plt
+        >>> fig = plt.figure(figsize=(4, 2))
+        >>> title = suptitle_inches(fig, "All palettes")
+    """
+    transform = fig.transFigure + ScaledTranslation(0, -top, fig.dpi_scale_trans)
+    return fig.suptitle(t, x=0.5, y=1, va="top", transform=transform, **kwargs)
 
 
 def auto_ticks(
