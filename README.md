@@ -35,10 +35,10 @@ plt.style.use("mplplots.styles.GraphPadPrism")
 
 x = np.linspace(0, 10, 50)
 fig, ax = plt.subplots()
-ax.plot(x, np.sin(x), color=BLUES[4], label="sin(x)")
-ax.plot(x, np.cos(x), color=REDS[4], label="cos(x)")
-ax.set_xlabel("x")
-ax.set_ylabel("y")
+ax.plot(x, np.sin(x), color=BLUES[4], label=r"$\sin(x)$")
+ax.plot(x, np.cos(x), color=REDS[4], label=r"$\cos(x)$")
+ax.set_xlabel("$x$")
+ax.set_ylabel("$y$")
 ax.legend()
 auto_ticks(ax, left=0, right=10)
 fig.savefig("figure.png")
@@ -106,7 +106,7 @@ the `stylelib/` folder of your Matplotlib config directory (`matplotlib.get_conf
 | Area | Settings |
 | --- | --- |
 | Figure | No figure size is set. Saved at 600 dpi and shown on screen at 300 dpi. Saved files are not cropped, so they keep the figure's size; pass `bbox_inches="tight"` to `savefig` to crop to the drawn content. |
-| Text | Arial Regular 8 pt (see [Fonts](#fonts)) for every text element: tick labels, axis labels, axes and figure titles, and the legend and its title. Math text (`$...$`) uses the same font. |
+| Text | Arial Regular 8 pt (see [Fonts](#fonts)) for every text element: tick labels, axis labels, axes and figure titles, and the legend and its title. Math text (`$...$`) uses the same font: variables such as `$x$` in Arial Italic, and function names such as `$\sin$`, numbers, and operators upright. |
 | Vector output | PDF and PostScript embed fonts as TrueType (Type 42), so text stays editable and passes journal checks that reject Type 3 fonts. SVG stores glyphs as paths. |
 | Axes | 1 pt axis lines, with the top and right spines removed. Autoscaled limits are rounded out to tick values. |
 | Ticks | 1 pt major and minor ticks, with minor ticks shown on both axes. |
@@ -128,14 +128,18 @@ plotting:
 ```python
 from mplplots.utils import add_custom_fonts
 
-add_custom_fonts("/path/to/Arial.ttf", "/path/to/Arial Bold.ttf")
+add_custom_fonts("/path/to/Arial.ttf", "/path/to/Arial Italic.ttf", "/path/to/Arial Bold.ttf")
 ```
 
-`add_custom_fonts` registers the files for the current Python session only. The style itself uses
-the regular face. Register the bold face as well for bold text you add, such as `fontweight="bold"`
-or `$\mathbf{...}$`. Matplotlib caches its font list. If you install Arial system-wide after
-Matplotlib has already run, delete the `fontlist-*.json` file in `matplotlib.get_cachedir()` so the
-list is rebuilt.
+`add_custom_fonts` registers the files for the current Python session only. The style uses the
+regular face for text and the italic face for variables in math text. Register the bold face as
+well for bold text you add, such as `fontweight="bold"` or `$\mathbf{...}$`. Matplotlib caches its
+font list. If you install Arial system-wide after Matplotlib has already run, delete the
+`fontlist-*.json` file in `matplotlib.get_cachedir()` so the list is rebuilt.
+
+Write variables and formulas in labels, titles, and legends as math text, so they are set in
+italic like an equation: `ax.set_xlabel("$x$")` and `label=r"$\sin(x)$"`, not `"x"` and `"sin(x)"`.
+Math text uses Matplotlib's built-in TeX parser, so it needs no LaTeX installation.
 
 ## Color palettes
 
@@ -295,11 +299,11 @@ plt.style.use("mplplots.styles.GraphPadPrism")
 x = np.linspace(0, 10, 50)
 fig = plt.figure(figsize=(3, 2.25))  # the saved file is 3 × 2.25 in
 ax = add_axes_inches(fig, left=0.5, bottom=0.4, width=2.25, height=1.5)  # 2.25 in by 1.5 in axes
-ax.plot(x, np.sin(x), label="sin(x)")
-ax.plot(x, np.cos(x), label="cos(x)")
+ax.plot(x, np.sin(x), label=r"$\sin(x)$")
+ax.plot(x, np.cos(x), label=r"$\cos(x)$")
 auto_ticks(ax, left=0, right=10)
-ax.set_xlabel("x")
-ax.set_ylabel("y")
+ax.set_xlabel("$x$")
+ax.set_ylabel("$y$")
 legend_inches(ax, 2.75, 1.9, loc="upper right", ncols=2)  # upper-right corner at (2.75, 1.9) in
 fig.savefig("figure.pdf")
 ```
@@ -384,8 +388,9 @@ Every image uses the GraphPadPrism style, except the Matplotlib-defaults compari
 this README. Each figure is laid out in round inches (its size, the position and size of each axes,
 and the anchors of legends and titles), and the files are saved uncropped, so they keep that size.
 Apart from the comparison at the top, the README shows the images at 100 pixels per inch, so the
-8 pt text appears the same size in each. The scripts need Arial installed and exit with an error
-without it, instead of writing images in a fallback font.
+8 pt text appears the same size in each. Variables in labels and legends are math text, such as
+`$x$` and `$\sin(x)$`. The scripts need Arial Regular and Italic installed and exit with an error
+without them, instead of writing images in a fallback font.
 
 ## Development
 
