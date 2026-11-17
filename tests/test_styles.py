@@ -95,6 +95,18 @@ class TestGraphPadPrismStyle:
         assert matplotlib.rcParams["figure.dpi"] == 300
         assert matplotlib.rcParams["savefig.dpi"] == 600
 
+    def test_saved_figure_keeps_its_size(self) -> None:
+        # No tight bounding box: the file is the whole figure, so it keeps the figure's size.
+        with plt.style.context(GRAPHPAD_STYLE):
+            fig, ax = plt.subplots(figsize=(2, 1.5))
+            ax.plot([1, 2], [1, 2])
+            buffer = io.BytesIO()
+            fig.savefig(buffer, format="png", dpi=100)
+            plt.close(fig)
+        buffer.seek(0)
+        height, width = plt.imread(buffer).shape[:2]
+        assert (width, height) == (200, 150)
+
     def test_style_sets_no_figure_size(self) -> None:
         with plt.rc_context({"figure.figsize": (1.5, 2.5)}), plt.style.context(GRAPHPAD_STYLE):
             assert list(matplotlib.rcParams["figure.figsize"]) == [1.5, 2.5]

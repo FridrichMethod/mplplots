@@ -12,7 +12,8 @@ axes.titleweight: normal
 
 errorbar.capsize: 3
 
-# Screen resolution; saved files use savefig.dpi. The style sets no figure size.
+# Screen resolution; saved files use savefig.dpi. The style sets no figure size and does not
+# crop saved figures (no savefig.bbox), so a saved file has exactly the figure's size.
 figure.dpi: 300
 figure.frameon: False
 figure.labelsize: 8
@@ -55,7 +56,6 @@ mathtext.sf: sans
 pdf.fonttype: 42
 ps.fonttype: 42
 
-savefig.bbox: tight
 savefig.dpi: 600
 
 # SVG stores glyphs as paths, so it looks the same on machines without Arial.

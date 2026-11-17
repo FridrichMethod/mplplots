@@ -105,7 +105,7 @@ the `stylelib/` folder of your Matplotlib config directory (`matplotlib.get_conf
 
 | Area | Settings |
 | --- | --- |
-| Figure | No figure size is set. Saved at 600 dpi and shown on screen at 300 dpi. `savefig` crops to a tight bounding box. |
+| Figure | No figure size is set. Saved at 600 dpi and shown on screen at 300 dpi. Saved files are not cropped, so they keep the figure's size; pass `bbox_inches="tight"` to `savefig` to crop to the drawn content. |
 | Text | Arial Regular 8 pt (see [Fonts](#fonts)) for every text element: tick labels, axis labels, axes and figure titles, and the legend and its title. Math text (`$...$`) uses the same font. |
 | Vector output | PDF and PostScript embed fonts as TrueType (Type 42), so text stays editable and passes journal checks that reject Type 3 fonts. SVG stores glyphs as paths. |
 | Axes | 1.5 pt axis lines, with the top and right spines removed. Autoscaled limits are rounded out to tick values. |
