@@ -272,6 +272,19 @@ class TestAutoTicks:
         assert _ends_on_ticks(ax.get_yticks(), (bottom, top))
         assert ax.get_yticks()[1] - ax.get_yticks()[0] == pytest.approx(5)
 
+    @pytest.mark.parametrize("style", ["default", STYLE_PATH])
+    def test_unset_end_snaps_to_the_smallest_spacing_on_a_tie(self, style: str) -> None:
+        # Once the right end reaches 8, spacings 2 (0 to 8) and 2.5 (0 to 10) both give four
+        # intervals. The smaller spacing wins, so the axis is not widened to 10.
+        with plt.style.context(style):
+            _, ax = plt.subplots()
+            x = np.linspace(0, 2 * np.pi, 100)
+            ax.plot(x, np.sin(x))
+            auto_ticks(ax, left=0)
+        assert ax.get_xlim() == (0, 8)
+        visible = [tick for tick in ax.get_xticks() if 0 <= tick <= 8]
+        assert visible == pytest.approx([0, 2, 4, 6, 8])
+
     def test_fixed_limit_without_round_spacing_stays_between_ticks(self) -> None:
         _, ax = plt.subplots()
         x = np.linspace(0, 10, 50)

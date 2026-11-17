@@ -296,7 +296,7 @@ def _step_through_fixed_ends(
             n_intervals = round((hi - lo) / step)
             if not 2 <= n_intervals <= _MAX_INTERVALS:
                 continue
-            key = (n_intervals > _NBINS, abs(n_intervals - _NBINS), -step)
+            key = (n_intervals > _NBINS, abs(n_intervals - _NBINS), step)
             if best_key is None or key < best_key:
                 best, best_key = step, key
     return best
