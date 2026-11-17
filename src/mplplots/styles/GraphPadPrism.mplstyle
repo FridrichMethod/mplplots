@@ -1,17 +1,24 @@
+# Every text element is Arial Regular 8 pt: the base font, axis labels, axes and figure
+# titles, figure-level axis labels, tick labels, and the legend and its title.
+
 axes.autolimit_mode: round_numbers
-axes.labelsize: 12
-axes.labelweight: bold
+axes.labelsize: 8
+axes.labelweight: normal
 axes.linewidth: 1.5
 axes.spines.right: False
 axes.spines.top: False
-axes.titlesize: 16
-axes.titleweight: bold
+axes.titlesize: 8
+axes.titleweight: normal
 
 errorbar.capsize: 3
 
+# Screen resolution; saved files use savefig.dpi. The style sets no figure size.
 figure.dpi: 300
-figure.figsize: 4.5, 3
 figure.frameon: False
+figure.labelsize: 8
+figure.labelweight: normal
+figure.titlesize: 8
+figure.titleweight: normal
 
 # Matplotlib's default cursive fonts (used for \mathcal), plus DejaVu Sans, the font
 # Matplotlib falls back to anyway, so that a missing cursive font does not warn.
@@ -23,12 +30,13 @@ font.family: sans-serif
 # ships with Matplotlib and therefore always resolves. To get Arial on a machine
 # that lacks it, register the font files with mplplots.utils.add_custom_fonts().
 font.sans-serif: Arial, Helvetica, Liberation Sans, Arimo, Nimbus Sans, DejaVu Sans, sans-serif
-font.size: 14
-font.weight: bold
+font.size: 8
+font.weight: normal
 
 legend.fontsize: 8
 legend.frameon: False
 legend.loc: upper right
+legend.title_fontsize: 8
 
 lines.linewidth: 2
 
@@ -41,14 +49,24 @@ mathtext.it: sans:italic
 mathtext.rm: sans
 mathtext.sf: sans
 
-savefig.bbox: tight
+# Embed fonts in PDF and PostScript as TrueType (Type 42) instead of Type 3, so the text
+# stays editable (in Illustrator, for example) and passes journal checks that reject
+# Type 3 fonts.
+pdf.fonttype: 42
+ps.fonttype: 42
 
-xtick.labelsize: 10
+savefig.bbox: tight
+savefig.dpi: 600
+
+# SVG stores glyphs as paths, so it looks the same on machines without Arial.
+svg.fonttype: path
+
+xtick.labelsize: 8
 xtick.major.width: 1.5
 xtick.minor.visible: True
 xtick.minor.width: 1.5
 
-ytick.labelsize: 10
+ytick.labelsize: 8
 ytick.major.width: 1.5
 ytick.minor.visible: True
 ytick.minor.width: 1.5

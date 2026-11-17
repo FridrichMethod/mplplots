@@ -105,8 +105,9 @@ the `stylelib/` folder of your Matplotlib config directory (`matplotlib.get_conf
 
 | Area | Settings |
 | --- | --- |
-| Figure | 4.5 × 3 in at 300 dpi. `savefig` crops to a tight bounding box. |
-| Text | Arial (see [Fonts](#fonts)), bold throughout. The base size is 14 pt, axis labels are 12 pt, titles 16 pt, tick labels 10 pt, and the legend 8 pt. Math text (`$...$`) uses the same font. |
+| Figure | No figure size is set. Saved at 600 dpi and shown on screen at 300 dpi. `savefig` crops to a tight bounding box. |
+| Text | Arial Regular 8 pt (see [Fonts](#fonts)) for every text element: tick labels, axis labels, axes and figure titles, and the legend and its title. Math text (`$...$`) uses the same font. |
+| Vector output | PDF and PostScript embed fonts as TrueType (Type 42), so text stays editable and passes journal checks that reject Type 3 fonts. SVG stores glyphs as paths. |
 | Axes | 1.5 pt axis lines, with the top and right spines removed. Autoscaled limits are rounded out to tick values. |
 | Ticks | 1.5 pt major and minor ticks, with minor ticks shown on both axes. |
 | Lines & markers | 2 pt lines. Markers take the color of their line. Error bars have 3 pt caps. |
@@ -130,10 +131,11 @@ from mplplots.utils import add_custom_fonts
 add_custom_fonts("/path/to/Arial.ttf", "/path/to/Arial Bold.ttf")
 ```
 
-`add_custom_fonts` registers the files for the current Python session only. Register the bold face
-as well, because the style uses bold text everywhere. Matplotlib caches its font list. If you
-install Arial system-wide after Matplotlib has already run, delete the `fontlist-*.json` file in
-`matplotlib.get_cachedir()` so the list is rebuilt.
+`add_custom_fonts` registers the files for the current Python session only. The style itself uses
+the regular face. Register the bold face as well for bold text you add, such as `fontweight="bold"`
+or `$\mathbf{...}$`. Matplotlib caches its font list. If you install Arial system-wide after
+Matplotlib has already run, delete the `fontlist-*.json` file in `matplotlib.get_cachedir()` so the
+list is rebuilt.
 
 ## Color palettes
 

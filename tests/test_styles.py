@@ -2,18 +2,20 @@
 
 from __future__ import annotations
 
+import io
 import json
 import os
 import re
 import subprocess
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import matplotlib
 import matplotlib.colors as mcolors
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
+from matplotlib.text import Text
 
 import mplplots
 
@@ -73,10 +75,9 @@ print(json.dumps({
 """
 
 # Matplotlib's mathtext always loads its bundled Computer Modern/STIX fallback
-# fonts by name, and those lookups inherit ``font.weight: bold``. Those fonts only
-# come in one weight, so Matplotlib notes that it used the regular weight. This
-# happens with any bold mathtext, does not change the output and cannot be avoided
-# without dropping ``font.weight: bold``, so such notices are tolerated, except
+# fonts by name, and for bold math (``\mathbf``) it looks them up in bold. Those
+# fonts only come in one weight, so Matplotlib may note that it used the regular
+# weight. This does not change the output, so such notices are tolerated, except
 # for the fonts the style uses for text and math.
 WEIGHT_NOTICE = re.compile(r"findfont: Failed to find font weight \S+ for (?P<font>.+), now using")
 
@@ -92,6 +93,50 @@ class TestGraphPadPrismStyle:
     def test_style_sets_dpi(self) -> None:
         mplplots.prism_style()
         assert matplotlib.rcParams["figure.dpi"] == 300
+        assert matplotlib.rcParams["savefig.dpi"] == 600
+
+    def test_style_sets_no_figure_size(self) -> None:
+        with plt.rc_context({"figure.figsize": (1.5, 2.5)}), plt.style.context(GRAPHPAD_STYLE):
+            assert list(matplotlib.rcParams["figure.figsize"]) == [1.5, 2.5]
+
+    def test_every_text_element_is_regular_8pt(self) -> None:
+        # Bold, large settings from a matplotlibrc (or an earlier style) are overridden.
+        earlier: dict[RcKeyType, Any] = {
+            "font.size": 20,
+            "font.weight": "bold",
+            "axes.labelweight": "bold",
+            "axes.titleweight": "bold",
+            "figure.titleweight": "bold",
+            "figure.labelweight": "bold",
+        }
+        with plt.rc_context(earlier), plt.style.context(GRAPHPAD_STYLE):
+            fig, ax = plt.subplots()
+            ax.plot([1, 2], [1, 2], label="data")
+            ax.set_title("Title")
+            ax.set_xlabel("x")
+            ax.set_ylabel("y")
+            ax.legend(title="Legend")
+            fig.suptitle("Figure title")
+            fig.supxlabel("Figure x")
+            fig.supylabel("Figure y")
+            fig.canvas.draw()
+            texts = [text for text in fig.findobj(Text) if text.get_text()]
+            plt.close(fig)
+        fonts = {(text.get_fontsize(), text.get_fontweight()) for text in texts}
+        assert len(texts) > 10  # the labelled elements above plus the tick labels
+        assert fonts == {(8, "normal")}
+
+    def test_pdf_embeds_truetype_and_svg_uses_paths(self) -> None:
+        with plt.style.context(GRAPHPAD_STYLE):
+            fig, ax = plt.subplots()
+            ax.set_title("Title")
+            pdf, svg = io.BytesIO(), io.BytesIO()
+            fig.savefig(pdf, format="pdf")
+            fig.savefig(svg, format="svg")
+            plt.close(fig)
+        assert b"/FontFile2" in pdf.getvalue()  # TrueType font program (Type 42)
+        assert b"/Type3" not in pdf.getvalue()
+        assert b"<text" not in svg.getvalue()
 
     def test_style_hides_top_right_spines(self) -> None:
         mplplots.prism_style()
