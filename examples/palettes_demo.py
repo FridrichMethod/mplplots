@@ -1,9 +1,11 @@
 """Demonstrate mplplots color palettes."""
 
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import font_manager
 
 import mplplots.palettes as palettes
 from mplplots.palettes import (
@@ -17,6 +19,15 @@ from mplplots.palettes import (
 )
 
 OUT = Path(__file__).resolve().parent
+
+# Matplotlib would silently fall back to DejaVu Sans, so refuse to write the README images in
+# anything but Arial.
+ARIAL_FACES = {("Arial", "normal", 400), ("Arial", "normal", 700)}
+if not {(f.name, f.style, f.weight) for f in font_manager.fontManager.ttflist} >= ARIAL_FACES:
+    sys.exit("Arial (regular and bold) is not installed; install it to regenerate the images.")
+
+# Arial text, as in the GraphPadPrism style; everything else keeps Matplotlib's defaults.
+plt.rcParams["font.family"] = "Arial"
 
 # ---------------------------------------------------------------------------
 # 1. Multi-line plot using CUSTOM palette

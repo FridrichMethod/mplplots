@@ -334,6 +334,10 @@ python examples/styles_demo.py
 python examples/palettes_demo.py
 ```
 
+All text in the images is set in Arial, except the Matplotlib-defaults comparison at the top of
+this README. The scripts need Arial (regular and bold) installed and exit with an error without it,
+instead of writing images in a fallback font.
+
 ## Development
 
 ```bash

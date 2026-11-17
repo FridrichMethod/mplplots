@@ -1,10 +1,11 @@
 """Demonstrate mplplots styles with palettes and auto_ticks."""
 
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import ticker
+from matplotlib import font_manager, ticker
 
 import mplplots.palettes as palettes
 from mplplots.palettes import BLUES, REDS
@@ -12,6 +13,12 @@ from mplplots.utils import auto_ticks
 
 STYLE = "mplplots.styles.GraphPadPrism"
 OUT = Path(__file__).resolve().parent
+
+# Without Arial the style silently falls back to a look-alike font (Liberation Sans, ...),
+# so refuse to write the README images in anything but Arial.
+ARIAL_FACES = {("Arial", "normal", 400), ("Arial", "normal", 700)}
+if not {(f.name, f.style, f.weight) for f in font_manager.fontManager.ttflist} >= ARIAL_FACES:
+    sys.exit("Arial (regular and bold) is not installed; install it to regenerate the images.")
 
 x = np.linspace(0, 10, 50)
 
