@@ -2,8 +2,11 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
+      # The example SVGs are written by Matplotlib and must stay byte for byte as rendered.
       - id: trailing-whitespace
+        exclude: ^examples/.*\.svg$
       - id: end-of-file-fixer
+        exclude: ^examples/.*\.svg$
       - id: check-yaml
       - id: check-toml
       - id: check-added-large-files
