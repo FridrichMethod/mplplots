@@ -110,7 +110,7 @@ the `stylelib/` folder of your Matplotlib config directory (`matplotlib.get_conf
 | Vector output | PDF and PostScript embed fonts as TrueType (Type 42), so text stays editable and passes journal checks that reject Type 3 fonts. SVG stores glyphs as paths. |
 | Axes | 1 pt axis lines, with the top and right spines removed. Autoscaled limits are rounded out to tick values. |
 | Ticks | 1 pt major and minor ticks, with minor ticks shown on both axes. |
-| Lines & markers | 2 pt lines. Markers take the color of their line. Error bars have 3 pt caps. |
+| Lines & markers | 1 pt lines, also used for error bars. Markers take the color of their line. Error bars have 3 pt caps. |
 | Legend | No frame, placed in the upper right. |
 
 For every setting, see the [style file](src/mplplots/styles/GraphPadPrism.mplstyle).

@@ -39,7 +39,7 @@ legend.frameon: False
 legend.loc: upper right
 legend.title_fontsize: 8
 
-lines.linewidth: 2
+lines.linewidth: 1
 
 # "sans" resolves through font.sans-serif, so math uses the same font as the text
 # (Arial when installed).

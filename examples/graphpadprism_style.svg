@@ -637,7 +637,7 @@ L 188.081633 77.867482
 L 191.387755 85.186181 
 L 194.693878 92.256423 
 L 198 98.78476 
-" clip-path="url(#p5382000584)" style="fill: none; stroke: #4f9bcb; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#p5382000584)" style="fill: none; stroke: #4f9bcb; stroke-linecap: square"/>
    </g>
    <g id="line2d_26">
     <path d="M 36 43.2 
@@ -690,7 +690,7 @@ L 188.081633 115.17533
 L 191.387755 114.698812 
 L 194.693878 112.748917 
 L 198 109.406575 
-" clip-path="url(#p5382000584)" style="fill: none; stroke: #f34a36; stroke-width: 2; stroke-linecap: square"/>
+" clip-path="url(#p5382000584)" style="fill: none; stroke: #f34a36; stroke-linecap: square"/>
    </g>
    <g id="patch_3">
     <path d="M 36 133.2 
@@ -1136,7 +1136,7 @@ z
      <path d="M 92.67 31.424219 
 L 100.67 31.424219 
 L 108.67 31.424219 
-" style="fill: none; stroke: #4f9bcb; stroke-width: 2; stroke-linecap: square"/>
+" style="fill: none; stroke: #4f9bcb; stroke-linecap: square"/>
     </g>
     <g id="text_17">
      <!-- sin(x) -->
@@ -1202,7 +1202,7 @@ z
      <path d="M 150.62375 31.424219 
 L 158.62375 31.424219 
 L 166.62375 31.424219 
-" style="fill: none; stroke: #f34a36; stroke-width: 2; stroke-linecap: square"/>
+" style="fill: none; stroke: #f34a36; stroke-linecap: square"/>
     </g>
     <g id="text_18">
      <!-- cos(x) -->
