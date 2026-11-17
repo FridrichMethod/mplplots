@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mplplots"
-version = "0.1.0"
+version = "0.2.0"
 description = "Visual styling helpers for Matplotlib/Seaborn"
 authors = [{ name = "Zhaoyang Li", email = "zhaoyangli@stanford.edu" }]
 license = { file = "LICENSE" }

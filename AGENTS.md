@@ -25,6 +25,17 @@ Always run these before `git commit` and `git push`:
 
 Do not commit or push if either fails. Fix issues first.
 
+## Changelog and Releases
+
+- Record every user-visible change in `CHANGELOG.md` under `## [Unreleased]`, in the Keep a
+  Changelog sections (Added, Changed, Fixed, ...) with its PR number.
+- The version lives only in `pyproject.toml` and follows Semantic Versioning; while it is 0.x, a
+  change that alters how existing figures look or breaks the API raises the minor version.
+- To release: set the version in `pyproject.toml`, rename `## [Unreleased]` to
+  `## [X.Y.Z] - YYYY-MM-DD` above a fresh empty `## [Unreleased]`, update the compare links at
+  the bottom, merge that PR, then tag the merged commit on `main` as `vX.Y.Z` (annotated) and
+  publish a GitHub release from the tag with that version's changelog section as its notes.
+
 ## Code Style
 
 - Ruff for linting and formatting (line length 100, Google-style docstrings)
