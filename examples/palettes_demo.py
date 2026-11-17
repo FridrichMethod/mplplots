@@ -4,7 +4,7 @@ from collections.abc import Mapping, Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
-from _common import STYLE, add_axes, legend, require_arial, save, suptitle
+from _common import STYLE, require_arial, save
 from matplotlib.figure import Figure
 
 import mplplots.palettes as palettes
@@ -17,7 +17,7 @@ from mplplots.palettes import (
     REDS,
     get_colors,
 )
-from mplplots.utils import auto_ticks
+from mplplots.utils import add_axes_inches, auto_ticks, legend_inches, suptitle_inches
 
 require_arial()
 plt.style.use(STYLE)
@@ -43,7 +43,7 @@ def swatches(
     """
     cell_width, cell_height = cell
     for row, (name, colors) in enumerate(reversed(list(rows.items()))):
-        ax = add_axes(
+        ax = add_axes_inches(
             fig, left, bottom + row * (cell_height + gap), len(colors) * cell_width, cell_height
         )
         for i, c in enumerate(colors):
@@ -61,12 +61,12 @@ def swatches(
 # ---------------------------------------------------------------------------
 x = np.linspace(0, 2 * np.pi, 100)
 fig = plt.figure(figsize=(4.5, 2.75))
-ax = add_axes(fig, 0.5, 0.4, 3, 2)
+ax = add_axes_inches(fig, 0.5, 0.4, 3, 2)
 for i, color in enumerate(CUSTOM):
     ax.plot(x, np.sin(x + i * 0.3), color=color, label=f"Line {i}")
 auto_ticks(ax, left=0)
 ax.set_title("CUSTOM palette — multi-line plot")
-legend(fig, ax, 3.6, 2.4)
+legend_inches(ax, 3.6, 2.4)
 save(fig, "custom_multiline")
 
 # ---------------------------------------------------------------------------
@@ -75,7 +75,7 @@ save(fig, "custom_multiline")
 families = {"BLUES": BLUES, "GREENS": GREENS, "REDS": REDS, "PURPLES": PURPLES, "ORANGES": ORANGES}
 fig = plt.figure(figsize=(4, 1.9))
 swatches(fig, families, left=0.75, bottom=0.1, cell=(0.4, 0.2), gap=0.1)
-suptitle(fig, "Colormap-derived families")
+suptitle_inches(fig, "Colormap-derived families")
 save(fig, "color_families")
 
 # ---------------------------------------------------------------------------
@@ -83,7 +83,7 @@ save(fig, "color_families")
 # ---------------------------------------------------------------------------
 fig = plt.figure(figsize=(6, 1.8))
 for i, cmap_name in enumerate(["coolwarm", "viridis", "YlGnBu"]):
-    ax = add_axes(fig, 0.4 + i * 2, 0.2, 1.5, 1.25)
+    ax = add_axes_inches(fig, 0.4 + i * 2, 0.2, 1.5, 1.25)
     colors = get_colors(cmap_name, 6, 0.15, 0.85)
     ax.bar(range(len(colors)), [3 + i * 0.5 for i in range(len(colors))], color=colors)
     ax.set_title(f'get_colors("{cmap_name}", 6)')
@@ -130,7 +130,7 @@ swatches(
     cell=(0.3, 0.15),
     gap=0.05,
 )
-suptitle(fig, "All 25 custom-style palettes")
+suptitle_inches(fig, "All 25 custom-style palettes")
 save(fig, "all_palettes")
 
 # ---------------------------------------------------------------------------
@@ -139,7 +139,7 @@ save(fig, "all_palettes")
 rng = np.random.default_rng(42)
 fig = plt.figure(figsize=(5.5, 1.7))
 for i, name in enumerate(["OCEAN", "ROSE", "FOREST"]):
-    ax = add_axes(fig, 0.25 + i * 1.75, 0.1, 1.5, 1.25)
+    ax = add_axes_inches(fig, 0.25 + i * 1.75, 0.1, 1.5, 1.25)
     pal = getattr(palettes, name)
     for j, c in enumerate(pal):
         xs = rng.normal(j, 0.3, 20)
@@ -155,7 +155,7 @@ save(fig, "scatter_comparison")
 # ---------------------------------------------------------------------------
 x = np.linspace(0, 4, 80)
 fig = plt.figure(figsize=(4.5, 2.5))
-ax = add_axes(fig, 0.5, 0.4, 3, 1.75)
+ax = add_axes_inches(fig, 0.5, 0.4, 3, 1.75)
 spring = palettes.SPRING
 base = np.zeros_like(x)
 for i in range(6):
@@ -164,14 +164,14 @@ for i in range(6):
     base += y
 auto_ticks(ax, left=0, right=4, bottom=0)
 ax.set_title("SPRING palette — stacked area chart")
-legend(fig, ax, 3.6, 2.15)
+legend_inches(ax, 3.6, 2.15)
 save(fig, "spring_area")
 
 # ---------------------------------------------------------------------------
 # 7. Pie chart with CANDY palette
 # ---------------------------------------------------------------------------
 fig = plt.figure(figsize=(2.5, 2.5))
-ax = add_axes(fig, 0.25, 0.1, 2, 2)
+ax = add_axes_inches(fig, 0.25, 0.1, 2, 2)
 candy = palettes.CANDY
 sizes = [22, 18, 15, 13, 10, 8, 7, 4, 2, 1]
 ax.pie(sizes, colors=candy[:10], startangle=90, wedgeprops={"edgecolor": "white", "linewidth": 1.5})
@@ -182,7 +182,7 @@ save(fig, "candy_pie")
 # 8. Horizontal bar chart with DUSK palette
 # ---------------------------------------------------------------------------
 fig = plt.figure(figsize=(3.5, 3))
-ax = add_axes(fig, 0.6, 0.4, 2.6, 2.25)
+ax = add_axes_inches(fig, 0.6, 0.4, 2.6, 2.25)
 dusk = palettes.DUSK
 categories = [f"Item {chr(65 + i)}" for i in range(11)]
 values = [45, 38, 35, 30, 28, 24, 20, 18, 14, 10, 6]

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import uuid
 from collections.abc import Callable, Iterator
 from pathlib import Path
@@ -16,12 +17,23 @@ import pytest
 from fontTools.ttLib import TTFont
 from matplotlib import ticker
 from matplotlib.font_manager import FontProperties
+from matplotlib.patches import Rectangle
 from matplotlib.text import Text
 
 import mplplots
-from mplplots.utils import _clear_font_caches, add_custom_fonts, auto_ticks
+from mplplots.utils import (
+    LegendCorner,
+    _clear_font_caches,
+    add_axes_inches,
+    add_custom_fonts,
+    auto_ticks,
+    legend_inches,
+    suptitle_inches,
+)
 
 if TYPE_CHECKING:
+    from matplotlib.artist import Artist
+    from matplotlib.figure import Figure
     from matplotlib.typing import RcKeyType  # Matplotlib 3.10+
 
 STYLE_PATH = str(mplplots.STYLE_PATH)
@@ -309,6 +321,92 @@ class TestAutoTicks:
             assert limits[0] == fixed
             assert _ends_on_ticks(ax.get_yticks(), limits), (low, high, limits)
             plt.close(fig)
+
+
+def _inches(fig: Figure, artist: Artist) -> tuple[float, float, float, float]:
+    """Return an artist's drawn (x0, y0, x1, y1) in inches from the figure's lower-left corner."""
+    fig.canvas.draw()
+    x0, y0, x1, y1 = np.asarray(artist.get_window_extent().extents) / fig.dpi
+    return float(x0), float(y0), float(x1), float(y1)
+
+
+# One pixel at the default 100 dpi; text extents are rounded to whole pixels.
+PIXEL = 0.01
+
+
+class TestInchLayout:
+    @pytest.mark.parametrize("style", ["default", STYLE_PATH])
+    def test_add_axes_inches_sets_position_and_axis_lengths(self, style: str) -> None:
+        with plt.style.context(style):
+            fig = plt.figure(figsize=(3, 2.25))
+            ax = add_axes_inches(fig, 0.5, 0.4, 2.25, 1.5)
+            assert _inches(fig, ax) == pytest.approx((0.5, 0.4, 2.75, 1.9))
+
+    def test_axis_lengths_stay_when_the_figure_is_resized(self) -> None:
+        fig = plt.figure(figsize=(3, 2.25))
+        ax = add_axes_inches(fig, 0.5, 0.4, 2.25, 1.5)
+        fig.set_size_inches(5, 4)
+        assert _inches(fig, ax) == pytest.approx((0.5, 0.4, 2.75, 1.9))
+
+    def test_saved_file_keeps_axis_lengths(self) -> None:
+        with plt.style.context(STYLE_PATH):
+            fig = plt.figure(figsize=(2, 1.5))
+            ax = add_axes_inches(fig, 0.5, 0.25, 1.25, 1)
+            ax.set_axis_off()
+            # Fill exactly the axes box, so its pixels show where the axes ended up.
+            ax.add_patch(Rectangle((0, 0), 1, 1, transform=ax.transAxes, color="black", lw=0))
+            buffer = io.BytesIO()
+            fig.savefig(buffer, format="png", dpi=100)
+        buffer.seek(0)
+        image = plt.imread(buffer)
+        assert image.shape[:2] == (150, 200)
+        black = np.argwhere((image[..., 3] > 0.5) & (image[..., :3].sum(axis=-1) < 0.5))
+        (top, left), (bottom, right) = black.min(axis=0), black.max(axis=0)
+        # Rows count from the top of the 150 px image; the axes span 50-175 px x 25-125 px.
+        assert (left, right + 1, 150 - (bottom + 1), 150 - top) == (50, 175, 25, 125)
+
+    @pytest.mark.parametrize(("width", "height"), [(0, 1), (1, -0.5)])
+    def test_add_axes_inches_rejects_empty_axes(self, width: float, height: float) -> None:
+        fig = plt.figure(figsize=(3, 2))
+        with pytest.raises(ValueError, match="positive"):
+            add_axes_inches(fig, 0.5, 0.5, width, height)
+
+    @pytest.mark.parametrize(
+        ("loc", "corner"),
+        [("upper left", (0, 3)), ("lower right", (2, 1)), ("upper right", (2, 3))],
+    )
+    def test_legend_inches_puts_its_corner_on_the_point(
+        self, loc: LegendCorner, corner: tuple[int, int]
+    ) -> None:
+        fig = plt.figure(figsize=(4, 2.25))
+        ax = add_axes_inches(fig, 0.5, 0.4, 2.5, 1.5)
+        ax.plot([0, 1], [0, 1], label="data")
+        legend = legend_inches(ax, 3.1, 1.9, loc=loc)
+        for size in ((4, 2.25), (6, 3)):
+            fig.set_size_inches(*size)
+            extents = _inches(fig, legend)
+            assert (extents[corner[0]], extents[corner[1]]) == pytest.approx((3.1, 1.9))
+
+    def test_legend_inches_passes_options_on(self) -> None:
+        fig = plt.figure(figsize=(4, 2))
+        ax = add_axes_inches(fig, 0.5, 0.4, 2.5, 1.25)
+        ax.plot([0, 1], [0, 1], label="a")
+        ax.plot([0, 1], [1, 0], label="b")
+        legend = legend_inches(ax, 2.75, 1.9, loc="upper right", ncols=2, title="Series")
+        assert legend.get_title().get_text() == "Series"
+        # Two columns: both entries share one row.
+        first, second = (_inches(fig, text) for text in legend.get_texts())
+        assert first[1] == pytest.approx(second[1])
+        assert first[2] < second[0]
+
+    def test_suptitle_inches_sets_the_top_edge(self) -> None:
+        fig = plt.figure(figsize=(4, 2))
+        title = suptitle_inches(fig, "Figure title", top=0.1)
+        for width, height in ((4, 2), (5, 3)):
+            fig.set_size_inches(width, height)
+            x0, _, x1, y1 = _inches(fig, title)
+            assert y1 == pytest.approx(height - 0.1, abs=PIXEL)
+            assert (x0 + x1) / 2 == pytest.approx(width / 2, abs=PIXEL)
 
 
 @pytest.fixture
