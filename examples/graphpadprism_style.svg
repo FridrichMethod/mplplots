@@ -328,29 +328,28 @@ L 0 2
      </g>
     </g>
     <g id="text_7">
-     <!-- x -->
+     <!-- $x$ -->
      <g transform="translate(115 157.532031) scale(0.08 -0.08)">
       <defs>
-       <path id="ArialMT-5b" d="M 47 0 
-L 1259 1725 
-L 138 3319 
-L 841 3319 
-L 1350 2541 
-Q 1494 2319 1581 2169 
-Q 1719 2375 1834 2534 
-L 2394 3319 
-L 3066 3319 
-L 1919 1756 
-L 3153 0 
-L 2463 0 
-L 1781 1031 
-L 1600 1309 
-L 728 0 
-L 47 0 
+       <path id="Arial-ItalicMT-5b" d="M -9 0 
+L 1434 1684 
+L 606 3319 
+L 1231 3319 
+L 1513 2728 
+Q 1669 2397 1794 2094 
+L 2750 3319 
+L 3441 3319 
+L 2047 1641 
+L 2884 0 
+L 2259 0 
+L 1928 675 
+Q 1822 891 1688 1209 
+L 700 0 
+L -9 0 
 z
 " transform="scale(0.015625)"/>
       </defs>
-      <use xlink:href="#ArialMT-5b"/>
+      <use xlink:href="#Arial-ItalicMT-5b" transform="translate(0 0.140625)"/>
      </g>
     </g>
    </g>
@@ -557,32 +556,29 @@ L -2 0
      </g>
     </g>
     <g id="text_15">
-     <!-- y -->
-     <g transform="translate(7.52375 81.2) rotate(-90) scale(0.08 -0.08)">
+     <!-- $y$ -->
+     <g transform="translate(7.4475 81.2) rotate(-90) scale(0.08 -0.08)">
       <defs>
-       <path id="ArialMT-5c" d="M 397 -1278 
-L 334 -750 
-Q 519 -800 656 -800 
-Q 844 -800 956 -737 
-Q 1069 -675 1141 -563 
-Q 1194 -478 1313 -144 
-Q 1328 -97 1363 -6 
-L 103 3319 
-L 709 3319 
-L 1400 1397 
-Q 1534 1031 1641 628 
-Q 1738 1016 1872 1384 
-L 2581 3319 
-L 3144 3319 
-L 1881 -56 
-Q 1678 -603 1566 -809 
-Q 1416 -1088 1222 -1217 
-Q 1028 -1347 759 -1347 
-Q 597 -1347 397 -1278 
+       <path id="Arial-ItalicMT-5c" d="M 0 -1281 
+L 34 -750 
+Q 209 -800 375 -800 
+Q 547 -800 653 -722 
+Q 791 -619 953 -334 
+L 1134 -9 
+L 581 3319 
+L 1138 3319 
+L 1388 1641 
+Q 1463 1144 1516 647 
+L 3000 3319 
+L 3591 3319 
+L 1475 -441 
+Q 1169 -991 931 -1169 
+Q 694 -1347 384 -1347 
+Q 188 -1347 0 -1281 
 z
 " transform="scale(0.015625)"/>
       </defs>
-      <use xlink:href="#ArialMT-5c"/>
+      <use xlink:href="#Arial-ItalicMT-5c" transform="translate(0 0.140625)"/>
      </g>
     </g>
    </g>
@@ -1133,14 +1129,14 @@ z
    </g>
    <g id="legend_1">
     <g id="line2d_27">
-     <path d="M 92.67 31.424219 
-L 100.67 31.424219 
-L 108.67 31.424219 
+     <path d="M 92.56 31.44 
+L 100.56 31.44 
+L 108.56 31.44 
 " style="fill: none; stroke: #4f9bcb; stroke-linecap: square"/>
     </g>
     <g id="text_17">
-     <!-- sin(x) -->
-     <g transform="translate(115.07 34.224219) scale(0.08 -0.08)">
+     <!-- $\sin(x)$ -->
+     <g transform="translate(114.96 34.24) scale(0.08 -0.08)">
       <defs>
        <path id="ArialMT-51" d="M 422 0 
 L 422 3319 
@@ -1190,29 +1186,29 @@ Q 1253 -759 791 -1347
 z
 " transform="scale(0.015625)"/>
       </defs>
-      <use xlink:href="#ArialMT-56"/>
-      <use xlink:href="#ArialMT-4c" transform="translate(50 0)"/>
-      <use xlink:href="#ArialMT-51" transform="translate(72.21875 0)"/>
-      <use xlink:href="#ArialMT-b" transform="translate(127.828125 0)"/>
-      <use xlink:href="#ArialMT-5b" transform="translate(161.125 0)"/>
-      <use xlink:href="#ArialMT-c" transform="translate(211.125 0)"/>
+      <use xlink:href="#ArialMT-56" transform="translate(0 0.203125)"/>
+      <use xlink:href="#ArialMT-4c" transform="translate(50 0.203125)"/>
+      <use xlink:href="#ArialMT-51" transform="translate(72.216797 0.203125)"/>
+      <use xlink:href="#ArialMT-b" transform="translate(127.832031 0.203125)"/>
+      <use xlink:href="#Arial-ItalicMT-5b" transform="translate(161.132812 0.203125)"/>
+      <use xlink:href="#ArialMT-c" transform="translate(211.132812 0.203125)"/>
      </g>
     </g>
     <g id="line2d_28">
-     <path d="M 150.62375 31.424219 
-L 158.62375 31.424219 
-L 166.62375 31.424219 
+     <path d="M 150.56 31.44 
+L 158.56 31.44 
+L 166.56 31.44 
 " style="fill: none; stroke: #f34a36; stroke-linecap: square"/>
     </g>
     <g id="text_18">
-     <!-- cos(x) -->
-     <g transform="translate(173.02375 34.224219) scale(0.08 -0.08)">
-      <use xlink:href="#ArialMT-46"/>
-      <use xlink:href="#ArialMT-52" transform="translate(50 0)"/>
-      <use xlink:href="#ArialMT-56" transform="translate(105.609375 0)"/>
-      <use xlink:href="#ArialMT-b" transform="translate(155.609375 0)"/>
-      <use xlink:href="#ArialMT-5b" transform="translate(188.90625 0)"/>
-      <use xlink:href="#ArialMT-c" transform="translate(238.90625 0)"/>
+     <!-- $\cos(x)$ -->
+     <g transform="translate(172.96 34.24) scale(0.08 -0.08)">
+      <use xlink:href="#ArialMT-46" transform="translate(0 0.203125)"/>
+      <use xlink:href="#ArialMT-52" transform="translate(50 0.203125)"/>
+      <use xlink:href="#ArialMT-56" transform="translate(105.615234 0.203125)"/>
+      <use xlink:href="#ArialMT-b" transform="translate(155.615234 0.203125)"/>
+      <use xlink:href="#Arial-ItalicMT-5b" transform="translate(188.916016 0.203125)"/>
+      <use xlink:href="#ArialMT-c" transform="translate(238.916016 0.203125)"/>
      </g>
     </g>
    </g>

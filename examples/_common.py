@@ -33,14 +33,17 @@ _SAVE_RC: dict[RcKeyType, Any] = {"savefig.bbox": "standard", "svg.hashsalt": "m
 
 
 def require_arial() -> None:
-    """Exit unless Arial is installed.
+    """Exit unless Arial Regular and Arial Italic are installed.
 
     Without Arial the style silently falls back to a look-alike font (Liberation Sans,
-    ...), so the README images are never written in anything but Arial.
+    ...), so the README images are never written in anything but Arial. Text uses the
+    regular face and variables in math text (``$x$``) the italic one.
     """
     faces = {(f.name, f.style, f.weight) for f in font_manager.fontManager.ttflist}
-    if ("Arial", "normal", 400) not in faces:
-        sys.exit("Arial is not installed; install it to regenerate the images.")
+    if not {("Arial", "normal", 400), ("Arial", "italic", 400)} <= faces:
+        sys.exit(
+            "Arial (regular and italic) is not installed; install it to regenerate the images."
+        )
 
 
 def save(fig: Figure, name: str) -> None:

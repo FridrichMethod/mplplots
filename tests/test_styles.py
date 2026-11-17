@@ -215,6 +215,13 @@ class TestGraphPadPrismFonts:
                 math_font = fm.get_font(fm.findfont(matplotlib.rcParams[key]))
                 assert math_font.family_name == text_font.family_name, key
 
+    def test_math_variables_are_italic_and_functions_upright(self) -> None:
+        with plt.style.context(GRAPHPAD_STYLE):
+            variable = fm.get_font(fm.findfont(matplotlib.rcParams["mathtext.it"]))
+            function = fm.get_font(fm.findfont(matplotlib.rcParams["mathtext.rm"]))
+        assert any(word in variable.style_name for word in ("Italic", "Oblique"))
+        assert not any(word in function.style_name for word in ("Italic", "Oblique"))
+
     def test_renders_without_font_warnings(self) -> None:
         result = subprocess.run(
             [sys.executable, "-c", RENDER_SCRIPT, GRAPHPAD_STYLE],

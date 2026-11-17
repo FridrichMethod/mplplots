@@ -54,9 +54,12 @@ Do not commit or push if either fails. Fix issues first.
   Place them with `add_axes_inches`, `legend_inches` and `suptitle_inches` from
   `mplplots.utils`, not with `tight_layout`, `subplots_adjust` or a tight bounding box.
 - Keep the style's text: pass no `fontsize` or `fontweight`.
+- Write variables and formulas in labels, titles and legends as math text (`"$x$"`,
+  `r"$\sin(x)$"`), never as upright text (`"x"`, `"sin(x)"`). The style sets math variables in
+  Arial Italic and function names, numbers and operators upright.
 - Render every figure in three formats with `save()` from `examples/_common.py`: PNG at 600 dpi,
   SVG and PDF, side by side in `examples/`, uncropped and without timestamps, so rerunning an
   unchanged script reproduces the files byte for byte.
-- Rendering needs Arial installed; the scripts exit without it. After changing the style or a
+- Rendering needs Arial Regular and Italic installed; the scripts exit without them. After changing the style or a
   script, rerun both scripts and commit all three formats. In `README.md`, show each image at
   100 pixels per inch of figure width.
