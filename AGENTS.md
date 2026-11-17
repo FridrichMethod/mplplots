@@ -39,7 +39,8 @@ Do not commit or push if either fails. Fix issues first.
   tick labels, axis labels, axes and figure titles, figure-level axis labels, and the legend and
   its title. Do not give any of them another size or weight.
 - It saves at 600 dpi (`savefig.dpi`), embeds TrueType fonts in PDF and PostScript
-  (`pdf.fonttype` and `ps.fonttype` 42), stores SVG text as paths, and sets no figure size.
+  (`pdf.fonttype` and `ps.fonttype` 42), stores SVG text as paths, sets no figure size, and does
+  not crop saved figures (no `savefig.bbox`), so a saved file has exactly the figure's size.
 - A change to the style goes together with the "What the style changes" table in `README.md` and
   the assertions in `tests/test_styles.py`.
 
