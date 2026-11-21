@@ -264,6 +264,50 @@ def test_a_reader_that_stops_early_gets_no_traceback(tmp_path: Path, command: li
     assert stderr == b""
 
 
+def run_without_stdout(*args: str) -> subprocess.CompletedProcess[bytes]:
+    # File descriptor 1 is closed in the child, as `mplplots styles >&-` leaves it, so Python
+    # starts with sys.stdout set to None.
+    return subprocess.run(
+        [sys.executable, "-m", "mplplots", *args],
+        stderr=subprocess.PIPE,
+        preexec_fn=lambda: os.close(1),
+        check=False,
+    )
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        ["guide"],
+        ["rules"],
+        ["styles"],
+        ["install-skill", "--project", "{project}", "--rules"],
+        ["install-skill", "--project", "{project}", "--check"],
+    ],
+)
+def test_without_stdout_a_command_does_its_work_and_succeeds(
+    tmp_path: Path, command: list[str]
+) -> None:
+    # print() writes nothing when sys.stdout is None; the command still runs and exits 0. The
+    # --check runs on an installed project, the plain install on an empty one.
+    if "--check" in command:
+        assert install(tmp_path, "--rules") == 0
+    result = run_without_stdout(*(arg.format(project=tmp_path) for arg in command))
+    assert result.returncode == 0
+    assert result.stderr == b""
+    if "install-skill" in command:
+        assert MARKER in (tmp_path / CLAUDE / "SKILL.md").read_text(encoding="utf-8")
+        assert (tmp_path / ".claude" / "rules" / "mplplots.md").read_text(encoding="utf-8") == RULES
+
+
+@pytest.mark.parametrize("flag", ["--version", "--help"])
+def test_without_stdout_version_and_help_exit_0(flag: str) -> None:
+    # argparse writes them to standard error when there is no standard output.
+    result = run_without_stdout(flag)
+    assert result.returncode == 0
+    assert b"Traceback" not in result.stderr
+
+
 def test_home_as_project_is_refused(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

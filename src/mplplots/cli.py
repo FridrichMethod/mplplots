@@ -214,7 +214,7 @@ def _rules(_args: argparse.Namespace) -> int:
     Returns:
         The success exit code.
     """
-    sys.stdout.write(_packaged(_RULES))
+    print(_packaged(_RULES), end="")
     return _EXIT_OK
 
 
@@ -224,7 +224,7 @@ def _guide(_args: argparse.Namespace) -> int:
     Returns:
         The success exit code.
     """
-    sys.stdout.write(_packaged(_GUIDE))
+    print(_packaged(_GUIDE), end="")
     return _EXIT_OK
 
 
@@ -333,6 +333,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         output that has gone. A usage error raises ``SystemExit`` with code 2, and ``--help``
         and ``--version`` raise it with 0.
     """
+    # With file descriptor 1 closed, ``sys.stdout`` is None and ``print`` writes nothing, so a
+    # command run without standard output does its work and exits as it would otherwise.
     try:
         try:
             args = _parser().parse_args(argv)
@@ -340,9 +342,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             return handler(args)
         finally:
             # Flush here, so that a closed pipe fails inside the try, not at interpreter exit.
-            sys.stdout.flush()
+            if sys.stdout is not None:
+                sys.stdout.flush()
     except BrokenPipeError:
         # A reader such as ``head`` may close the pipe before the output is written. Standard
         # output is pointed at the null device so that Python's final flush does not fail too.
-        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        if sys.stdout is not None:
+            os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
         return _EXIT_FAILURE
