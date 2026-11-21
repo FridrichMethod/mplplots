@@ -97,10 +97,11 @@ Do not commit or push if either fails. Fix issues first.
     `get_colors_demo`, `custom_multiline`, `dusk_hbar`, `spring_area`, `candy_pie`,
     `scatter_comparison`) in the Personal style.
 - Lay figures out in round inches: the figure size, each axes' position and size (the axis
-  lengths), and the anchors of legends and figure titles lie on the 0.05 in grid that
-  `check_figure` checks, mostly on multiples of 0.1, 0.25, 0.5 or 1 in. Place them with
-  `grid_inches`, `add_axes_inches`, `legend_inches` and `suptitle_inches`, not with
-  `tight_layout`, `subplots_adjust` or a tight bounding box.
+  lengths), and the anchors of legends and figure titles lie on a 0.05 in grid, mostly on
+  multiples of 0.1, 0.25, 0.5 or 1 in. Place them with `grid_inches`, `add_axes_inches`,
+  `legend_inches` and `suptitle_inches`, not with `tight_layout`, `subplots_adjust` or a tight
+  bounding box. `check_figure` (`round-inches`) checks the figure size and the axes boxes only,
+  so check the anchors of legends and titles by hand.
 - Keep the style's text: pass no `fontsize` or `fontweight`.
 - Write variables and formulas in labels, titles and legends as math text (`"$x$"`,
   `r"$\sin(x)$"`), never as upright text (`"x"`, `"sin(x)"`). The styles set math variables in
