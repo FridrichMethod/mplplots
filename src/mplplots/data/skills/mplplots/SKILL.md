@@ -46,6 +46,8 @@ Matplotlib's cache directory (`matplotlib.get_cachedir()`) so it finds them.
 6. `mpp.save_figure(fig, path, caption=...)`, then look at the PNG.
 
 ```python
+import numpy as np
+
 import mplplots as mpp
 
 mpp.use()  # 1

@@ -9,7 +9,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
-import matplotlib.pyplot as plt
+import matplotlib as mpl
 from matplotlib.backend_bases import FigureCanvasBase
 from matplotlib.figure import Figure
 
@@ -96,7 +96,7 @@ def save_figure(
     )
     written: list[Path] = []
     # "standard" keeps the file at the figure's size even if a matplotlibrc or style crops.
-    with plt.rc_context({
+    with mpl.rc_context({
         "savefig.bbox": "standard",
         "svg.hashsalt": "mplplots",
         "svg.fonttype": "none" if editable_svg_text else "path",
@@ -112,5 +112,8 @@ def save_figure(
         written.append(caption_path)
 
     if close:
+        # Imported here, so that importing mplplots leaves pyplot and its backend alone.
+        import matplotlib.pyplot as plt
+
         plt.close(fig)
     return tuple(written)

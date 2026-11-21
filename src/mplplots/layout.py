@@ -15,7 +15,7 @@ from numbers import Real
 from types import MappingProxyType
 from typing import Any, Literal
 
-import matplotlib.pyplot as plt
+import matplotlib as mpl
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.text import Text
@@ -183,6 +183,9 @@ def grid_inches(
     lefts = [_inch_sum([left, *widths[:j], *wspaces[:j]]) for j in range(ncols)]
     bottoms = [_inch_sum([bottom, *heights[i + 1 :], *hspaces[i:]]) for i in range(nrows)]
 
+    # Imported here, so that importing mplplots leaves pyplot and its backend alone.
+    import matplotlib.pyplot as plt
+
     fig = plt.figure(figsize=(fig_width, fig_height), **figure_kwargs)
     axes: list[Axes] = []
     for i in range(nrows):
@@ -267,13 +270,13 @@ def add_shared_ylabel(fig: Figure, axes: Sequence[Axes], text: str, **kwargs: An
         rotation=90,
         ha="left",
         va="center",
-        fontsize=kwargs.pop("fontsize", plt.rcParams["axes.labelsize"]),
+        fontsize=kwargs.pop("fontsize", mpl.rcParams["axes.labelsize"]),
         **kwargs,
     )
     # Second pass: shift the label so its right edge sits labelpad points left of the ink. The
     # anchor of rotated text is hard to predict, so the drawn extent is measured instead.
     fig.draw_without_rendering()
-    pad_px = plt.rcParams["axes.labelpad"] * fig.dpi / 72.0
+    pad_px = mpl.rcParams["axes.labelpad"] * fig.dpi / 72.0
     right_px = label.get_window_extent().x1
     dx_px = (left_px - pad_px) - right_px
     label.set_x(label.get_position()[0] + dx_px / (fig.get_figwidth() * fig.dpi))
