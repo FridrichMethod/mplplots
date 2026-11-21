@@ -62,8 +62,9 @@ def swatches(
 x = np.linspace(0, 2 * np.pi, 100)
 fig = plt.figure(figsize=(4.5, 2.75))
 ax = add_axes_inches(fig, 0.5, 0.4, 3, 2)
+# Curves that share a panel set their width (rule L4 of the style guide).
 for i, color in enumerate(CUSTOM):
-    ax.plot(x, np.sin(x + i * 0.3), color=color, label=f"Line {i}")
+    ax.plot(x, np.sin(x + i * 0.3), color=color, linewidth=1.2, label=f"Line {i}")
 auto_ticks(ax, left=0)
 ax.set_title("CUSTOM palette — multi-line plot")
 legend_inches(ax, 3.6, 2.4)
