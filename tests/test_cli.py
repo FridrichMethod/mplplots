@@ -233,14 +233,29 @@ def test_unknown_client_is_a_usage_error(tmp_path: Path) -> None:
     assert list(tmp_path.iterdir()) == []
 
 
-def test_a_reader_that_stops_early_gets_no_traceback() -> None:
+@pytest.mark.parametrize(
+    "command",
+    [
+        ["guide"],
+        ["rules"],
+        ["styles"],
+        ["install-skill", "--project", "{project}", "--rules"],
+        ["install-skill", "--project", "{project}", "--check"],
+        ["--version"],
+        ["--help"],
+    ],
+)
+def test_a_reader_that_stops_early_gets_no_traceback(tmp_path: Path, command: list[str]) -> None:
     # The pipe has no reader before the command writes, as `mplplots guide | head -1` can leave
-    # it, so the first write always fails, whatever the pipe's capacity.
+    # it, so the first write always fails, whatever the pipe's capacity. Every command, even one
+    # that would succeed (the --check runs on an installed project), exits 1 without a traceback.
+    assert install(tmp_path, "--rules") == 0
+    args = [arg.format(project=tmp_path) for arg in command]
     read_end, write_end = os.pipe()
     os.close(read_end)
     try:
         process = subprocess.Popen(
-            [sys.executable, "-m", "mplplots", "guide"], stdout=write_end, stderr=subprocess.PIPE
+            [sys.executable, "-m", "mplplots", *args], stdout=write_end, stderr=subprocess.PIPE
         )
     finally:
         os.close(write_end)

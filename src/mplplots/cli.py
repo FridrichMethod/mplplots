@@ -185,27 +185,6 @@ def _fail(message: str) -> int:
     return _EXIT_FAILURE
 
 
-def _write(text: str) -> int:
-    """Write text to standard output, and stop quietly when the reader has gone.
-
-    A reader such as ``head`` may close the pipe before the text is written; standard output is
-    then pointed at the null device so that Python's final flush does not fail as well.
-
-    Args:
-        text: The text to write.
-
-    Returns:
-        The success exit code, or the failure exit code when the pipe was closed.
-    """
-    try:
-        sys.stdout.write(text)
-        sys.stdout.flush()
-    except BrokenPipeError:
-        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
-        return _EXIT_FAILURE
-    return _EXIT_OK
-
-
 def _print_states(states: Mapping[str, str]) -> None:
     """Print one line per target: its state, then its project-relative path.
 
@@ -233,18 +212,20 @@ def _rules(_args: argparse.Namespace) -> int:
     """Print the packaged rules snippet verbatim.
 
     Returns:
-        The exit code of ``_write``.
+        The success exit code.
     """
-    return _write(_packaged(_RULES))
+    sys.stdout.write(_packaged(_RULES))
+    return _EXIT_OK
 
 
 def _guide(_args: argparse.Namespace) -> int:
     """Print the packaged style guide verbatim.
 
     Returns:
-        The exit code of ``_write``.
+        The success exit code.
     """
-    return _write(_packaged(_GUIDE))
+    sys.stdout.write(_packaged(_GUIDE))
+    return _EXIT_OK
 
 
 def _install_skill(args: argparse.Namespace) -> int:
@@ -348,9 +329,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         argv: The arguments after the program name; ``None`` reads them from ``sys.argv``.
 
     Returns:
-        The exit code: 0 on success, 1 on a failure or a failed ``--check``. A usage error
-        raises ``SystemExit`` with code 2, and ``--help`` and ``--version`` raise it with 0.
+        The exit code: 0 on success, 1 on a failure, a failed ``--check`` or a reader of standard
+        output that has gone. A usage error raises ``SystemExit`` with code 2, and ``--help``
+        and ``--version`` raise it with 0.
     """
-    args = _parser().parse_args(argv)
-    handler: _Handler = args.handler
-    return handler(args)
+    try:
+        try:
+            args = _parser().parse_args(argv)
+            handler: _Handler = args.handler
+            return handler(args)
+        finally:
+            # Flush here, so that a closed pipe fails inside the try, not at interpreter exit.
+            sys.stdout.flush()
+    except BrokenPipeError:
+        # A reader such as ``head`` may close the pipe before the output is written. Standard
+        # output is pointed at the null device so that Python's final flush does not fail too.
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        return _EXIT_FAILURE
