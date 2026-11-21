@@ -220,7 +220,7 @@ for sample, pair, zorder in zip(samples.values(), (REFERENCE, TREATED), (4.0, 2.
             ax, edges, counts, sample.size, fill=pair.fill, edge=pair.edge, zorder=zorder
         )
     )
-ax.legend(proxies, list(samples))
+mpp.legend_inches(ax, 3.1, 1.9, loc="upper right", handles=proxies, labels=list(samples))
 ax.set(xlim=(0.0, 6.0), ylim=(0.0, 20.0), xlabel="Distance (\u00c5)", ylabel="Percent of samples")
 ax.yaxis.set_major_locator(MultipleLocator(5.0))
 mpp.assert_figure(fig, warnings_as_errors=True)

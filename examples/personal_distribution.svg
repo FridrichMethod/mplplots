@@ -1363,16 +1363,16 @@ L 220.2 115.2
    </g>
    <g id="legend_1">
     <g id="patch_5">
-     <path d="M 167.8925 18.624219 
-L 177.4925 18.624219 
-L 177.4925 13.024219 
-L 167.8925 13.024219 
+     <path d="M 170.2925 16.224219 
+L 179.8925 16.224219 
+L 179.8925 10.624219 
+L 170.2925 10.624219 
 z
 " style="fill: #cccccc; fill-opacity: 0.5; stroke: #7a7a7a; stroke-linejoin: miter"/>
     </g>
     <g id="text_15">
      <!-- Reference -->
-     <g transform="translate(180.6925 18.624219) scale(0.08 -0.08)">
+     <g transform="translate(183.0925 16.224219) scale(0.08 -0.08)">
       <defs>
        <path id="ArialMT-35" d="M 503 0 
 L 503 4581 
@@ -1419,16 +1419,16 @@ z
      </g>
     </g>
     <g id="patch_6">
-     <path d="M 167.8925 28.132031 
-L 177.4925 28.132031 
-L 177.4925 22.532031 
-L 167.8925 22.532031 
+     <path d="M 170.2925 25.732031 
+L 179.8925 25.732031 
+L 179.8925 20.132031 
+L 170.2925 20.132031 
 z
 " style="fill: #c7e9c0; fill-opacity: 0.5; stroke: #4f9d58; stroke-linejoin: miter"/>
     </g>
     <g id="text_16">
      <!-- Treated -->
-     <g transform="translate(180.6925 28.132031) scale(0.08 -0.08)">
+     <g transform="translate(183.0925 25.732031) scale(0.08 -0.08)">
       <defs>
        <path id="ArialMT-37" d="M 1659 0 
 L 1659 4041 
