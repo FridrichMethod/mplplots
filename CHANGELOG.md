@@ -6,6 +6,41 @@ All notable changes to mplplots are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- The Personal style, `mplplots.styles.Personal`, the default of `mplplots.use()`: Arial Regular
+  8 pt for every text element, 0.8 pt axis lines and ticks with minor ticks, no top or right
+  spines, ASCII hyphen-minus in tick labels, and files saved uncropped at 600 dpi.
+- A style registry in `mplplots.styles`: `DEFAULT_STYLE`, `STYLES`, `style_path`, `use`, and
+  `context` apply any packaged style by name. `mplplots.__version__` gives the installed version.
+- `mplplots.colors`: `ColorPair` (a role's fill and edge colors), `lighten`, `darken`,
+  `relative_luminance`, `contrast_ratio`, `check_palette` (edges darker than fills, unique, and
+  above a contrast floor), and the constants `SCATTER_ALPHA`, `BAND_ALPHA`, `LINE_ALPHA`,
+  `REFERENCE_LINE`, and `SECONDARY_LINESTYLE`.
+- `mplplots.layout`: `grid_inches` lays out a grid of axes from axis lengths, margins, and gaps
+  in inches; `figure_size` and `COLUMN_WIDTHS` give journal column widths; `add_shared_ylabel`
+  and `align_legends_left` finish multi-panel figures. It also exports the inch helpers of
+  `mplplots.utils`.
+- `mplplots.export.save_figure` writes PNG, PDF, and SVG at the figure's exact size, byte for
+  byte reproducibly, with an optional caption file.
+- `mplplots.plots`: `plot_mean_sem`, `plot_distribution`, `significance_stars`, and `box_axes`.
+- `mplplots.check`: `check_figure` reports the ways a figure departs from a style as `Issue`s,
+  under 14 rules (`RULES`) whose expected values come from the style file; `assert_figure`
+  raises `StyleError` on errors and emits a `StyleWarning` per warning.
+- The `mplplots` command (also `python -m mplplots`): `styles`, `rules`, `guide`, and
+  `install-skill`, which copies the packaged agent skill and its style guide into a project for
+  Claude Code and Codex, with `--rules` for the rules snippet and `--check` for stale copies.
+- Every public name of the styles and the toolkit is importable from the top-level package
+  (`import mplplots as mpp`).
+- A Personal gallery: `examples/personal_demo.py` and its five figures in the README.
+
+### Changed
+
+- The README palette images use the Personal style, and the comparison at the top of the README
+  shows the Personal style beside Matplotlib's defaults.
+- The README describes GraphPadPrism as a style inspired by GraphPad Prism whose values are
+  chosen by eye, not measured from Prism's defaults.
+
 ## [0.2.0] - 2026-11-16
 
 First tagged release. Figures made with the GraphPadPrism style look different from 0.1.0:
