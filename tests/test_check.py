@@ -6,6 +6,7 @@ import warnings
 from collections.abc import Callable
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -468,6 +469,30 @@ def test_axes_in_subfigures_are_measured_in_inches() -> None:
         # 0.5 in from the left and 0.4 in from the bottom of a 2 x 2 in subfigure, 1.4 x 1.4 in.
         sub.add_axes((0.25, 0.2, 0.7, 0.7)).plot([0, 1], [0, 1], color="#4f9d58")
     assert not found(fig, "round-inches")
+
+
+def test_fixed_aspect_axes_placed_in_inches_are_on_the_grid() -> None:
+    # A fixed aspect shrinks the drawn axes inside the box that the axes locator places; the
+    # box, not the shrunk axes, is the layout. The colour bar recipe of add_axes_inches.
+    mplplots.use()
+    fig, (ax, cax) = mplplots.grid_inches(
+        1, 2, width=[2.0, 0.1], height=1.5, wspace=0.15, right=0.6, top=0.35
+    )
+    fig.colorbar(ax.imshow(np.arange(21.0).reshape(3, 7)), cax=cax, label="Value")
+    boxed = mplplots.add_axes_inches(fig, 0.6, 0.0, 0.5, 0.3)
+    boxed.set_box_aspect(1.0)
+    boxed.set_axis_off()
+    assert not found(fig, "round-inches")
+    fig.set_size_inches(3.5, 2.5)  # The locators keep every box in inches.
+    assert not found(fig, "round-inches")
+
+
+def test_a_fixed_aspect_axes_placed_off_the_grid_is_reported() -> None:
+    mplplots.use()
+    fig = plt.figure(figsize=(3.0, 2.0))
+    mplplots.add_axes_inches(fig, 0.63, 0.4, 2.2, 1.4).imshow(np.zeros((3, 7)))
+    (issue,) = found(fig, "round-inches")
+    assert "position (0.63, 0.4) in and size 2.2 x 1.4 in" in issue.message
 
 
 def test_an_empty_figure_has_no_issue(monkeypatch: pytest.MonkeyPatch) -> None:

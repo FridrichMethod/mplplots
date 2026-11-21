@@ -19,7 +19,7 @@ import warnings
 from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import matplotlib.collections as mcollections
 import matplotlib.colors as mcolors
@@ -42,6 +42,7 @@ from mplplots.styles import DEFAULT_STYLE, style_path
 
 if TYPE_CHECKING:
     from matplotlib.axes._base import _AxesBase  # Axes, and SecondaryAxis among child axes
+    from matplotlib.backend_bases import RendererBase
     from matplotlib.typing import RcKeyType  # Matplotlib 3.10+
 
 __all__ = [
@@ -625,12 +626,28 @@ def _on_grid(inches: float) -> bool:
     return abs(inches - round(inches / _GRID_INCHES) * _GRID_INCHES) <= _GRID_TOLERANCE_INCHES
 
 
-def _axes_box_inches(ax: _AxesBase, fig: Figure) -> Bbox:
-    """Return the box of an axes in inches from the figure's lower left corner."""
-    # An axes locator places the axes at every draw, so its active position is the one chosen.
-    # Otherwise the original position is, before a fixed aspect shrinks the active one.
-    locator: object = ax.get_axes_locator()
-    position = ax.get_position(original=locator is None)
+def _renderer(fig: Figure) -> RendererBase | None:
+    """Return the renderer that Matplotlib measures a figure's artists with, or ``None``."""
+    # Text.get_window_extent() and Legend.get_window_extent() measure with this renderer too.
+    get_renderer = getattr(fig, "_get_renderer", None)
+    return get_renderer() if callable(get_renderer) else None
+
+
+def _axes_box_inches(ax: _AxesBase, fig: Figure, renderer: RendererBase | None) -> BboxBase:
+    """Return the box an axes is placed in, in inches from the figure's lower left corner.
+
+    At each draw, a fixed aspect (``imshow``, ``set_aspect``, ``set_box_aspect``, polar and 3D
+    axes) shrinks the drawn axes inside this box, so the box, not the shrunk axes, is what the
+    layout chose. An axes locator, as ``add_axes_inches`` and ``grid_inches`` set, returns the
+    box at each draw; without a locator, the original position is the box.
+    """
+    locator = cast("Callable[[_AxesBase, RendererBase], BboxBase] | None", ax.get_axes_locator())
+    if locator is None:
+        position: BboxBase = ax.get_position(original=True)
+    elif renderer is not None:
+        position = locator(ax, renderer)
+    else:
+        position = ax.get_position(original=False)
     parent = ax.get_figure()
     to_pixels = parent.transSubfigure if parent is not None else fig.transFigure
     return position.transformed(to_pixels + fig.dpi_scale_trans.inverted())
@@ -641,8 +658,9 @@ def _check_round_inches(context: _Context) -> Iterator[tuple[str, str]]:
     width, height = context.fig.get_size_inches()
     if not (_on_grid(width) and _on_grid(height)):
         yield "figure", f"size {width:.4g} x {height:.4g} in is not a multiple of 0.05 in"
+    renderer = _renderer(context.fig)
     for owner, ax in context.scene.axes:
-        box = _axes_box_inches(ax, context.fig)
+        box = _axes_box_inches(ax, context.fig, renderer)
         if not all(_on_grid(value) for value in (box.x0, box.y0, box.width, box.height)):
             yield (
                 owner,
