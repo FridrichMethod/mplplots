@@ -208,6 +208,32 @@ def test_assert_figure_warns_or_raises_on_warnings(clean: tuple[Figure, Axes]) -
         assert_figure(fig, warnings_as_errors=True)
 
 
+def test_assert_figure_warns_once_per_warning_and_raises_only_for_errors(
+    clean: tuple[Figure, Axes], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(check, "_installed", lambda _family: True)
+    fig, ax = clean
+    ax.plot([0, 1], [1, 0])
+    ax.plot([0, 1], [0.5, 0.5])
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        assert_figure(fig)
+    messages = [str(w.message) for w in caught if issubclass(w.category, StyleWarning)]
+    assert len(messages) == 2
+    assert all(message.startswith("default-color: ") for message in messages)
+    ax.set_title("Title", fontsize=10)
+    with pytest.raises(StyleError) as raised:
+        assert_figure(fig)
+    assert [line.split(": ", 1)[0] for line in str(raised.value).splitlines()] == ["font-size"]
+    with pytest.raises(StyleError) as raised:
+        assert_figure(fig, warnings_as_errors=True)
+    assert [line.split(": ", 1)[0] for line in str(raised.value).splitlines()] == [
+        "font-size",
+        "default-color",
+        "default-color",
+    ]
+
+
 # Cases beyond the rule table: where a rule could misfire, and more unusual figures.
 
 
@@ -316,6 +342,31 @@ def test_tick_labels_outside_the_view_are_not_inspected() -> None:
     # The locator proposes a tick above the view whose label would cross the top edge.
     assert max(ax.yaxis.get_majorticklocs()) > 0.95
     assert not found(fig, "off-canvas")
+
+
+@pytest.mark.parametrize(("width", "reported"), [(3.0009, False), (3.0011, True)])
+def test_round_inches_tolerates_a_thousandth_of_an_inch(
+    clean: tuple[Figure, Axes], width: float, reported: bool
+) -> None:
+    fig, _ = clean
+    fig.set_size_inches(width, 2.0)
+    assert any(issue.message.startswith("figure: ") for issue in found(fig, "round-inches")) is (
+        reported
+    )
+
+
+@pytest.mark.parametrize(("overhang", "reported"), [(0.4, False), (0.6, True)])
+def test_off_canvas_tolerates_half_a_pixel(
+    clean: tuple[Figure, Axes], overhang: float, reported: bool
+) -> None:
+    fig, _ = clean
+    text = fig.text(0.5, 0.5, "Edge")
+    fig.draw_without_rendering()
+    # Shift the text so that its left edge lies `overhang` pixels left of the canvas.
+    text.set_x(0.5 - (text.get_window_extent().x0 + overhang) / fig.bbox.width)
+    fig.draw_without_rendering()
+    assert text.get_window_extent().x0 == pytest.approx(-overhang, abs=1e-6)
+    assert bool(found(fig, "off-canvas")) is reported
 
 
 def test_a_legend_off_the_canvas_is_reported(clean: tuple[Figure, Axes]) -> None:

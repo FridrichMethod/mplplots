@@ -173,7 +173,7 @@ def test_align_legends_left_in_a_nested_subfigure_does_not_warn() -> None:
 
 
 def test_layout_reexports_the_inch_helpers() -> None:
-    for name in ("add_axes_inches", "legend_inches", "suptitle_inches"):
+    for name in ("LegendCorner", "add_axes_inches", "legend_inches", "suptitle_inches"):
         assert getattr(layout, name) is getattr(utils, name)
 
 

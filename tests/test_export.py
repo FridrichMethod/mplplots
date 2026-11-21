@@ -48,9 +48,27 @@ def test_file_has_the_figure_size_even_when_rc_crops(tmp_path: Path) -> None:
     assert plt.imread(png).shape[:2] == (200, 300)
 
 
+def test_vector_files_have_the_figure_size_even_when_rc_crops(tmp_path: Path) -> None:
+    # A 3 x 2 in figure is 216 x 144 pt.
+    with plt.rc_context({"savefig.bbox": "tight", "savefig.pad_inches": 0.5}):
+        pdf, svg = save_figure(make_figure(), tmp_path / "f", formats=["pdf", "svg"])
+    assert b"/MediaBox [ 0 0 216 144 ]" in pdf.read_bytes()
+    assert 'width="216pt" height="144pt"' in svg.read_text()
+
+
 def test_crop_trims_to_the_drawn_content(tmp_path: Path) -> None:
     (png,) = save_figure(make_figure(), tmp_path / "f", formats=["png"], dpi=100, crop=True)
     assert plt.imread(png).shape[:2] != (200, 300)
+
+
+def test_crop_keeps_a_margin_of_two_hundredths_of_an_inch(tmp_path: Path) -> None:
+    fig = make_figure()
+    fig.draw_without_rendering()
+    tight = fig.get_tightbbox()  # In inches.
+    (png,) = save_figure(fig, tmp_path / "f", formats=["png"], dpi=100, crop=True)
+    height, width = plt.imread(png).shape[:2]
+    assert width == pytest.approx((tight.width + 2 * 0.02) * 100, abs=1)
+    assert height == pytest.approx((tight.height + 2 * 0.02) * 100, abs=1)
 
 
 def test_dpi_defaults_to_rcparams(tmp_path: Path) -> None:
