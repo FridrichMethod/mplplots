@@ -84,6 +84,13 @@ def test_output_is_deterministic(tmp_path: Path) -> None:
         assert one.read_bytes() == two.read_bytes(), one.suffix
 
 
+def test_other_raster_formats_are_deterministic(tmp_path: Path) -> None:
+    first = save_figure(make_figure(), tmp_path / "a", formats=["tif", "jpg"])
+    second = save_figure(make_figure(), tmp_path / "b", formats=["tif", "jpg"])
+    for one, two in zip(first, second, strict=True):
+        assert one.read_bytes() == two.read_bytes(), one.suffix
+
+
 def test_svg_text_is_paths_unless_editable(tmp_path: Path) -> None:
     (paths_svg,) = save_figure(make_figure(), tmp_path / "paths", formats=["svg"])
     assert "<text" not in paths_svg.read_text()

@@ -2,7 +2,7 @@
 
 ``save_figure`` writes one file per format next to each other, uncropped unless asked. SVG and
 PDF are written with fixed metadata, so saving the same figure again gives the same PNG, PDF and
-SVG bytes.
+SVG bytes, as it does for the other raster formats. SVGZ, PS and EPS record the time of the save.
 """
 
 from collections.abc import Sequence
@@ -50,7 +50,9 @@ def save_figure(
         fig: The figure to save.
         path: The output path without an extension, for example ``"figures/fig01"``.
         formats: The file formats to write, each one ``Figure.savefig`` can write, such as
-            ``"png"``, ``"pdf"`` or ``"svg"``.
+            ``"png"``, ``"pdf"`` or ``"svg"``. PNG, PDF, SVG and the other raster formats
+            (TIFF, JPEG, WebP, ...) are reproducible; SVGZ, PS and EPS record the time of the
+            save, so their bytes differ from one save to the next.
         dpi: The resolution of raster output, in dots per inch. ``None`` uses
             ``rcParams["savefig.dpi"]``, which is 600 under every packaged style.
         caption: A caption draft. When it is not blank, it is written, stripped and
