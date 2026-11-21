@@ -516,8 +516,8 @@ paths = mpp.save_figure(fig, "figures/fig01", caption="Signal after the pulse.")
 - Raster files use `rcParams["savefig.dpi"]` (600 under both styles) unless you pass `dpi`.
 - Output is reproducible: the PDF and SVG carry no date, so saving the same figure again writes the
   same bytes, and a file that changes under version control is a figure that changed. The raster
-  formats (PNG, TIFF, JPEG, WebP, ...) are reproducible too; SVGZ, PS and EPS, which `formats`
-  also accepts, record the time of the save.
+  formats (PNG, TIFF, JPEG, WebP, ...) and PGF are reproducible too; SVGZ, PS and EPS, which
+  `formats` also accepts, record the time of the save.
 - SVG stores text as paths, so it looks the same on a machine without Arial;
   `editable_svg_text=True` keeps it as text. The PDF keeps text editable (TrueType).
 - A non-empty `caption` is written to `<path>_caption.txt`. The figure is closed afterwards unless

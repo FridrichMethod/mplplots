@@ -1,8 +1,8 @@
 """Saving figures as PNG, PDF and SVG at the exact figure size, reproducibly.
 
 ``save_figure`` writes one file per format next to each other, uncropped unless asked. SVG and
-PDF are written with fixed metadata, so saving the same figure again gives the same PNG, PDF and
-SVG bytes, as it does for the other raster formats. SVGZ, PS and EPS record the time of the save.
+PDF are written with fixed metadata, so saving the same figure again gives the same bytes, as it
+does for PGF and for the raster formats such as PNG. SVGZ, PS and EPS record the time of the save.
 """
 
 from collections.abc import Sequence
@@ -50,8 +50,8 @@ def save_figure(
         fig: The figure to save.
         path: The output path without an extension, for example ``"figures/fig01"``.
         formats: The file formats to write, each one ``Figure.savefig`` can write, such as
-            ``"png"``, ``"pdf"`` or ``"svg"``. PNG, PDF, SVG and the other raster formats
-            (TIFF, JPEG, WebP, ...) are reproducible; SVGZ, PS and EPS record the time of the
+            ``"png"``, ``"pdf"`` or ``"svg"``. PDF, SVG, PGF and the raster formats (PNG,
+            TIFF, JPEG, WebP, ...) are reproducible; SVGZ, PS and EPS record the time of the
             save, so their bytes differ from one save to the next.
         dpi: The resolution of raster output, in dots per inch. ``None`` uses
             ``rcParams["savefig.dpi"]``, which is 600 under every packaged style.
@@ -105,7 +105,11 @@ def save_figure(
     }):
         for fmt in formats:
             target = base.with_name(f"{base.name}.{fmt}")
-            fig.savefig(target, format=fmt, dpi=dpi, metadata=_METADATA.get(fmt), **crop_kwargs)
+            # Only formats with fixed metadata get the keyword: the pgf printer rejects it.
+            metadata_kwargs: dict[str, Any] = (
+                {"metadata": _METADATA[fmt]} if fmt in _METADATA else {}
+            )
+            fig.savefig(target, format=fmt, dpi=dpi, **metadata_kwargs, **crop_kwargs)
             written.append(target)
 
     if caption is not None and caption.strip():

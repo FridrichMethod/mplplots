@@ -118,6 +118,22 @@ def test_writes_every_format_from_a_single_format_canvas(tmp_path: Path) -> None
     assert all(path.stat().st_size > 0 for path in paths)
 
 
+def test_writes_pgf_reproducibly(tmp_path: Path) -> None:
+    # The pgf printer takes no metadata. A figure without text needs no LaTeX to save as pgf.
+    def text_free_figure() -> Figure:
+        fig = plt.figure(figsize=(3, 2))
+        ax = fig.add_axes((0.2, 0.25, 0.7, 0.65))
+        ax.plot([0, 1], [0, 1])
+        ax.set_axis_off()
+        return fig
+
+    first = save_figure(text_free_figure(), tmp_path / "a", formats=["png", "pgf"])
+    second = save_figure(text_free_figure(), tmp_path / "b", formats=["pgf"])
+    assert [path.name for path in first] == ["a.png", "a.pgf"]
+    assert "\\begin{pgfpicture}" in first[1].read_text()
+    assert first[1].read_bytes() == second[0].read_bytes()
+
+
 def test_caption_sidecar(tmp_path: Path) -> None:
     paths = save_figure(make_figure(), tmp_path / "f", formats=["png"], caption="  A caption.\n\n")
     assert [path.name for path in paths] == ["f.png", "f_caption.txt"]
