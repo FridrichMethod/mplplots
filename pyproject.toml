@@ -24,6 +24,9 @@ dev = [
     "ruff",
 ]
 
+[project.scripts]
+mplplots = "mplplots.cli:main"
+
 [tool.setuptools]
 include-package-data = true
 package-dir = { "" = "src" }
@@ -32,7 +35,12 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-mplplots = ["styles/*.mplstyle"]
+mplplots = [
+    "styles/*.mplstyle",
+    "data/rules/*.md",
+    "data/skills/*/SKILL.md",
+    "data/skills/*/references/*.md",
+]
 
 [tool.ruff]
 target-version = "py312"
