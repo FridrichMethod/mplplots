@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from _common import STYLE, require_arial, save
+from _common import PRISM, require_arial, save
 from matplotlib import ticker
 
 import mplplots.palettes as palettes
@@ -25,7 +25,7 @@ ax.set_ylabel("$y$")
 ax.legend()
 save(fig, "default_style")
 
-plt.style.use(STYLE)
+plt.style.use(PRISM)
 
 fig = plt.figure(figsize=(3, 2.25))
 ax = add_axes_inches(fig, 0.5, 0.4, 2.25, 1.5)

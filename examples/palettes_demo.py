@@ -1,10 +1,10 @@
-"""Demonstrate mplplots color palettes with the GraphPadPrism style."""
+"""Demonstrate mplplots color palettes with the Personal style."""
 
 from collections.abc import Mapping, Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
-from _common import STYLE, require_arial, save
+from _common import PERSONAL, require_arial, save
 from matplotlib.figure import Figure
 
 import mplplots.palettes as palettes
@@ -20,7 +20,7 @@ from mplplots.palettes import (
 from mplplots.utils import add_axes_inches, auto_ticks, legend_inches, suptitle_inches
 
 require_arial()
-plt.style.use(STYLE)
+plt.style.use(PERSONAL)
 
 
 def swatches(

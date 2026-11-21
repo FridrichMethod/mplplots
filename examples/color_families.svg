@@ -96,7 +96,7 @@ z
    <g id="matplotlib.axis_2">
     <g id="text_1">
      <!-- ORANGES -->
-     <g transform="translate(9.99125 124.472578) scale(0.08 -0.08)">
+     <g transform="translate(10.99125 124.472578) scale(0.08 -0.08)">
       <defs>
        <path id="ArialMT-32" d="M 309 2231 
 Q 309 3372 921 4017 
@@ -352,7 +352,7 @@ z
    <g id="matplotlib.axis_4">
     <g id="text_2">
      <!-- PURPLES -->
-     <g transform="translate(12.65125 102.870312) scale(0.08 -0.08)">
+     <g transform="translate(13.65125 102.870312) scale(0.08 -0.08)">
       <defs>
        <path id="ArialMT-33" d="M 494 0 
 L 494 4581 
@@ -488,7 +488,7 @@ z
    <g id="matplotlib.axis_6">
     <g id="text_3">
      <!-- REDS -->
-     <g transform="translate(27.7725 81.270312) scale(0.08 -0.08)">
+     <g transform="translate(28.7725 81.270312) scale(0.08 -0.08)">
       <defs>
        <path id="ArialMT-27" d="M 494 0 
 L 494 4581 
@@ -595,7 +595,7 @@ z
    <g id="matplotlib.axis_8">
     <g id="text_4">
      <!-- GREENS -->
-     <g transform="translate(16.21375 59.670312) scale(0.08 -0.08)">
+     <g transform="translate(17.21375 59.670312) scale(0.08 -0.08)">
       <use xlink:href="#ArialMT-2a"/>
       <use xlink:href="#ArialMT-35" transform="translate(77.78125 0)"/>
       <use xlink:href="#ArialMT-28" transform="translate(150 0)"/>
@@ -675,7 +675,7 @@ z
    <g id="matplotlib.axis_10">
     <g id="text_5">
      <!-- BLUES -->
-     <g transform="translate(23.765 38.070312) scale(0.08 -0.08)">
+     <g transform="translate(24.765 38.070312) scale(0.08 -0.08)">
       <defs>
        <path id="ArialMT-25" d="M 469 0 
 L 469 4581 
