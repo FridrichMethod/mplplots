@@ -7,6 +7,7 @@ is saved. The data are seeded random numbers, so a rerun writes the same files.
 
 import itertools
 from statistics import NormalDist
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -38,7 +39,7 @@ FIT_WIDTH = 1.4
 BAR_EDGE_WIDTH = 1.0
 ERROR_BAR_WIDTH = 0.8
 # The scatter recipe (L7).
-DOTS = {"s": 22, "linewidths": 0.5, "alpha": mpp.SCATTER_ALPHA}
+DOTS: dict[str, Any] = {"s": 22, "linewidths": 0.5, "alpha": mpp.SCATTER_ALPHA}
 
 
 def bca_interval(
@@ -250,7 +251,8 @@ q_values = dict(
 
 BAR_WIDTH = 0.36
 fig, (ax,) = mpp.grid_inches(width=2.0, height=1.5, right=1.0)
-hollow = {"s": 10, "facecolor": "white", "linewidths": 0.5, "zorder": 3}  # replicates (E4)
+# The individual replicates, as hollow dots (E4).
+hollow: dict[str, Any] = {"s": 10, "facecolor": "white", "linewidths": 0.5, "zorder": 3}
 for position, (group, pair) in enumerate(groups.items()):
     tops = []
     for offset, state, face in ((-0.2, "Resting", pair.fill), (0.2, "Stimulated", "none")):
