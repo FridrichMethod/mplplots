@@ -1,12 +1,25 @@
 """mplplots: Visual styling helpers for Matplotlib/Seaborn."""
 
+import importlib.metadata
 from importlib.resources import files
 from pathlib import Path
 
 from matplotlib import style
 
-__all__ = ["STYLE_PATH", "prism_style"]
+from mplplots.styles import DEFAULT_STYLE, STYLES, context, style_path, use
 
+__all__ = [
+    "DEFAULT_STYLE",
+    "STYLES",
+    "STYLE_PATH",
+    "__version__",
+    "context",
+    "prism_style",
+    "style_path",
+    "use",
+]
+
+__version__: str = importlib.metadata.version("mplplots")
 
 STYLE_PATH = Path(str(files(__package__).joinpath("styles", "GraphPadPrism.mplstyle")))
 

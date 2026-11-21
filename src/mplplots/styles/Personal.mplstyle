@@ -1,0 +1,96 @@
+# Personal: the default mplplots style, for publication figures.
+# Every text element is Arial Regular 8 pt: the base font, axis labels, axes and figure
+# titles, figure-level axis labels, tick labels, and the legend and its title. Axis lines and
+# major ticks are 0.8 pt, minor ticks are on, and the top and right spines are hidden.
+
+axes.autolimit_mode: round_numbers
+axes.labelpad: 3
+axes.labelsize: 8
+axes.labelweight: normal
+axes.linewidth: 0.8
+axes.spines.right: False
+axes.spines.top: False
+axes.titlesize: 8
+axes.titleweight: normal
+# Negative tick labels use the ASCII hyphen-minus, the character hand-written text uses.
+axes.unicode_minus: False
+
+errorbar.capsize: 3
+
+# Screen resolution; saved files use savefig.dpi. The style sets no figure size and does not
+# crop saved figures (no savefig.bbox), so a saved file has exactly the figure's size.
+figure.dpi: 150
+figure.frameon: False
+figure.labelsize: 8
+figure.labelweight: normal
+figure.titlesize: 8
+figure.titleweight: normal
+
+# Matplotlib's default cursive fonts (used for \mathcal), plus DejaVu Sans, the font
+# Matplotlib falls back to anyway, so that a missing cursive font does not warn.
+font.cursive: Apple Chancery, Textile, Zapf Chancery, Sand, Script MT, Felipa, Comic Neue, Comic Sans MS, DejaVu Sans, cursive
+# Use the sans-serif list below even when a matplotlibrc sets another font.family.
+font.family: sans-serif
+# Arial is used whenever it is installed. Otherwise fall back, without warnings, to
+# Helvetica or an Arial metric-compatible clone, and finally to DejaVu Sans, which
+# ships with Matplotlib and therefore always resolves. To get Arial on a machine
+# that lacks it, register the font files with mplplots.utils.add_custom_fonts().
+font.sans-serif: Arial, Helvetica, Liberation Sans, Arimo, Nimbus Sans, DejaVu Sans, sans-serif
+font.size: 8
+font.weight: normal
+
+image.cmap: viridis
+
+legend.borderaxespad: 0.3
+legend.columnspacing: 1.0
+legend.fontsize: 8
+legend.frameon: False
+legend.handlelength: 1.2
+legend.handletextpad: 0.4
+legend.labelspacing: 0.25
+legend.loc: upper right
+legend.title_fontsize: 8
+
+# A bare plot call draws a 2 pt line; give each curve its width when several share a panel.
+# Markers are black unless the call sets their face and edge colours.
+lines.linewidth: 2.0
+lines.markeredgecolor: black
+lines.markerfacecolor: black
+lines.markersize: 3.0
+
+# "sans" resolves through font.sans-serif, so math uses the same font as the text
+# (Arial when installed).
+mathtext.bf: sans:bold
+mathtext.bfit: sans:italic:bold
+mathtext.fontset: custom
+mathtext.it: sans:italic
+mathtext.rm: sans
+mathtext.sf: sans
+
+patch.linewidth: 0.5
+
+# Embed fonts in PDF and PostScript as TrueType (Type 42) instead of Type 3, so the text
+# stays editable (in Illustrator, for example) and passes journal checks that reject
+# Type 3 fonts.
+pdf.fonttype: 42
+ps.fonttype: 42
+
+savefig.dpi: 600
+savefig.transparent: False
+
+# SVG stores glyphs as paths, so it looks the same on machines without Arial.
+svg.fonttype: path
+
+xtick.labelsize: 8
+xtick.major.size: 3.5
+xtick.major.width: 0.8
+xtick.minor.size: 2.0
+xtick.minor.visible: True
+xtick.minor.width: 0.6
+
+ytick.labelsize: 8
+ytick.major.size: 3.5
+ytick.major.width: 0.8
+ytick.minor.size: 2.0
+ytick.minor.visible: True
+ytick.minor.width: 0.6
