@@ -6,6 +6,14 @@ All notable changes to mplplots are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-22
+
+The GraphPadPrism style reproduces the default graphs of GraphPad Prism 11, measured from the
+files Prism exports, and the Personal style draws one minor tick between major ticks. The style
+guide asks for `auto_ticks` on every panel, the t interval for every mean, and a palette only
+for figures that draw named colors. The README is a short introduction, and the reference
+documentation lives in `docs/`. Figures in both styles look different from 0.4.0.
+
 ### Changed
 
 - GraphPadPrism style: reproduces the default graphs of GraphPad Prism 11, with every value that
@@ -164,7 +172,8 @@ Untagged initial version: the GraphPadPrism style (`STYLE_PATH`, `prism_style`),
 in `mplplots.palettes` (`PALETTES`, `set_palette`, `get_colors`), `auto_ticks`, and
 `add_custom_fonts`.
 
-[Unreleased]: https://github.com/FridrichMethod/mplplots/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/FridrichMethod/mplplots/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/FridrichMethod/mplplots/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/FridrichMethod/mplplots/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/FridrichMethod/mplplots/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/FridrichMethod/mplplots/releases/tag/v0.2.0

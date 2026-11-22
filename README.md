@@ -54,7 +54,7 @@ pip install git+https://github.com/FridrichMethod/mplplots.git
 
 mplplots needs Python 3.12 or newer and Matplotlib 3.8 or newer. It is not on PyPI; to pin a
 release, install its tag:
-`pip install git+https://github.com/FridrichMethod/mplplots.git@v0.4.0`.
+`pip install git+https://github.com/FridrichMethod/mplplots.git@v0.5.0`.
 [`CHANGELOG.md`](CHANGELOG.md) lists what each release changed. Install Arial for final figures;
 without it the styles fall back to a similar font without warnings (see
 [Fonts](docs/styles.md#fonts)).
