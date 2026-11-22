@@ -136,3 +136,10 @@ Do not commit or push if either fails. Fix issues first.
   and the rules snippet when it changes the workflow.
 - `tests/test_api.py` runs every `python` block in the style guide and the skill, so each block
   must run as written.
+- `evals/evals.json` holds the eval cases of the skill: a request, its input files and what a
+  good result looks like, including one request the skill must not be applied to.
+  `python evals/cases.py setup <case> <dir>` builds a throwaway project with the skill installed
+  and prints the message for a fresh agent (`--no-skill` gives the baseline), and
+  `python evals/cases.py score <dir>` runs what the agent wrote under `check_figure`. After a
+  change to the skill, the rules snippet or the workflow of the style guide, run the cases with
+  fresh agents and read their figures.

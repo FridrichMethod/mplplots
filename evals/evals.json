@@ -1,0 +1,69 @@
+{
+  "skill_name": "mplplots",
+  "evals": [
+    {
+      "id": "timecourse",
+      "prompt": "data/kinetics.csv has the signal of three conditions over time, four replicates each (columns: time_min, condition, replicate, signal). Plot the mean and SEM of each condition over time for the paper and save it under figures/.",
+      "files": ["data/kinetics.csv"],
+      "expected_output": "A script that applies the Personal style, takes colors from a ColorPair palette, lays the panel out with grid_inches, draws each condition with plot_mean_sem, checks the figure with assert_figure and saves it with save_figure and a caption that names the SEM and n.",
+      "assertions": [
+        "mpp.use() runs before the figure is created",
+        "colors come from ColorPair roles that pass check_palette, not from Matplotlib's cycle",
+        "the layout uses grid_inches or add_axes_inches, with no tight_layout or constrained layout",
+        "no fontsize or fontweight argument appears",
+        "assert_figure is called, and every ignore or allow_* argument has a reason beside it",
+        "save_figure writes PNG, PDF and SVG and a caption that says the band is 1 SEM and gives n",
+        "check_figure on each saved figure reports no error"
+      ]
+    },
+    {
+      "id": "embedding-heatmap",
+      "prompt": "Make a two-panel figure at double-column width for the paper: left, the embedding in data/embedding.csv (columns x, y, score; 20,000 cells) colored by score with a color bar; right, the sample correlation matrix in data/correlation.csv as a heat map with the sample names on both axes. Save it under figures/.",
+      "files": ["data/embedding.csv", "data/correlation.csv"],
+      "expected_output": "A script whose color bars sit in their own axes placed in inches with a 0.6 pt outline, whose scatter is rasterized, and whose twelve sample names stay at the style's size without overlapping.",
+      "assertions": [
+        "each color bar is drawn into a cax placed in inches, not with fig.colorbar(ax=...)",
+        "each color bar outline is 0.6 pt wide",
+        "the 20,000-point scatter is drawn with rasterized=True and is not subsampled",
+        "the sample names keep the style's font size",
+        "check_figure on each saved figure reports no error and no text-overlap warning"
+      ]
+    },
+    {
+      "id": "restyle",
+      "prompt": "Restyle plot_expression.py to our figure style for the paper. Keep what it shows.",
+      "files": ["plot_expression.py"],
+      "expected_output": "The script no longer calls sns.set_theme or tight_layout, passes no font size or weight, has no baked-in panel letters, and saves with save_figure after assert_figure; the reply says that panel letters are added at manuscript assembly.",
+      "assertions": [
+        "sns.set_theme, sns.set_style, tight_layout and bbox_inches='tight' are gone",
+        "no fontsize, labelsize or fontweight argument remains",
+        "the panel letters A, B, C are removed and the reply says where they are added instead",
+        "bars have a fill and an explicit edge from a ColorPair palette",
+        "the three panels show the same data as before",
+        "check_figure on each saved figure reports no error"
+      ]
+    },
+    {
+      "id": "pressure-shrink-text",
+      "prompt": "The submission closes in an hour. In my draft of the kinetics figure (data/kinetics.csv: time_min, condition, replicate, signal) the legend sits on top of the curves and the long condition names do not fit. Just make it fit in a single column, a smaller font is fine. Save it under figures/.",
+      "files": ["data/kinetics.csv"],
+      "expected_output": "The figure fits a single column with every text at the style's size: the legend moves beside or above the data, or the axes change, and the reply says that the text stays at 8 pt and why.",
+      "assertions": [
+        "no fontsize argument appears and font-size is not ignored or allowed away",
+        "the legend does not cover the curves in the saved PNG",
+        "the figure is 3.5 in wide",
+        "check_figure on each saved figure reports no error"
+      ]
+    },
+    {
+      "id": "not-for-plotly",
+      "prompt": "Build an interactive HTML view of data/kinetics.csv with Plotly for the lab meeting, with a dropdown to pick the condition.",
+      "files": ["data/kinetics.csv"],
+      "expected_output": "A Plotly script. The mplplots style and toolkit are not applied to it.",
+      "assertions": [
+        "the script uses plotly and does not import mplplots or matplotlib",
+        "the reply does not claim that the figure follows the Personal style"
+      ]
+    }
+  ]
+}
