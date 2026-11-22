@@ -99,7 +99,7 @@ def write_correlation(path: Path) -> None:
     profiles = rng.normal(0.0, 1.0, (12, 200)) + np.repeat(
         rng.normal(0.0, 1.5, (6, 200)), 2, axis=0
     )
-    matrix = np.corrcoef(profiles)
+    matrix: list[list[float]] = np.atleast_2d(np.corrcoef(profiles)).tolist()
     rows = ["sample," + ",".join(names)]
     rows += [
         name + "," + ",".join(f"{value:.4f}" for value in row) for name, row in zip(names, matrix)
