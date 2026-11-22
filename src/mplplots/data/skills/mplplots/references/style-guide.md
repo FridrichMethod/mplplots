@@ -323,6 +323,8 @@ assert [path.name for path in paths][-1] == "signal_caption.txt"  # after the PN
 
 `mpp.check_figure(fig)` returns an `Issue(rule, severity, message)` per problem among the drawn
 artists, with the expected values read from the style file (`style=` names another style).
+`font-size` and `font-weight` accept every text size and weight the style sets for a kind of
+text (in the Personal style, 8 pt and regular for all of them; T1).
 `mpp.assert_figure(fig)` raises `StyleError` listing the errors and emits a `StyleWarning` per
 warning (`warnings_as_errors=True` fails on those too). Run one before every save, fix what it
 reports, and pass `ignore`, `allow_font_sizes` or `allow_font_weights` (a bold callout that a

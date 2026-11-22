@@ -4,6 +4,7 @@ import subprocess
 import sys
 import warnings
 from collections.abc import Callable
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -160,6 +161,87 @@ def test_the_expected_values_follow_the_named_style() -> None:
     ax.plot([0, 1], [0, 1], color="#4f9d58")
     assert "spine-width" not in rules(check_figure(fig, style="GraphPadPrism"))
     assert "spine-width" in rules(check_figure(fig, style="Personal"))
+
+
+def test_personal_messages_name_its_one_size_and_regular(clean: tuple[Figure, Axes]) -> None:
+    fig, ax = clean
+    ax.set_title("Title", fontsize=10)
+    ax.set_xlabel("Time (s)", fontweight="bold")
+    (size,) = found(fig, "font-size")
+    assert size.message == "axes 0 title 'Title': font size 10 pt, expected 8 pt"
+    (weight,) = found(fig, "font-weight")
+    assert weight.message == "axes 0 x label 'Time (s)': font weight bold, expected regular"
+
+
+def test_text_sizes_and_weights_come_from_the_style_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    style = tmp_path / "Sparse.mplstyle"
+    style.write_text(
+        "font.size: 10\naxes.titlesize: x-large\naxes.titleweight: bold\nxtick.labelsize: 9\n"
+    )
+    monkeypatch.setattr(check, "style_path", lambda _name: style)
+    expected = check._Expected.read("Sparse")
+    # A relative size resolves against the style's font.size, and a key the style omits takes
+    # Matplotlib's default: "medium" axis labels, y tick labels and legend (10 pt), a "large"
+    # figure title and figure labels (12 pt), and a legend title of font.size, all regular.
+    assert expected.font_sizes == pytest.approx((9.0, 10.0, 12.0, 14.4))
+    assert expected.font_weights == {400, 700}
+    mplplots.use()
+    fig = plt.figure(figsize=(3.0, 2.0))
+    fig.text(0.1, 0.5, "Note", fontsize=20, fontweight="light")
+    (size,) = found(fig, "font-size", style="Sparse")
+    assert size.message == "figure text 'Note': font size 20 pt, expected 9, 10, 12 or 14.4 pt"
+    (weight,) = found(fig, "font-weight", style="Sparse")
+    assert weight.message == "figure text 'Note': font weight light, expected regular or bold"
+
+
+# Every rcParam that gives a kind of text its size or weight, listed here rather than read from
+# check.py, so that a key missing there fails its case below.
+TEXT_SIZE_KEYS = (
+    "font.size",
+    "axes.labelsize",
+    "axes.titlesize",
+    "xtick.labelsize",
+    "ytick.labelsize",
+    "legend.fontsize",
+    "legend.title_fontsize",
+    "figure.titlesize",
+    "figure.labelsize",
+)
+TEXT_WEIGHT_KEYS = (
+    "font.weight",
+    "axes.labelweight",
+    "axes.titleweight",
+    "figure.titleweight",
+    "figure.labelweight",
+)
+
+
+@pytest.mark.parametrize("key", TEXT_SIZE_KEYS)
+def test_each_text_size_key_is_read(
+    key: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Every other size is 9 pt, so 13.5 pt can only come from the key under test.
+    style = tmp_path / "Sizes.mplstyle"
+    style.write_text(
+        "".join(f"{other}: {13.5 if other == key else 9}\n" for other in TEXT_SIZE_KEYS)
+    )
+    monkeypatch.setattr(check, "style_path", lambda _name: style)
+    assert check._Expected.read("Sizes").font_sizes == (9.0, 13.5)
+
+
+@pytest.mark.parametrize("key", TEXT_WEIGHT_KEYS)
+def test_each_text_weight_key_is_read(
+    key: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Every other weight is regular, so semibold can only come from the key under test.
+    style = tmp_path / "Weights.mplstyle"
+    style.write_text(
+        "".join(f"{other}: {600 if other == key else 'normal'}\n" for other in TEXT_WEIGHT_KEYS)
+    )
+    monkeypatch.setattr(check, "style_path", lambda _name: style)
+    assert check._Expected.read("Weights").font_weights == {400, 600}
 
 
 def test_font_fallback_is_one_warning(

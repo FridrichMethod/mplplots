@@ -6,6 +6,14 @@ All notable changes to mplplots are recorded here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- `check_figure` and `assert_figure` read every text size and weight from the style file: the
+  `font-size` rule accepts each size the style sets for a kind of text (`font.size`,
+  `axes.labelsize`, `axes.titlesize`, the tick label, legend, and figure text sizes), and
+  `font-weight` each weight it sets, in place of `font.size` and regular alone. Both packaged
+  styles check as before.
+
 ### Fixed
 
 - `mpp.use`, `mpp.context`, and `prism_style` first return every setting that any packaged style

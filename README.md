@@ -534,10 +534,11 @@ paths = mpp.save_figure(fig, "figures/fig01", caption="Signal after the pulse.")
 ## Checking a figure
 
 `mplplots.check` turns the mechanical rules of the style guide into code. `check_figure(fig)`
-returns a list of `Issue(rule, severity, message)`, reading the expected values (font size, font
-list, spine width, hidden spines, legend frame, minus sign) from the style file, so it follows the
-style instead of restating it. `assert_figure(fig)` raises `StyleError` listing every error and
-emits one `StyleWarning` per warning; `warnings_as_errors=True` fails on warnings too.
+returns a list of `Issue(rule, severity, message)`, reading the expected values (text sizes and
+weights, font list, spine width, hidden spines, legend frame, minus sign) from the style file, so
+it follows the style instead of restating it. `assert_figure(fig)` raises `StyleError` listing
+every error and emits one `StyleWarning` per warning; `warnings_as_errors=True` fails on warnings
+too.
 
 ```python
 import numpy as np
@@ -557,16 +558,24 @@ mpp.assert_figure(fig, ignore={"open-spines"})
 ```
 
 Both take `style=` to check against another packaged style (`"Personal"` by default), `ignore=`
-to skip rule ids, `allow_font_sizes=` for sizes accepted besides the style's `font.size`, and
-`allow_font_weights=` for weights accepted besides regular, such as a bold callout. Pass any of
-the three only with the reason in a comment. They inspect only drawn artists and handle polar and
-3D axes, colorbars, twin axes, and log scales. `mplplots.RULES` maps each rule id to a one-line
-description.
+to skip rule ids, `allow_font_sizes=` for sizes accepted besides the style's text sizes, and
+`allow_font_weights=` for weights accepted besides the style's weights, such as a bold callout in
+the Personal style. Pass any of the three only with the reason in a comment. They inspect only
+drawn artists and handle polar and 3D axes, colorbars, twin axes, and log scales.
+`mplplots.RULES` maps each rule id to a one-line description.
+
+The style's text sizes are the sizes it sets for each kind of text: `font.size`,
+`axes.labelsize`, `axes.titlesize`, `xtick.labelsize`, `ytick.labelsize`, `legend.fontsize`,
+`legend.title_fontsize`, `figure.titlesize`, and `figure.labelsize`, with a relative size such as
+`"large"` taken against `font.size`. Its weights are those of `font.weight`, `axes.labelweight`,
+`axes.titleweight`, `figure.titleweight`, and `figure.labelweight`. A key that the style leaves
+out counts with Matplotlib's default, which is what text gets when the style is applied over
+Matplotlib's defaults. So both packaged styles accept 8 pt regular text only.
 
 | Rule id | Severity | Reports |
 | --- | --- | --- |
-| `font-size` | error | Text whose size is neither the style's `font.size` nor in `allow_font_sizes` |
-| `font-weight` | error | Text whose weight is neither regular nor in `allow_font_weights` |
+| `font-size` | error | Text whose size is neither one of the style's text sizes nor in `allow_font_sizes` |
+| `font-weight` | error | Text whose weight is neither one of the style's weights nor in `allow_font_weights` |
 | `font-family` | error | Text that resolves to a font outside the style's `font.sans-serif` list |
 | `font-fallback` | warning | The style's first-choice font is not installed, so text renders in a fallback (once per figure) |
 | `script-glyph` | error | Text with a precomposed superscript or subscript character, such as U+00B2; write `$^2$` |

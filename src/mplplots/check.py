@@ -1,9 +1,9 @@
 """Check a figure against a packaged style and the style guide's rules.
 
 ``check_figure`` returns the issues it finds; ``assert_figure`` raises ``StyleError`` on errors
-and emits a ``StyleWarning`` for each warning. The expected values (font size, font list, spine
-width, hidden spines, legend frame, minus sign) are read from the named style's file, so the
-check follows the style instead of restating it.
+and emits a ``StyleWarning`` for each warning. The expected values (text sizes and weights, font
+list, spine width, hidden spines, legend frame, minus sign) are read from the named style's file,
+so the check follows the style instead of restating it.
 
 Only artists that are drawn are inspected: visible, with visible ancestors, and for text,
 non-empty. Each message names the artist: its role, its text and the index of its axes in
@@ -82,8 +82,16 @@ class StyleWarning(UserWarning):
 
 
 _RULE_TABLE: tuple[tuple[str, Severity, str], ...] = (
-    ("font-size", "error", "Text whose size is neither the style's font.size nor an allowed size."),
-    ("font-weight", "error", "Text whose weight is not regular."),
+    (
+        "font-size",
+        "error",
+        "Text whose size is neither one of the text sizes the style sets nor an allowed size.",
+    ),
+    (
+        "font-weight",
+        "error",
+        "Text whose weight is neither one of the weights the style sets nor an allowed weight.",
+    ),
     ("font-family", "error", "Text that resolves to a font outside the style's font.sans-serif."),
     (
         "font-fallback",
@@ -128,7 +136,37 @@ _GRID_TOLERANCE_INCHES = 0.001
 _CANVAS_TOLERANCE_PIXELS = 0.5
 _OVERLAP_TOLERANCE_POINTS = 1.0
 _SIZE_TOLERANCE_POINTS = 1e-6
-_REGULAR_WEIGHT = 400
+# The rcParams that give text its size: the base size, then the size of each kind of text.
+_TEXT_SIZE_KEYS: tuple[RcKeyType, ...] = (
+    "font.size",
+    "axes.labelsize",
+    "axes.titlesize",
+    "xtick.labelsize",
+    "ytick.labelsize",
+    "legend.fontsize",
+    "legend.title_fontsize",
+    "figure.titlesize",
+    "figure.labelsize",
+)
+# The rcParams that give text its weight: the base weight, then the weight of each kind of text.
+_TEXT_WEIGHT_KEYS: tuple[RcKeyType, ...] = (
+    "font.weight",
+    "axes.labelweight",
+    "axes.titleweight",
+    "figure.titleweight",
+    "figure.labelweight",
+)
+# The names that messages give the numeric font weights.
+_WEIGHT_NAMES: Mapping[int, str] = {
+    100: "ultralight",
+    200: "light",
+    400: "regular",
+    500: "medium",
+    600: "semibold",
+    700: "bold",
+    800: "heavy",
+    900: "black",
+}
 _SCRIPT_GLYPH = re.compile("[\u00b2\u00b3\u00b9\u2070-\u209f]")
 _MINUS_SIGN = "\u2212"
 _PANEL_LETTER = re.compile(r"[A-Za-z]|\([A-Za-z]\)")
@@ -143,9 +181,17 @@ _NO_LINE = frozenset({"None", "none", "", " "})
 
 @dataclass(frozen=True, slots=True)
 class _Expected:
-    """The values a style sets, falling back to Matplotlib's defaults for keys it omits."""
+    """The values a style sets, falling back to Matplotlib's defaults for keys it omits.
 
-    font_size: float
+    ``font_sizes`` and ``font_weights`` hold every size and weight that text takes under the
+    style. A size key that the style omits takes Matplotlib's default, as it does when the style
+    is applied over Matplotlib's defaults: the default of ``axes.titlesize``, ``"large"``, is
+    1.2 times the style's ``font.size``. A relative size resolves against the style's
+    ``font.size``, and an unset ``legend.title_fontsize`` is ``font.size``.
+    """
+
+    font_sizes: tuple[float, ...]
+    font_weights: frozenset[int]
     font_list: tuple[str, ...]
     unicode_minus: bool
     spine_width: float
@@ -163,8 +209,12 @@ class _Expected:
             """Return the style's value for a key, or Matplotlib's default."""
             return rc[key] if key in rc else rcParamsDefault[key]
 
+        base = float(value("font.size"))
+        sizes = {_points(value(key), base) for key in _TEXT_SIZE_KEYS}
+        weights = {_numeric_weight(value(key)) for key in _TEXT_WEIGHT_KEYS}
         return cls(
-            font_size=float(value("font.size")),
+            font_sizes=tuple(sorted(sizes)),
+            font_weights=frozenset(int(weight) for weight in weights),
             font_list=tuple(value("font.sans-serif")),
             unicode_minus=bool(value("axes.unicode_minus")),
             spine_width=float(value("axes.linewidth")),
@@ -173,6 +223,22 @@ class _Expected:
             hide_right=not value("axes.spines.right"),
             legend_frame=bool(value("legend.frameon")),
         )
+
+
+def _points(size: float | str | None, base: float) -> float:
+    """Return an rcParams font size in points.
+
+    A relative size (``"large"``) is a multiple of ``base``, the style's ``font.size``, as
+    Matplotlib resolves it; ``None``, as an unset ``legend.title_fontsize`` is, means ``base``.
+    """
+    if size is None or isinstance(size, str):
+        return font_manager.font_scalings[size] * base
+    return float(size)
+
+
+def _numeric_weight(weight: int | str) -> int | str:
+    """Return a font weight as a number; a name that Matplotlib does not know stays as it is."""
+    return font_manager.weight_dict.get(weight, weight) if isinstance(weight, str) else weight
 
 
 @dataclass(frozen=True, slots=True)
@@ -492,34 +558,37 @@ def _texts(context: _Context, problem: Callable[[_Text], str | None]) -> Iterato
 _Check = Callable[[_Context], Iterator[tuple[str, str]]]
 
 
+def _alternatives(names: Sequence[str]) -> str:
+    """Return names joined for a message: ``8``, ``regular or bold``, ``11, 12 or 14``."""
+    return names[0] if len(names) == 1 else f"{', '.join(names[:-1])} or {names[-1]}"
+
+
 def _check_font_size(context: _Context) -> Iterator[tuple[str, str]]:
-    """Report each text whose size is neither the style's nor an allowed size."""
-    expected = context.expected.font_size
+    """Report each text whose size is neither one of the style's sizes nor an allowed size."""
+    expected = _alternatives([f"{size:g}" for size in context.expected.font_sizes])
 
     def problem(item: _Text) -> str | None:
         """Return the text's wrong size, or ``None`` if it is allowed."""
         size = item.text.get_fontproperties().get_size_in_points()
         if any(math.isclose(size, ok, abs_tol=_SIZE_TOLERANCE_POINTS) for ok in context.font_sizes):
             return None
-        return f"font size {size:g} pt, expected {expected:g} pt"
+        return f"font size {size:g} pt, expected {expected} pt"
 
     return _texts(context, problem)
 
 
-def _numeric_weight(weight: int | str) -> int | str:
-    """Return a font weight as a number; a name that Matplotlib does not know stays as it is."""
-    return font_manager.weight_dict.get(weight, weight) if isinstance(weight, str) else weight
-
-
 def _check_font_weight(context: _Context) -> Iterator[tuple[str, str]]:
-    """Report each text whose weight is neither regular nor an allowed weight."""
+    """Report each text whose weight is neither one of the style's weights nor an allowed one."""
+    expected = _alternatives([
+        _WEIGHT_NAMES.get(weight, str(weight)) for weight in sorted(context.expected.font_weights)
+    ])
 
     def problem(item: _Text) -> str | None:
         """Return the text's wrong weight, or ``None`` if it is allowed."""
         weight = item.text.get_fontweight()
         if _numeric_weight(weight) in context.font_weights:
             return None
-        return f"font weight {weight}, expected regular"
+        return f"font weight {weight}, expected {expected}"
 
     return _texts(context, problem)
 
@@ -893,7 +962,7 @@ def _rule_ids(ignore: Collection[str]) -> frozenset[str]:
 
 
 def _font_weights(allowed: Collection[int | str]) -> frozenset[int]:
-    """Return regular and the allowed font weights as numbers.
+    """Return the allowed font weights as numbers.
 
     Raises:
         ValueError: If a name is not a font weight that Matplotlib knows.
@@ -907,7 +976,7 @@ def _font_weights(allowed: Collection[int | str]) -> frozenset[int]:
             f"unknown font weight {', '.join(map(repr, unknown))};"
             f" choose from {', '.join(font_manager.weight_dict)} or give a number"
         )
-    return frozenset({_REGULAR_WEIGHT, *(int(weight) for weight in weights)})
+    return frozenset(int(weight) for weight in weights)
 
 
 def check_figure(
@@ -929,9 +998,9 @@ def check_figure(
         fig: The figure to check.
         style: The style whose file holds the expected values, one of ``STYLES``.
         ignore: Rule ids (keys of ``RULES``) to skip.
-        allow_font_sizes: Font sizes in points accepted besides the style's ``font.size``.
-        allow_font_weights: Font weights accepted besides regular, as names (``"bold"``) or
-            numbers (``500``), for text that the figure emphasizes on purpose.
+        allow_font_sizes: Font sizes in points accepted besides the text sizes the style sets.
+        allow_font_weights: Font weights accepted besides the weights the style sets, as names
+            (``"bold"``) or numbers (``500``), for text that the figure emphasizes on purpose.
 
     Returns:
         The issues found, ordered by rule as in ``RULES``; an empty list for a clean figure.
@@ -945,8 +1014,10 @@ def check_figure(
     expected = _Expected.read(style)
     with _TickRecorder(_every_axes(fig)) as recorder:
         fig.draw_without_rendering()
-    sizes = (expected.font_size, *(float(size) for size in allow_font_sizes))
-    context = _Context(fig, _scene(fig, recorder.drawn), expected, sizes, weights)
+    sizes = (*expected.font_sizes, *(float(size) for size in allow_font_sizes))
+    context = _Context(
+        fig, _scene(fig, recorder.drawn), expected, sizes, expected.font_weights | weights
+    )
     return [
         Issue(rule, _SEVERITY[rule], f"{subject}: {problem}")
         for rule, check in _CHECKS.items()
@@ -970,9 +1041,9 @@ def assert_figure(
         fig: The figure to check.
         style: The style whose file holds the expected values, one of ``STYLES``.
         ignore: Rule ids (keys of ``RULES``) to skip.
-        allow_font_sizes: Font sizes in points accepted besides the style's ``font.size``.
-        allow_font_weights: Font weights accepted besides regular, as names (``"bold"``) or
-            numbers (``500``), for text that the figure emphasizes on purpose.
+        allow_font_sizes: Font sizes in points accepted besides the text sizes the style sets.
+        allow_font_weights: Font weights accepted besides the weights the style sets, as names
+            (``"bold"``) or numbers (``500``), for text that the figure emphasizes on purpose.
         warnings_as_errors: Raise for warnings as well as errors.
 
     Raises:
