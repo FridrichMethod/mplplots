@@ -130,10 +130,12 @@ GRAPHPAD_RC: dict[RcKeyType, Any] = {
     "lines.solid_capstyle": "round",
     "mathtext.bf": "sans:bold",
     "mathtext.bfit": "sans:italic:bold",
+    "mathtext.cal": "cursive:bold",
     "mathtext.fontset": "custom",
-    "mathtext.it": "sans:italic",
-    "mathtext.rm": "sans",
-    "mathtext.sf": "sans",
+    "mathtext.it": "sans:italic:bold",
+    "mathtext.rm": "sans:bold",
+    "mathtext.sf": "sans:bold",
+    "mathtext.tt": "monospace:bold",
     "patch.linewidth": 2.16,
     "pdf.fonttype": 42.0,
     "ps.fonttype": 42.0,
@@ -182,6 +184,8 @@ MATH_FONT_KEYS: tuple[RcKeyType, ...] = (
     "mathtext.bfit",
     "mathtext.sf",
 )
+# Every font that math text looks up by an rcParams pattern.
+MATH_PATTERN_KEYS: tuple[RcKeyType, ...] = (*MATH_FONT_KEYS, "mathtext.cal", "mathtext.tt")
 
 # Runs in a fresh interpreter, because Matplotlib logs each font lookup only once
 # per process (results are cached), so earlier tests could hide the warnings.
@@ -331,6 +335,19 @@ class TestStyleRegistry:
         mplplots.use("GraphPadPrism")
         assert plt.rcParams["axes.unicode_minus"] is True
         assert plt.rcParams["lines.markerfacecolor"] == "auto"
+
+    @pytest.mark.parametrize(("before", "after"), list(itertools.permutations(mplplots.STYLES, 2)))
+    def test_math_fonts_do_not_depend_on_the_style_before(self, before: str, after: str) -> None:
+        # Matplotlib before 3.11 caches a font lookup by its pattern alone, without
+        # font.weight, so a math font resolves the same after a style of another weight only
+        # if its pattern names its weight.
+        with mplplots.context(before):
+            for key in MATH_PATTERN_KEYS:
+                fm.findfont(matplotlib.rcParams[key])
+        with mplplots.context(after):
+            for key in MATH_PATTERN_KEYS:
+                pattern = matplotlib.rcParams[key]
+                assert fm.findfont(pattern) == fm.findfont(FontProperties(pattern)), key
 
     def test_dotted_name_loads(self) -> None:
         plt.style.use("mplplots.styles.Personal")
@@ -519,8 +536,8 @@ class TestGraphPadPrismStyle:
         }
 
     def test_math_is_set_in_the_bold_text_font(self) -> None:
-        # Math takes font.weight, so it matches the bold text: the bold face of the text font
-        # for numbers and function names, its bold italic for variables.
+        # Math matches the bold text: the bold face of the text font for numbers and function
+        # names, its bold italic for variables.
         with plt.style.context(GRAPHPAD_STYLE):
             text = fm.findfont(FontProperties())
             italic = fm.findfont(FontProperties(style="italic"))

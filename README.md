@@ -168,7 +168,8 @@ rendered widths, so a saved file looks like Prism's. Lengths and sizes below are
 | `axes.titlesize`, `axes.titleweight` | 14, bold | Graph title: Arial Bold 14 pt |
 | `figure.titlesize`, `figure.titleweight` | 14, bold | Figure titles (`suptitle`) like the graph title |
 | `legend.fontsize`, `legend.title_fontsize` | 12, 12 | Legend: Arial 12 pt, in bold where Prism uses regular |
-| `mathtext.fontset`, `mathtext.rm`, `mathtext.sf`, `mathtext.it`, `mathtext.bf`, `mathtext.bfit` | `custom`, `sans`, `sans`, `sans:italic`, `sans:bold`, `sans:italic:bold` | Math text in the bold text font: variables such as `$x$` in Arial Bold Italic, and function names such as `$\sin$`, numbers, and operators in Arial Bold |
+| `mathtext.fontset`, `mathtext.rm`, `mathtext.sf`, `mathtext.it`, `mathtext.bf`, `mathtext.bfit` | `custom`, `sans:bold`, `sans:bold`, `sans:italic:bold`, `sans:bold`, `sans:italic:bold` | Math text in the bold text font: variables such as `$x$` in Arial Bold Italic, and function names such as `$\sin$`, numbers, and operators in Arial Bold. Each pattern names its weight, because Matplotlib before 3.11 caches a font lookup by its pattern alone and would otherwise keep the weight of the style that first rendered math in the session |
+| `mathtext.cal`, `mathtext.tt` | `cursive:bold`, `monospace:bold` | Not from Prism: `\mathcal` and `\mathtt` in bold, like the rest of the math |
 | `axes.linewidth` | 1.44 | Thickness of axes "Auto (1 pt)" |
 | `axes.spines.top`, `axes.spines.right` | False, False | Frame style "No frame" |
 | `xtick.direction`, `ytick.direction` | out, out | Outward ticks: the X axis ticks direction "Down" |
@@ -203,8 +204,8 @@ No figure size is set, and saved files are not cropped, so they keep the figure'
 Where the style departs from Prism:
 
 - **Legend weight.** The legend is Arial Bold, where Prism uses Arial Regular, so its labels are
-  slightly wider. Math text takes its weight from `font.weight`, so it is bold even in a text set
-  to `fontweight="normal"`, and `$\mathbf{...}$` looks like `$\mathrm{...}$`.
+  slightly wider. The math fonts are bold, so math is bold even in a text set to
+  `fontweight="normal"`, and `$\mathbf{...}$` looks like `$\mathrm{...}$`.
 - **Legend placement.** Prism puts the legend outside the plot on the right, top-aligned: its
   legend keys (line handles and bar swatches) start about 0.46 in right of the plot, its symbols
   about 0.52 in. `mpp.legend_inches` with `loc="upper left"`, 0.4 in right of the plot area's top
@@ -234,8 +235,8 @@ Where the style departs from Prism:
 - **Error-bar ends.** Prism rounds the ends of its error bars and caps. `lines.solid_capstyle`
   reaches only data lines, so Matplotlib's error bars and caps have flat ends: the caps are as
   long as Prism's, but an error bar without caps (`capsize=0`) ends 0.36 pt short at each end.
-- **Font notices with math.** Under `font.weight: bold`, Matplotlib looks up its bundled math
-  fonts (Computer Modern, STIX) and the `\mathcal` font in bold. They come in one weight, so the
+- **Font notices with math.** With bold math, Matplotlib looks up its bundled math fonts
+  (Computer Modern, STIX) and the `\mathcal` font in bold. They come in one weight, so the
   first math text in a session logs about ten `findfont: Failed to find font weight bold for ...`
   warnings. They do not change the output.
   `logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)` silences them, along with

@@ -12,7 +12,7 @@
 #   of Prism's error-bar caps, which Matplotlib draws with the same setting unless
 #   errorbar.capthick is set. That key is new in Matplotlib 3.11; earlier versions log it as a
 #   bad key, so the style leaves it out.
-# - Under font.weight bold, the first math text in a session logs findfont weight notices for
+# - With bold math, the first math text in a session logs findfont weight notices for
 #   Matplotlib's one-weight math fonts and the \mathcal font. They do not change the output.
 
 axes.autolimit_mode: round_numbers
@@ -78,14 +78,18 @@ lines.markeredgewidth: 0.72
 lines.markersize: 5.04
 lines.solid_capstyle: round
 
-# "sans" resolves through font.sans-serif and takes its weight from font.weight, so math uses
-# the text's font in bold (Arial Bold and Bold Italic when installed), even in regular text.
+# "sans" resolves through font.sans-serif, so math uses the text's font in bold (Arial Bold and
+# Bold Italic when installed), even in regular text. Each pattern names its weight instead of
+# taking font.weight: Matplotlib before 3.11 caches a font lookup by its pattern alone, so math
+# would otherwise keep the weight of whichever style first rendered it in the session.
 mathtext.bf: sans:bold
 mathtext.bfit: sans:italic:bold
+mathtext.cal: cursive:bold
 mathtext.fontset: custom
-mathtext.it: sans:italic
-mathtext.rm: sans
-mathtext.sf: sans
+mathtext.it: sans:italic:bold
+mathtext.rm: sans:bold
+mathtext.sf: sans:bold
+mathtext.tt: monospace:bold
 
 # Prism's bar border. A patch gets an edge only when given an edge color, for example
 # bar(..., edgecolor="black"). The width also applies to every other patch with an edge
