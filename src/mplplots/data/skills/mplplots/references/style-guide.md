@@ -181,9 +181,11 @@ lighter_edge = mpp.lighten(GREEN.edge, 0.3)  # a further member of the green fam
 - **S4.** Figures meant to be read against each other keep the same physical data scale, data
   units per inch, even when they show different windows.
 - **S5.** Margins for 8 pt text: 0.6 in on the left for tick labels and a y label, 0.4 in below,
-  0.1 in on the top and right, 0.35 in above for a title; `grid_inches` defaults to them, with
-  `top=0.35` passed for a title. Stacked panels that share x need a 0.05 to 0.2 in gap; panels
-  with their own tick labels need at least 0.22 in, which is 0.25 in on the grid.
+  0.1 in on top (0.35 in above for a title) and 0.2 in on the right, where the label of the
+  tick at the end of the x-axis overhangs the axes by half its width; 0.1 in is enough there
+  for a label of up to three characters. `grid_inches` defaults to them, with `top=0.35` passed
+  for a title. Stacked panels that share x need a 0.05 to 0.2 in gap; panels with their own
+  tick labels need at least 0.22 in, which is 0.25 in on the grid.
 - **S6.** No panel letters in the figure. They are added when the manuscript is assembled, in
   the journal's style, and captions refer to panels by position ("top", "left to right").
 - **S7.** A shared x label is the bottom panel's `set_xlabel`, never `supxlabel`, which pins the

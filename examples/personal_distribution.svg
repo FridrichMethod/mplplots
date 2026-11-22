@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="230.4pt" height="144pt" viewBox="0 0 230.4 144" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="237.6pt" height="144pt" viewBox="0 0 237.6 144" xmlns="http://www.w3.org/2000/svg" version="1.1">
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -21,8 +21,8 @@
  <g id="figure_1">
   <g id="patch_1">
    <path d="M 0 144 
-L 230.4 144 
-L 230.4 0 
+L 237.6 144 
+L 237.6 0 
 L 0 0 
 z
 " style="fill: #ffffff"/>
@@ -1217,7 +1217,7 @@ L 58.2 115.2
 L 52.2 115.2 
 L 46.2 115.2 
 z
-" clip-path="url(#p7b1fb86e71)" style="fill: #c7e9c0; fill-opacity: 0.5"/>
+" clip-path="url(#p55f5dabe53)" style="fill: #c7e9c0; fill-opacity: 0.5"/>
    </g>
    <g id="line2d_53">
     <path d="M 46.2 115.2 
@@ -1250,7 +1250,7 @@ L 202.2 112.095
 L 208.2 113.985 
 L 214.2 114.255 
 L 220.2 115.2 
-" clip-path="url(#p7b1fb86e71)" style="fill: none; stroke: #4f9d58; stroke-linecap: square"/>
+" clip-path="url(#p55f5dabe53)" style="fill: none; stroke: #4f9d58; stroke-linecap: square"/>
    </g>
    <g id="patch_3">
     <path d="M 43.2 115.2 
@@ -1326,7 +1326,7 @@ L 58.2 115.2
 L 52.2 115.2 
 L 46.2 115.2 
 z
-" clip-path="url(#p7b1fb86e71)" style="fill: #cccccc; fill-opacity: 0.5"/>
+" clip-path="url(#p55f5dabe53)" style="fill: #cccccc; fill-opacity: 0.5"/>
    </g>
    <g id="line2d_54">
     <path d="M 46.2 115.2 
@@ -1359,7 +1359,7 @@ L 202.2 115.2
 L 208.2 115.2 
 L 214.2 115.2 
 L 220.2 115.2 
-" clip-path="url(#p7b1fb86e71)" style="fill: none; stroke: #7a7a7a; stroke-linecap: square"/>
+" clip-path="url(#p55f5dabe53)" style="fill: none; stroke: #7a7a7a; stroke-linecap: square"/>
    </g>
    <g id="legend_1">
     <g id="patch_5">
@@ -1482,7 +1482,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p7b1fb86e71">
+  <clipPath id="p55f5dabe53">
    <rect x="43.2" y="7.2" width="180" height="108"/>
   </clipPath>
  </defs>

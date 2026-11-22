@@ -107,7 +107,7 @@ def grid_inches(
     width: float | Sequence[float],
     height: float | Sequence[float],
     left: float = 0.6,
-    right: float = 0.1,
+    right: float = 0.2,
     top: float = 0.1,
     bottom: float = 0.4,
     wspace: float | Sequence[float] = 0.6,
@@ -135,6 +135,8 @@ def grid_inches(
             every row.
         left: Distance from the figure's left edge to the first column's y-axis, in inches.
         right: Distance from the last column's right edge to the figure's right edge, in inches.
+            The default holds the label of a tick at the end of the x-axis, which overhangs the
+            axes by half its width, up to six characters of 8 pt text.
         top: Distance from the figure's top edge to the first row's top edge, in inches.
         bottom: Distance from the last row's x-axis to the figure's bottom edge, in inches.
         wspace: Gap between adjacent columns, in inches: one number for every gap, or
@@ -156,11 +158,11 @@ def grid_inches(
 
     Examples:
         Three stacked panels sharing a 5.1 in x-axis, each with a 0.8 in y-axis and 0.2 in
-        between, in a 5.8 by 3.3 in figure:
+        between, in a 5.9 by 3.3 in figure:
 
         >>> fig, axes = grid_inches(3, 1, width=5.1, height=0.8, hspace=0.2, sharex=True)
         >>> tuple(float(size) for size in fig.get_size_inches())
-        (5.8, 3.3)
+        (5.9, 3.3)
     """
     if nrows < 1 or ncols < 1:
         raise ValueError(f"nrows and ncols must be at least 1, got {nrows} and {ncols}")

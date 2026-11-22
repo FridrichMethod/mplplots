@@ -41,7 +41,7 @@ TREATED = mpp.ColorPair(fill="#c7e9c0", edge="#4f9d58")  # one role of a project
 t = np.linspace(0, 10, 101)
 mean, sem = 1 - np.exp(-t / 2), np.full_like(t, 0.05)
 
-fig, (ax,) = mpp.grid_inches(width=2.5, height=1.5)  # 2.5 × 1.5 in axes in a 3.2 × 2 in figure
+fig, (ax,) = mpp.grid_inches(width=2.5, height=1.5)  # 2.5 × 1.5 in axes in a 3.3 × 2 in figure
 mpp.plot_mean_sem(ax, t, mean, sem, fill=TREATED.fill, edge=TREATED.edge, label="Treated")
 ax.set(xlim=(0, 10), ylim=(0, 1.2), xlabel="Time (s)", ylabel="Signal (a.u.)")
 ax.legend()
@@ -50,7 +50,7 @@ mpp.assert_figure(fig)  # raises StyleError if the figure breaks a rule of the s
 mpp.save_figure(fig, "figures/signal", caption="Mean of n = 6 replicates; the band is 1 SEM.")
 ```
 
-`save_figure` writes `figures/signal.png` (600 dpi), `.pdf` and `.svg`, each exactly 3.2 × 2 in,
+`save_figure` writes `figures/signal.png` (600 dpi), `.pdf` and `.svg`, each exactly 3.3 × 2 in,
 and the caption draft `figures/signal_caption.txt`. The functions and constants of the styles and
 the toolkit are all importable from the top-level package, as `mpp.<name>`; the palettes live in
 `mplplots.palettes`.
@@ -419,7 +419,7 @@ import mplplots as mpp
 mpp.use()
 
 # Three stacked panels with 2.5 × 0.8 in axes, 0.2 in apart and sharing both axes:
-# a 3.2 × 3.3 in figure.
+# a 3.3 × 3.3 in figure.
 fig, axes = mpp.grid_inches(3, 1, width=2.5, height=0.8, hspace=0.2, sharex=True, sharey=True)
 t = np.linspace(0, 10, 201)
 series = [("Slow", 1, "#7a7a7a"), ("Intermediate", 2, "#4f9d58"), ("Fast", 4, "#3182bd")]
@@ -432,7 +432,7 @@ mpp.add_shared_ylabel(fig, axes, "Signal (a.u.)")
 mpp.align_legends_left(axes)  # the three legends start at the same x
 ```
 
-- `grid_inches(nrows=1, ncols=1, *, width, height, left=0.6, right=0.1, top=0.1, bottom=0.4,
+- `grid_inches(nrows=1, ncols=1, *, width, height, left=0.6, right=0.2, top=0.1, bottom=0.4,
   wspace=0.6, hspace=0.5, sharex=False, sharey=False, **figure_kwargs)` returns the figure and its
   axes as a flat list, top row first. `width` is the x-axis length of each column and `height` the
   y-axis length of each row; a number applies to all, a sequence gives one per column or row, and
@@ -609,14 +609,14 @@ Personal image at the top of this README. Every figure passes `assert_figure`:
 <table>
   <tr>
     <td><img src="examples/personal_mean_sem.png" alt="Mean and SEM bands with a dashed second state and a threshold line" width="450"></td>
-    <td><img src="examples/personal_distribution.png" alt="Two binned distributions as filled curves" width="320"></td>
+    <td><img src="examples/personal_distribution.png" alt="Two binned distributions as filled curves" width="330"></td>
   </tr>
   <tr>
     <td><code>plot_mean_sem</code> bands, a second state in <code>SECONDARY_LINESTYLE</code>, and a <code>REFERENCE_LINE</code> threshold</td>
     <td><code>plot_distribution</code> curves with their legend proxies</td>
   </tr>
   <tr>
-    <td><img src="examples/personal_grid.png" alt="A 2 by 2 grid of panels with replicate dots and fitted curves" width="400"></td>
+    <td><img src="examples/personal_grid.png" alt="A 2 by 2 grid of panels with replicate dots and fitted curves" width="410"></td>
     <td><img src="examples/personal_bars.png" alt="Grouped bars with replicate dots, confidence intervals, and significance stars" width="360"></td>
   </tr>
   <tr>

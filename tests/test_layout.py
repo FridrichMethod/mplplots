@@ -9,6 +9,7 @@ from matplotlib.legend import Legend
 from matplotlib.transforms import Bbox
 
 from mplplots import layout, utils
+from mplplots.check import check_figure
 from mplplots.layout import (
     COLUMN_WIDTHS,
     add_shared_ylabel,
@@ -16,6 +17,7 @@ from mplplots.layout import (
     figure_size,
     grid_inches,
 )
+from mplplots.styles import context
 
 
 def inches(ax: Axes) -> tuple[float, float, float, float]:
@@ -60,10 +62,20 @@ def test_figure_size_rejects(kwargs: dict[str, object]) -> None:
 
 def test_grid_inches_geometry() -> None:
     fig, axes = grid_inches(2, 3, width=2.0, height=1.5)
-    assert tuple(fig.get_size_inches()) == pytest.approx((7.9, 4.0))
+    assert tuple(fig.get_size_inches()) == pytest.approx((8.0, 4.0))
     assert len(axes) == 6
     assert inches(axes[0]) == pytest.approx((0.6, 2.4, 2.0, 1.5))
     assert inches(axes[5]) == pytest.approx((5.8, 0.4, 2.0, 1.5))
+
+
+@pytest.mark.parametrize("upper", [1.25, 2500.0, 100000.0])
+def test_grid_inches_default_margins_hold_the_last_tick_label(upper: float) -> None:
+    # round_numbers puts a tick at the end of each axis, so its label overhangs the axes by
+    # half its width: up to six characters of 8 pt text fit in the default right margin.
+    with context():
+        fig, (ax,) = grid_inches(width=2.0, height=1.5)
+        ax.set_xlim(0.0, upper)
+        assert [issue for issue in check_figure(fig) if issue.rule == "off-canvas"] == []
 
 
 def test_grid_inches_single_panel_with_margins() -> None:
@@ -74,7 +86,7 @@ def test_grid_inches_single_panel_with_margins() -> None:
 
 def test_grid_inches_per_row_and_per_column_sizes() -> None:
     fig, axes = grid_inches(2, 2, width=[2.0, 1.0], height=[0.8, 1.6], wspace=0.5, hspace=0.2)
-    assert tuple(fig.get_size_inches()) == pytest.approx((4.2, 3.1))
+    assert tuple(fig.get_size_inches()) == pytest.approx((4.3, 3.1))
     assert inches(axes[0]) == pytest.approx((0.6, 2.2, 2.0, 0.8))
     assert inches(axes[3]) == pytest.approx((3.1, 0.4, 1.0, 1.6))
 
@@ -208,7 +220,7 @@ def test_grid_inches_orders_axes_row_major_from_the_top() -> None:
 
 def test_grid_inches_takes_per_gap_spaces() -> None:
     fig, axes = grid_inches(3, 3, width=1.0, height=1.0, wspace=[0.25, 0.5], hspace=[0.1, 0.2])
-    assert tuple(fig.get_size_inches()) == pytest.approx((4.45, 3.8))
+    assert tuple(fig.get_size_inches()) == pytest.approx((4.55, 3.8))
     assert [inches(ax)[0] for ax in axes[:3]] == pytest.approx([0.6, 1.85, 3.35])
     assert [inches(ax)[1] for ax in axes[::3]] == pytest.approx([2.7, 1.6, 0.4])
 
@@ -217,7 +229,7 @@ def test_grid_inches_figure_is_whole_pixels_at_600_dpi() -> None:
     # 0.6 + 2 + 2 + 2 + 0.6 + 0.6 + 0.1 summed left to right is 7.899999999999999 in, which
     # Agg truncates to 4739 px at 600 dpi. Matplotlib 3.10 and later tolerate 1e-8 px in
     # get_width_height and 3.8 does not, so the exact size is checked as well.
-    fig, _ = grid_inches(2, 3, width=2.0, height=1.5)
+    fig, _ = grid_inches(2, 3, width=2.0, height=1.5, right=0.1)
     assert tuple(float(size) for size in fig.get_size_inches()) == (7.9, 4.0)
     fig.set_dpi(600)
     assert fig.canvas.get_width_height() == (4740, 2400)
