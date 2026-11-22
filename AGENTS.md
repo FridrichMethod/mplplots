@@ -30,14 +30,27 @@ Do not commit or push if either fails. Fix issues first.
 
 ## Changelog and Releases
 
-- Record every user-visible change in `CHANGELOG.md` under `## [Unreleased]`, in the Keep a
-  Changelog sections (Added, Changed, Fixed, ...) with its PR number.
-- The version lives only in `pyproject.toml` and follows Semantic Versioning; while it is 0.x, a
-  change that alters how existing figures look or breaks the API raises the minor version.
-- To release: set the version in `pyproject.toml`, rename `## [Unreleased]` to
-  `## [X.Y.Z] - YYYY-MM-DD` above a fresh empty `## [Unreleased]`, update the compare links at
-  the bottom, merge that PR, then tag the merged commit on `main` as `vX.Y.Z` (annotated) and
-  publish a GitHub release from the tag with that version's changelog section as its notes.
+- Changes land on `main` as commits, without pull requests. Record every user-visible change in
+  `CHANGELOG.md` under `## [Unreleased]`, in the Keep a Changelog sections (Added, Changed,
+  Fixed, ...); an entry carries a PR number only when its change came through a pull request.
+- The version lives in `pyproject.toml` and follows Semantic Versioning; while it is 0.x, a
+  change that alters how existing figures look or breaks the API raises the minor version. The
+  install example in `README.md` names the latest release tag.
+- Release from an up-to-date `main` whose CI passes, as release commit, tag and GitHub release:
+  1. Set the version in `pyproject.toml` and the tag in the install example of `README.md`
+     (`...mplplots.git@vX.Y.Z`).
+  2. In `CHANGELOG.md`, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD` above a fresh empty
+     `## [Unreleased]`, open the section with a short paragraph that sums up the release and
+     says whether figures look different from the previous one, and update the compare links at
+     the bottom.
+  3. Run the checks of "Before Committing", commit the three files on `main` as
+     `chore(release): X.Y.Z`, push, and wait until CI passes on that commit.
+  4. Tag the commit `vX.Y.Z` as an annotated tag with the message `mplplots X.Y.Z`, push the
+     tag, and publish a GitHub release from it titled `mplplots X.Y.Z`, whose notes are that
+     version's changelog section without its heading:
+     `gh release create vX.Y.Z --title "mplplots X.Y.Z" --notes-file NOTES.md --verify-tag`.
+  5. Check that `pip install git+https://github.com/FridrichMethod/mplplots.git@vX.Y.Z` installs
+     that version.
 
 ## Documentation
 
