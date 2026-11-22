@@ -81,9 +81,11 @@ with mpp.context("GraphPadPrism"):  # a style for one block only
     ax.plot([1, 2, 3], [1, 4, 9])
 ```
 
-`mpp.use` and `mpp.context` raise `ValueError` for a name that is not in `mplplots.STYLES`. Apply a
-style before you create the figure: Matplotlib reads the settings when it creates an artist, so a
-figure made earlier keeps the old look.
+`mpp.use` and `mpp.context` raise `ValueError` for a name that is not in `mplplots.STYLES`. Both
+first return every setting that any packaged style sets to Matplotlib's default, so switching from
+one packaged style to another in a session gives the same settings as applying the second one
+alone. Apply a style before you create the figure: Matplotlib reads the settings when it creates
+an artist, so a figure made earlier keeps the old look.
 
 Matplotlib also loads each style by its dotted package name, so a script can use one without
 importing mplplots:
@@ -97,6 +99,10 @@ with plt.style.context("mplplots.styles.GraphPadPrism"):  # for one block only
     fig, ax = plt.subplots()
     ax.plot([1, 2, 3], [1, 4, 9])
 ```
+
+`plt.style.use` applies only the settings in the file, so a setting that only an earlier style
+sets stays in effect. To switch between packaged styles this way, start from Matplotlib's
+defaults: `plt.style.use(["default", "mplplots.styles.Personal"])`.
 
 `mplplots.STYLE_PATH` is the path of `GraphPadPrism.mplstyle`, and `mplplots.prism_style()` applies
 it, as `mpp.use("GraphPadPrism")` does.

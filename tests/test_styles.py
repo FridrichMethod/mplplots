@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.metadata
 import io
+import itertools
 import json
 import os
 import re
@@ -222,6 +223,30 @@ class TestStyleRegistry:
     def test_context_applies_a_named_style(self) -> None:
         with mplplots.context("GraphPadPrism"):
             assert plt.rcParams["lines.linewidth"] == 1.0
+
+    @pytest.mark.parametrize(("before", "after"), list(itertools.permutations(mplplots.STYLES, 2)))
+    def test_switching_styles_gives_the_style_alone(self, before: str, after: str) -> None:
+        # A setting that only the earlier style sets returns to Matplotlib's default instead
+        # of carrying over into the later style.
+        plt.style.use("default")
+        mplplots.use(after)
+        alone = dict(plt.rcParams)
+        mplplots.use(before)
+        mplplots.use(after)
+        assert dict(plt.rcParams) == alone
+        mplplots.use(before)
+        with mplplots.context(after):
+            assert dict(plt.rcParams) == alone
+        mplplots.use(before)
+        mplplots.prism_style()
+        mplplots.use(after)
+        assert dict(plt.rcParams) == alone
+
+    def test_use_resets_the_settings_of_every_packaged_style(self) -> None:
+        mplplots.use("Personal")
+        mplplots.use("GraphPadPrism")
+        assert plt.rcParams["axes.unicode_minus"] is True
+        assert plt.rcParams["lines.markerfacecolor"] == "auto"
 
     def test_dotted_name_loads(self) -> None:
         plt.style.use("mplplots.styles.Personal")

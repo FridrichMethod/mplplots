@@ -61,6 +61,9 @@ Do not commit or push if either fails. Fix issues first.
   `svg.fonttype: path`, and sets neither `figure.figsize` nor `savefig.bbox`, so a saved file
   has exactly the figure's size. Every style resolves its fonts without warnings on a machine
   that lacks its first-choice font. `tests/test_styles.py` checks both for every packaged style.
+- `mplplots.use` and `mplplots.context` first return every key that any packaged style sets to
+  Matplotlib's default, then apply the style, so switching styles in a session gives the style
+  alone. `tests/test_styles.py` checks every pair of packaged styles.
 - Adding a style takes: the file; a row in the style table of `README.md` with its own "What the
   style changes" table; one gallery image; and assertions in `tests/test_styles.py`.
 - A change to a style goes together with its "What the style changes" table in `README.md` and

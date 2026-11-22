@@ -4,8 +4,6 @@ import importlib.metadata
 from importlib.resources import files
 from pathlib import Path
 
-from matplotlib import style
-
 from mplplots.check import (
     RULES,
     Issue,
@@ -101,5 +99,5 @@ STYLE_PATH = Path(str(files(__package__).joinpath("styles", "GraphPadPrism.mplst
 
 
 def prism_style() -> None:
-    """Set a prism style for Matplotlib plots."""
-    style.use(STYLE_PATH)
+    """Apply the GraphPadPrism style, as ``use("GraphPadPrism")`` does."""
+    use("GraphPadPrism")

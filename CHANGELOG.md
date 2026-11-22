@@ -6,6 +6,13 @@ All notable changes to mplplots are recorded here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `mpp.use`, `mpp.context`, and `prism_style` first return every setting that any packaged style
+  sets to Matplotlib's default, then apply the style. Switching from one packaged style to another
+  in a session kept the settings that only the earlier style sets, such as the Personal style's
+  black markers and hyphen-minus in a GraphPadPrism figure.
+
 ## [0.4.0] - 2026-11-21
 
 The style checker reports overlapping texts, accepts text that a figure emphasizes on purpose, and
