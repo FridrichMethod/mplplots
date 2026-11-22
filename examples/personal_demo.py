@@ -1,8 +1,9 @@
 """Demonstrate the Personal style and the figure toolkit: the Personal gallery.
 
 Every figure takes its colors from a small demo palette of ``ColorPair`` roles, is laid out in
-round inches with ``grid_inches`` or ``add_axes_inches``, and passes ``assert_figure`` before it
-is saved. The data are seeded random numbers, so a rerun writes the same files.
+round inches with ``grid_inches`` or ``add_axes_inches``, sets its ticks with ``auto_ticks``, and
+passes ``assert_figure`` before it is saved. The data are seeded random numbers, so a rerun
+writes the same files.
 """
 
 import itertools
@@ -13,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from _common import PERSONAL, require_arial, save
 from matplotlib.patches import Patch
-from matplotlib.ticker import MultipleLocator, NullLocator
+from matplotlib.ticker import NullLocator
 from numpy.typing import NDArray
 
 import mplplots as mpp
@@ -151,9 +152,8 @@ for ax, (pair, title, tau) in zip(axes, roles):
     model = 1.0 - np.exp(-fine_times / tau)  # the curve the replicates scatter around
     ax.plot(fine_times, model, color=pair.edge, linewidth=FIT_WIDTH, alpha=mpp.LINE_ALPHA)
     ax.set_title(title)
-axes[0].set(xlim=(0.0, 60.0), ylim=(0.0, 1.2))
-axes[0].xaxis.set_major_locator(MultipleLocator(20.0))
-axes[0].yaxis.set_major_locator(MultipleLocator(0.5))
+# The panels share their axes, so ticks set on one apply to all four.
+mpp.auto_ticks(axes[0], left=0.0, right=60.0, bottom=0.0, top=1.2)
 for ax in axes[2:]:
     ax.set_xlabel("Time (min)")
 mpp.add_shared_ylabel(fig, axes, "Signal (a.u.)")
@@ -195,8 +195,8 @@ mean, sem = summary["Reference"]
 mpp.plot_mean_sem(
     ax, t, mean, sem, fill=REFERENCE.fill, edge=REFERENCE.edge, label="Reference", zorder=5.0
 )  # the reference on top (L6)
-ax.set(xlim=(0.0, 10.0), ylim=(0.5, 2.5), xlabel="Time (s)", ylabel="Signal (a.u.)")
-ax.yaxis.set_major_locator(MultipleLocator(0.5))
+mpp.auto_ticks(ax, left=0.0, right=10.0, bottom=0.8, top=2.2)
+ax.set(xlabel="Time (s)", ylabel="Signal (a.u.)")
 handles, labels = ax.get_legend_handles_labels()
 order = [labels.index(name) for name in ("Reference", *list(profiles)[1:], "Threshold")]
 mpp.legend_inches(
@@ -210,7 +210,7 @@ save(fig, "personal_mean_sem")
 # ---------------------------------------------------------------------------
 rng = np.random.default_rng(3)
 edges = np.linspace(0.0, 6.0, 31)  # a 0.2 bin grid shared by both series
-samples = {"Reference": rng.normal(2.2, 0.5, 5000), "Treated": rng.normal(3.6, 0.7, 4000)}
+samples = {"Reference": rng.normal(2.2, 0.65, 5000), "Treated": rng.normal(3.5, 0.75, 4000)}
 fig, (ax,) = mpp.grid_inches(width=2.5, height=1.5)
 proxies = []
 # The reference is drawn on top of the series it overlaps (L6).
@@ -222,8 +222,8 @@ for sample, pair, zorder in zip(samples.values(), (REFERENCE, TREATED), (4.0, 2.
         )
     )
 mpp.legend_inches(ax, 3.1, 1.9, loc="upper right", handles=proxies, labels=list(samples))
-ax.set(xlim=(0.0, 6.0), ylim=(0.0, 20.0), xlabel="Distance (\u00c5)", ylabel="Percent of samples")
-ax.yaxis.set_major_locator(MultipleLocator(5.0))
+mpp.auto_ticks(ax, left=0.0, right=6.0, bottom=0.0, top=12.0)
+ax.set(xlabel="Distance (\u00c5)", ylabel="Percent of samples")
 mpp.assert_figure(fig, warnings_as_errors=True)
 save(fig, "personal_distribution")
 
@@ -286,10 +286,11 @@ for position, (group, pair) in enumerate(groups.items()):
     )
     stars = mpp.significance_stars(q_values[group])
     ax.text(position, bracket + 0.05, stars, ha="center", va="bottom")
+mpp.auto_ticks(ax, bottom=0.0, top=3.0)
+# Set the group labels after auto_ticks, which replaces the major tick locators.
 ax.set_xticks(range(len(groups)), list(groups))
 ax.xaxis.set_minor_locator(NullLocator())  # a categorical axis has no minor ticks (L2)
-ax.set(xlim=(-0.6, len(groups) - 0.4), ylim=(0.0, 3.0), ylabel="Activity (a.u.)")
-ax.yaxis.set_major_locator(MultipleLocator(1.0))
+ax.set(xlim=(-0.6, len(groups) - 0.4), ylabel="Activity (a.u.)")
 # The state legend copies the reference bars' face, edge and edge width (L8).
 states = [
     Patch(facecolor=REFERENCE.fill, edgecolor=REFERENCE.edge, linewidth=BAR_EDGE_WIDTH),

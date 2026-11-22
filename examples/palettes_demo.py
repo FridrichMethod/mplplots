@@ -59,13 +59,13 @@ def swatches(
 # ---------------------------------------------------------------------------
 # 1. Multi-line plot using CUSTOM palette
 # ---------------------------------------------------------------------------
-x = np.linspace(0, 2 * np.pi, 100)
+x = np.linspace(0, 6, 100)
 fig = plt.figure(figsize=(4.5, 2.75))
 ax = add_axes_inches(fig, 0.5, 0.4, 3, 2)
 # Curves that share a panel set their width (rule L4 of the style guide).
 for i, color in enumerate(CUSTOM):
     ax.plot(x, np.sin(x + i * 0.3), color=color, linewidth=1.2, label=f"Line {i}")
-auto_ticks(ax, left=0)
+auto_ticks(ax, left=0, right=6)
 ax.set_title("CUSTOM palette \u2014 multi-line plot")
 legend_inches(ax, 3.6, 2.4)
 save(fig, "custom_multiline")
@@ -88,6 +88,7 @@ for i, cmap_name in enumerate(["coolwarm", "viridis", "YlGnBu"]):
     colors = get_colors(cmap_name, 6, 0.15, 0.85)
     ax.bar(range(len(colors)), [3 + i * 0.5 for i in range(len(colors))], color=colors)
     ax.set_title(f'get_colors("{cmap_name}", 6)')
+    auto_ticks(ax, left=-0.6, right=5.6, bottom=0)  # before the x ticks are removed
     ax.set_xticks([])
 save(fig, "get_colors_demo")
 
@@ -154,7 +155,7 @@ save(fig, "scatter_comparison")
 # ---------------------------------------------------------------------------
 # 6. Area chart with SPRING palette
 # ---------------------------------------------------------------------------
-x = np.linspace(0, 4, 80)
+x = np.linspace(0, 5, 100)
 fig = plt.figure(figsize=(4.5, 2.5))
 ax = add_axes_inches(fig, 0.5, 0.4, 3, 1.75)
 spring = palettes.SPRING
@@ -163,7 +164,7 @@ for i in range(6):
     y = np.abs(np.sin(x + i * 0.5)) * (1 + 0.3 * i)
     ax.fill_between(x, base, base + y, color=spring[i], alpha=0.85, label=f"Layer {i}")
     base += y
-auto_ticks(ax, left=0, right=4, bottom=0)
+auto_ticks(ax, left=0, right=5, bottom=0, top=10)
 ax.set_title("SPRING palette \u2014 stacked area chart")
 legend_inches(ax, 3.6, 2.15)
 save(fig, "spring_area")

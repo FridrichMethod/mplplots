@@ -38,6 +38,8 @@ All notable changes to mplplots are recorded here. The format follows
   major ticks the 2.5 pt length and leaves its minor ticks as the style draws them. Step 4 of the
   skill's workflow and of the rules snippet calls `auto_ticks`, and so do the examples of the
   style guide and the skill.
+- The Personal gallery images and the palette figures with numeric axes set their ticks with
+  `auto_ticks`, with limits that leave five or more major intervals.
 
 ### Fixed
 
