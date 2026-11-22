@@ -571,6 +571,7 @@ description.
 | `layout-engine` | error | A figure with a layout engine (tight or constrained) |
 | `round-inches` | warning | A figure size, or an axes position or size, off the 0.05 in grid |
 | `off-canvas` | error | Text or a legend that extends beyond the canvas, which an uncropped file cuts off |
+| `text-overlap` | warning | Texts whose drawn boxes overlap each other; a text at an angle other than a multiple of 90 degrees is not compared |
 | `panel-letter` | warning | Text other than a tick label that is a single letter, such as `a`, `B`, or `(c)` |
 | `default-color` | warning | A line, patch, or collection in one of Matplotlib's ten default-cycle colors |
 

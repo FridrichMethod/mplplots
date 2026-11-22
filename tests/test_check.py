@@ -32,6 +32,7 @@ SEVERITY = {
     "layout-engine": "error",
     "round-inches": "warning",
     "off-canvas": "error",
+    "text-overlap": "warning",
     "panel-letter": "warning",
     "default-color": "warning",
 }
@@ -81,6 +82,7 @@ MUTATIONS: dict[str, Mutation] = {
     "layout-engine": lambda fig, _ax: fig.set_layout_engine("tight"),
     "round-inches": lambda fig, _ax: fig.set_size_inches(3.03, 2.0),
     "off-canvas": lambda _fig, ax: ax.text(1.5, 0.5, "outside", transform=ax.transAxes),
+    "text-overlap": lambda _fig, ax: ax.text(0.0, -0.11, "note", transform=ax.transAxes),
     "panel-letter": lambda fig, _ax: fig.text(0.02, 0.92, "a"),
     "default-color": lambda _fig, ax: ax.plot([0, 1], [1, 0]),
 }
@@ -617,6 +619,87 @@ def test_a_fixed_aspect_axes_placed_off_the_grid_is_reported() -> None:
     mplplots.add_axes_inches(fig, 0.63, 0.4, 2.2, 1.4).imshow(np.zeros((3, 7)))
     (issue,) = found(fig, "round-inches")
     assert "position (0.63, 0.4) in and size 2.2 x 1.4 in" in issue.message
+
+
+def test_each_overlap_is_reported_once_under_the_first_text(clean: tuple[Figure, Axes]) -> None:
+    fig, ax = clean
+    ax.text(0.5, 0.5, "first")
+    ax.text(0.5, 0.5, "second")
+    ax.text(0.52, 0.52, "third")
+    issues = found(fig, "text-overlap")
+    assert [issue.message for issue in issues] == [
+        "axes 0 text 'first': overlaps axes 0 text 'second', 'third'",
+        "axes 0 text 'second': overlaps axes 0 text 'third'",
+    ]
+    assert {issue.severity for issue in issues} == {"warning"}
+
+
+def test_texts_that_only_touch_do_not_overlap(clean: tuple[Figure, Axes]) -> None:
+    fig, ax = clean
+    ax.text(0.5, 0.5, "upper", va="bottom")
+    lower = ax.text(0.5, 0.5, "lower", va="top")
+    assert not found(fig, "text-overlap")
+    to_data = ax.transData.inverted().transform
+    point = (to_data((0.0, fig.dpi / 72.0)) - to_data((0.0, 0.0)))[1]  # 1 pt in data units
+    lower.set_y(0.5 + 0.4 * point)  # The line boxes are 0.4 pt into each other.
+    assert not found(fig, "text-overlap")
+    lower.set_y(0.5 + 2.0 * point)
+    (issue,) = found(fig, "text-overlap")
+    assert issue.message == "axes 0 text 'upper': overlaps axes 0 text 'lower'"
+
+
+def test_the_arrow_of_an_annotation_is_not_part_of_its_text(clean: tuple[Figure, Axes]) -> None:
+    # The extent of an annotation spans its arrow as well, which may pass close to other text.
+    fig, ax = clean
+    ax.annotate("note", xy=(0.1, 0.1), xytext=(0.6, 0.6), arrowprops={"arrowstyle": "->"})
+    ax.text(0.2, 0.42, "label")
+    assert not found(fig, "text-overlap")
+    ax.text(0.6, 0.6, "over the note")
+    (issue,) = found(fig, "text-overlap")
+    assert issue.message == "axes 0 annotation 'note': overlaps axes 0 text 'over the note'"
+
+
+def test_crowded_tick_labels_are_reported_per_axis(clean: tuple[Figure, Axes]) -> None:
+    fig, ax = clean
+    ax.set_xlim(0.0, 1.0)
+    ax.set_xticks(np.linspace(0.0, 1.0, 41))
+    (issue,) = found(fig, "text-overlap")
+    assert issue.message.startswith("axes 0 x tick labels '0.000', '0.025', ")
+    assert issue.message.endswith(": overlap each other")
+
+
+def test_a_legend_entry_over_a_text_is_reported(clean: tuple[Figure, Axes]) -> None:
+    fig, ax = clean
+    legend = ax.get_legend()
+    assert legend is not None
+    fig.draw_without_rendering()
+    box = legend.get_texts()[0].get_window_extent()
+    x, y = ax.transData.inverted().transform((box.x0, box.y0))
+    ax.text(x, y, "over the legend", va="bottom")
+    (issue,) = found(fig, "text-overlap")
+    assert "legend label 'series'" in issue.message
+    assert "'over the legend'" in issue.message
+
+
+def test_rotated_texts_are_not_compared(clean: tuple[Figure, Axes]) -> None:
+    # The bounding boxes of labels turned by 30 degrees overlap although the labels do not.
+    fig, ax = clean
+    ax.set_xticks([0.0, 0.25, 0.5, 0.75, 1.0], ["alpha-one", "beta-two", "gamma", "delta", "eps"])
+    ax.tick_params(axis="x", labelrotation=30)
+    ax.set_xlabel("")
+    assert not found(fig, "text-overlap")
+    for label in ax.get_xticklabels():
+        label.set_rotation(90)  # A quarter turn keeps the box exact.
+    assert not found(fig, "text-overlap")
+
+
+def test_clipped_and_hidden_texts_do_not_overlap(clean: tuple[Figure, Axes]) -> None:
+    fig, ax = clean
+    ax.text(0.5, 0.5, "shown")
+    ax.text(0.5, 0.5, "hidden", visible=False)
+    ax.text(5.0, 5.0, "clipped away", clip_on=True)
+    ax.text(5.0, 5.0, "clipped too", clip_on=True)
+    assert not found(fig, "text-overlap")
 
 
 def test_an_empty_figure_has_no_issue(monkeypatch: pytest.MonkeyPatch) -> None:

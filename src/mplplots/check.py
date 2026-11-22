@@ -103,6 +103,7 @@ _RULE_TABLE: tuple[tuple[str, Severity, str], ...] = (
     ("layout-engine", "error", "A figure with a layout engine (tight or constrained)."),
     ("round-inches", "warning", "A figure or axes size or position off the 0.05 in grid."),
     ("off-canvas", "error", "Text or a legend that extends beyond the canvas."),
+    ("text-overlap", "warning", "Texts whose drawn boxes overlap each other."),
     (
         "panel-letter",
         "warning",
@@ -125,6 +126,7 @@ _SEVERITY: Mapping[str, Severity] = {rule: severity for rule, severity, _ in _RU
 _GRID_INCHES = 0.05
 _GRID_TOLERANCE_INCHES = 0.001
 _CANVAS_TOLERANCE_PIXELS = 0.5
+_OVERLAP_TOLERANCE_POINTS = 1.0
 _SIZE_TOLERANCE_POINTS = 1e-6
 _REGULAR_WEIGHT = 400
 _SCRIPT_GLYPH = re.compile("[\u00b2\u00b3\u00b9\u2070-\u209f]")
@@ -717,9 +719,13 @@ def _overhang(box: BboxBase | None, canvas: BboxBase) -> str | None:
     return f"extends beyond the {edges} of the canvas, which an uncropped file cuts off"
 
 
-def _text_box(text: Text) -> Bbox | None:
-    """Return the drawn extent of a text in pixels, cut to its clip box."""
-    box = text.get_window_extent()
+def _text_box(text: Text, *, with_arrow: bool = True) -> Bbox | None:
+    """Return the drawn extent of a text in pixels, cut to its clip box.
+
+    The extent of an annotation spans its arrow as well; ``with_arrow=False`` gives the extent
+    of its text alone.
+    """
+    box = text.get_window_extent() if with_arrow else Text.get_window_extent(text)
     clip_box = text.get_clip_box() if text.get_clip_on() else None
     return Bbox.intersection(box, clip_box) if clip_box is not None else box
 
@@ -740,6 +746,57 @@ def _check_off_canvas(context: _Context) -> Iterator[tuple[str, str]]:
         found = _overhang(legend.get_window_extent(), canvas)
         if found is not None:
             yield f"{owner} {_legend_name(legend)}", found
+
+
+def _is_quarter_turn(text: Text) -> bool:
+    """Return whether a text is upright or turned by a multiple of 90 degrees."""
+    remainder = text.get_rotation() % 90.0
+    return min(remainder, 90.0 - remainder) < 1e-6
+
+
+def _check_text_overlap(context: _Context) -> Iterator[tuple[str, str]]:
+    """Report the texts whose drawn boxes overlap by more than a point in each direction.
+
+    Only upright texts and texts turned by a multiple of 90 degrees are compared: the bounding
+    box of a text at any other angle is larger than the text. An annotation counts by its text,
+    without its arrow. Each overlap is reported once, under the text that comes first, and the
+    tick labels of one axis that overlap each other are reported together.
+    """
+    items: list[_Text] = []
+    extents: list[Sequence[float]] = []
+    for item in context.scene.texts:
+        if not item.measurable or not _is_quarter_turn(item.text):
+            continue
+        box = _text_box(item.text, with_arrow=False)
+        if box is not None and box.width > 0 and box.height > 0:
+            items.append(item)
+            extents.append(box.extents)
+    if len(items) < 2:
+        return
+    tolerance = _OVERLAP_TOLERANCE_POINTS * context.fig.dpi / 72.0
+    x0, y0, x1, y1 = np.asarray(extents, dtype=float).T
+    wide = np.minimum(x1[:, None], x1[None, :]) - np.maximum(x0[:, None], x0[None, :])
+    tall = np.minimum(y1[:, None], y1[None, :]) - np.maximum(y0[:, None], y0[None, :])
+    pairs = np.argwhere(np.triu((wide > tolerance) & (tall > tolerance), k=1))
+
+    crowded: dict[tuple[str, str], dict[int, str]] = {}
+    partners: dict[int, dict[tuple[str, str], list[str]]] = {}
+    for first, second in pairs.tolist():
+        a, b = items[first], items[second]
+        if a.role.endswith("tick label") and (a.owner, a.role) == (b.owner, b.role):
+            labels = crowded.setdefault((a.owner, a.role), {})
+            labels[first], labels[second] = a.text.get_text(), b.text.get_text()
+        else:
+            others = partners.setdefault(first, {})
+            others.setdefault((b.owner, b.role), []).append(b.text.get_text())
+    for (owner, role), labels in crowded.items():
+        yield f"{owner} {role}s {_quote_all(list(labels.values()))}", "overlap each other"
+    for first, others in partners.items():
+        a = items[first]
+        named = " and ".join(
+            f"{owner} {role} {_quote_all(texts)}" for (owner, role), texts in others.items()
+        )
+        yield f"{a.owner} {a.role} {_quote(a.text.get_text())}", f"overlaps {named}"
 
 
 def _check_panel_letter(context: _Context) -> Iterator[tuple[str, str]]:
@@ -815,6 +872,7 @@ _CHECKS: Mapping[str, _Check] = {
     "layout-engine": _check_layout_engine,
     "round-inches": _check_round_inches,
     "off-canvas": _check_off_canvas,
+    "text-overlap": _check_text_overlap,
     "panel-letter": _check_panel_letter,
     "default-color": _check_default_color,
 }

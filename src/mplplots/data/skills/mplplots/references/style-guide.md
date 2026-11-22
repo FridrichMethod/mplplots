@@ -211,6 +211,9 @@ lighter_edge = mpp.lighten(GREEN.edge, 0.3)  # a further member of the green fam
   label to the figure's bottom edge instead of the ticks. A shared y label is
   `add_shared_ylabel`, called once the panels are drawn: it measures the tick labels and keeps
   the style's label gap from them.
+- **S8.** No text overlaps another: tick labels, axis labels, titles, annotations and legend
+  entries keep clear of each other. When two collide, thin the ticks, lengthen the axis or move
+  the annotation or the legend; the text keeps its size (T1).
 
 ```python
 fig, axes = mpp.grid_inches(3, 1, width=3.0, height=0.8, hspace=0.2, sharex=True)
@@ -339,6 +342,7 @@ figure emphasizes on purpose) only with the reason in a comment.
 | `layout-engine` | error | S2 |
 | `round-inches` | warning | S2, S3 (an exact derived size is a stated exception) |
 | `off-canvas` | error | S5, X1 (an uncropped file cuts off what lies outside) |
+| `text-overlap` | warning | S8 (texts at an angle other than a quarter turn are not compared) |
 | `panel-letter` | warning | S6 |
 | `default-color` | warning | C1 |
 
