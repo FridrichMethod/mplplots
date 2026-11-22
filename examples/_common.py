@@ -28,18 +28,25 @@ FORMATS = ("png", "svg", "pdf")
 DPI = 600
 
 
-def require_arial() -> None:
-    """Exit unless Arial Regular and Arial Italic are installed.
+def require_arial(*, bold: bool = False) -> None:
+    """Exit unless Arial Regular and Arial Italic are installed, and with ``bold`` its bold faces.
 
     Without Arial the styles silently fall back to a look-alike font (Liberation Sans,
-    ...), so the README images are never written in anything but Arial. Text uses the
-    regular face and variables in math text (``$x$``) the italic one.
+    ...), so the README images are never written in anything but Arial. The Personal style
+    sets text in the regular face and variables in math text (``$x$``) in the italic one; the
+    GraphPadPrism style sets them in Arial Bold and Arial Bold Italic.
+
+    Args:
+        bold: Also require Arial Bold and Arial Bold Italic, for the GraphPadPrism figures.
     """
     faces = {(f.name, f.style, f.weight) for f in font_manager.fontManager.ttflist}
-    if not {("Arial", "normal", 400), ("Arial", "italic", 400)} <= faces:
-        sys.exit(
-            "Arial (regular and italic) is not installed; install it to regenerate the images."
-        )
+    needed = {("Arial", "normal", 400), ("Arial", "italic", 400)}
+    names = "regular and italic"
+    if bold:
+        needed |= {("Arial", "normal", 700), ("Arial", "italic", 700)}
+        names = "regular, italic, bold and bold italic"
+    if not needed <= faces:
+        sys.exit(f"Arial ({names}) is not installed; install it to regenerate the images.")
 
 
 def save(fig: Figure, name: str) -> None:

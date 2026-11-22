@@ -1,25 +1,46 @@
-# Every text element is Arial Regular 8 pt: the base font, axis labels, axes and figure
-# titles, figure-level axis labels, tick labels, and the legend and its title.
+# The default graphs of GraphPad Prism 11. Every value that comes from Prism is measured from
+# the SVG and PDF files that Prism 11 exports for its default XY, column and grouped graphs.
+# Prism's "1 pt" line thickness renders 1.44 PostScript points wide (1/50 in) and its "1/2 pt"
+# 0.72, so every length and width below is the rendered value in points.
+# Text: tick labels Arial Bold 11 pt; axis labels and figure-level axis labels Arial Bold
+# 12 pt; axes and figure titles Arial Bold 14 pt; the legend and its title 12 pt.
+# Where it departs from Prism:
+# - Matplotlib has no weight setting for tick labels or the legend, so font.weight is bold and
+#   the legend is bold, where Prism draws it regular.
+# - Prism puts the legend outside the plot on the right; legend.loc keeps it inside.
+# - Prism draws hollow symbols with a 1.44 pt border; lines.markeredgewidth is 0.72, the width
+#   of Prism's error-bar caps, which Matplotlib draws with the same setting unless
+#   errorbar.capthick is set. That key is new in Matplotlib 3.11; earlier versions log it as a
+#   bad key, so the style leaves it out.
+# - Under font.weight bold, the first math text in a session logs findfont weight notices for
+#   Matplotlib's one-weight math fonts and the \mathcal font. They do not change the output.
 
 axes.autolimit_mode: round_numbers
-axes.labelsize: 8
-axes.labelweight: normal
-axes.linewidth: 1
+# The axis label's baseline lands 35.48 pt below the axis centerline, as in Prism.
+axes.labelpad: 6.15
+axes.labelsize: 12
+axes.labelweight: bold
+# Prism's "Auto (1 pt)" axes.
+axes.linewidth: 1.44
 axes.spines.right: False
 axes.spines.top: False
-axes.titlesize: 8
-axes.titleweight: normal
+# The title's baseline sits 12.15 pt above the top of the plot area, as in Prism.
+axes.titlepad: 12.15
+axes.titlesize: 14
+axes.titleweight: bold
 
-errorbar.capsize: 3
+# Caps 6.48 pt long, like Prism's on XY graphs (5.76 pt plus round ends); their thickness is
+# lines.markeredgewidth. Prism makes bar-graph caps half the bar width: pass capsize there.
+errorbar.capsize: 3.24
 
 # Screen resolution; saved files use savefig.dpi. The style sets no figure size and does not
 # crop saved figures (no savefig.bbox), so a saved file has exactly the figure's size.
 figure.dpi: 300
 figure.frameon: False
-figure.labelsize: 8
-figure.labelweight: normal
-figure.titlesize: 8
-figure.titleweight: normal
+figure.labelsize: 12
+figure.labelweight: bold
+figure.titlesize: 14
+figure.titleweight: bold
 
 # Matplotlib's default cursive fonts (used for \mathcal), plus DejaVu Sans, the font
 # Matplotlib falls back to anyway, so that a missing cursive font does not warn.
@@ -31,24 +52,46 @@ font.family: sans-serif
 # ships with Matplotlib and therefore always resolves. To get Arial on a machine
 # that lacks it, register the font files with mplplots.utils.add_custom_fonts().
 font.sans-serif: Arial, Helvetica, Liberation Sans, Arimo, Nimbus Sans, DejaVu Sans, sans-serif
-font.size: 8
-font.weight: normal
+font.size: 12
+# Bold everywhere: tick labels and legend text have no weight setting of their own.
+font.weight: bold
 
-legend.fontsize: 8
+legend.fontsize: 12
 legend.frameon: False
+# As in Prism: a 15.36 pt handle, 8.64 pt from handle to text, rows 20.16 pt apart and a bar
+# swatch 8.24 pt tall. Line and symbol handles then sit 0.16 pt higher than Prism's.
+legend.handleheight: 0.68
+legend.handlelength: 1.28
+legend.handletextpad: 0.72
+legend.labelspacing: 0.742
+# Prism puts the legend outside the plot on the right, which no setting can express: place
+# it with loc="upper left" and bbox_to_anchor, or with mplplots.legend_inches.
 legend.loc: upper right
-legend.title_fontsize: 8
+legend.title_fontsize: 12
 
-lines.linewidth: 1
+# Connecting lines and error bars are Prism's "1/2 pt"; connecting lines have round ends, while
+# error bars and caps keep Matplotlib's flat ends, where Prism's are round. Symbols are 5.76 pt
+# across like Prism's size 4: the marker edge is centered on the outline, so the drawn symbol
+# is markersize + markeredgewidth.
+lines.linewidth: 0.72
+lines.markeredgewidth: 0.72
+lines.markersize: 5.04
+lines.solid_capstyle: round
 
-# "sans" resolves through font.sans-serif, so math uses the same font as the text
-# (Arial when installed).
+# "sans" resolves through font.sans-serif and takes its weight from font.weight, so math uses
+# the text's font in bold (Arial Bold and Bold Italic when installed), even in regular text.
 mathtext.bf: sans:bold
 mathtext.bfit: sans:italic:bold
 mathtext.fontset: custom
 mathtext.it: sans:italic
 mathtext.rm: sans
 mathtext.sf: sans
+
+# Prism's bar border. A patch gets an edge only when given an edge color, for example
+# bar(..., edgecolor="black"). The width also applies to every other patch with an edge
+# (step histograms, arrows, text boxes) and to filled scatter markers, whose face-colored
+# edge makes them 7.2 pt across; pass linewidths=0.72 to scatter for Prism's 5.76 pt.
+patch.linewidth: 2.16
 
 # Embed fonts in PDF and PostScript as TrueType (Type 42) instead of Type 3, so the text
 # stays editable (in Illustrator, for example) and passes journal checks that reject
@@ -61,12 +104,27 @@ savefig.dpi: 600
 # SVG stores glyphs as paths, so it looks the same on machines without Arial.
 svg.fonttype: path
 
-xtick.labelsize: 8
-xtick.major.width: 1
-xtick.minor.visible: True
-xtick.minor.width: 1
+# Ticks point out and are 1.44 pt wide. A Matplotlib tick starts at the axis centerline with
+# a flat end, so a 6.12 pt (minor 3.42 pt) tick shows 5.4 pt (2.7 pt) beyond the axis line,
+# as Prism's do. Prism draws no minor ticks. The pads put the X tick labels' baseline 18.28 pt
+# below the axis centerline and the right edge of the Y tick labels 8.28 pt left of it; minor
+# tick labels (log axes) line up with the major ones.
+xtick.direction: out
+xtick.labelsize: 11
+xtick.major.pad: 4.15
+xtick.major.size: 6.12
+xtick.major.width: 1.44
+xtick.minor.pad: 6.85
+xtick.minor.size: 3.42
+xtick.minor.visible: False
+xtick.minor.width: 1.44
 
-ytick.labelsize: 8
-ytick.major.width: 1
-ytick.minor.visible: True
-ytick.minor.width: 1
+ytick.direction: out
+ytick.labelsize: 11
+ytick.major.pad: 2.15
+ytick.major.size: 6.12
+ytick.major.width: 1.44
+ytick.minor.pad: 4.85
+ytick.minor.size: 3.42
+ytick.minor.visible: False
+ytick.minor.width: 1.44

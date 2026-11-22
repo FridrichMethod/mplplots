@@ -60,7 +60,9 @@ Do not commit or push if either fails. Fix issues first.
 - Every style sets `pdf.fonttype: 42`, `ps.fonttype: 42`, `savefig.dpi: 600` and
   `svg.fonttype: path`, and sets neither `figure.figsize` nor `savefig.bbox`, so a saved file
   has exactly the figure's size. Every style resolves its fonts without warnings on a machine
-  that lacks its first-choice font. `tests/test_styles.py` checks both for every packaged style.
+  that lacks its first-choice font; the only notices tolerated are Matplotlib's weight notices
+  for its bundled one-weight fonts and the style's cursive fonts, which bold math logs (all math
+  in GraphPadPrism). `tests/test_styles.py` checks both for every packaged style.
 - `mplplots.use` and `mplplots.context` first return every key that any packaged style sets to
   Matplotlib's default, then apply the style, so switching styles in a session gives the style
   alone. `tests/test_styles.py` checks every pair of packaged styles.
@@ -84,15 +86,31 @@ Do not commit or push if either fails. Fix issues first.
 
 ### GraphPadPrism
 
-- `src/mplplots/styles/GraphPadPrism.mplstyle` sets every text element to Arial Regular 8 pt:
-  tick labels, axis labels, axes and figure titles, figure-level axis labels, and the legend and
-  its title. Do not give any of them another size or weight.
-- Axis lines, major and minor ticks, and data lines (including error bars) are 1 pt wide.
+- `src/mplplots/styles/GraphPadPrism.mplstyle` reproduces the default graphs of GraphPad Prism
+  11. Every value that comes from Prism is measured from the SVG and PDF files that Prism 11
+  exports for its default XY, column and grouped graphs (exported at "Actual" size, with Prism's
+  small export scale divided out); `tests/test_styles.py` pins every key it sets. A change to
+  them alters how existing figures look, so it raises the minor version.
+- Text is Arial Bold: tick labels 11 pt; axis labels and figure-level axis labels 12 pt; axes
+  and figure titles 14 pt; the legend and its title 12 pt (`font.size` 12). Matplotlib has no
+  weight setting for tick labels or the legend, so `font.weight` is bold and the legend is bold,
+  where Prism draws it regular. Math text is bold too. Do not give any text another size or
+  weight.
+- Lengths and widths are the rendered PostScript points measured in Prism's files, not Prism's
+  dialog values: Prism's "1 pt" renders 1.44 pt (1/50 in) and its "1/2 pt" 0.72 pt. Axis lines
+  and ticks are 1.44 pt wide; ticks point out and reach 5.4 pt beyond the axis line (minor
+  ticks 2.7 pt, off by default, as in Prism); data lines, error bars and caps are 0.72 pt; caps
+  are 6.48 pt long; filled symbols are 5.76 pt across; bars given an edge color get Prism's
+  2.16 pt border (`patch.linewidth`). The pads put tick labels, axis labels and the title where
+  Prism puts them.
+- Where the style departs from Prism is listed in `README.md` under "What the GraphPadPrism
+  style changes": among others, Prism's regular legend text, its legend outside the plot on the
+  right, its 1.44 pt border on hollow symbols (only `errorbar.capthick`, new in Matplotlib 3.11,
+  sets the caps apart from it, so the style leaves the border at 0.72 pt), its bar borders drawn
+  inside the bar, and the font weight notices that its bold math logs.
 - It saves at 600 dpi (`savefig.dpi`), embeds TrueType fonts in PDF and PostScript
   (`pdf.fonttype` and `ps.fonttype` 42), stores SVG text as paths, sets no figure size, and does
   not crop saved figures (no `savefig.bbox`), so a saved file has exactly the figure's size.
-- Its values are chosen by eye and are not measured from GraphPad Prism's defaults. A change to
-  them alters how existing figures look, so it raises the minor version.
 
 ## Rendering Figures
 
@@ -112,16 +130,18 @@ Do not commit or push if either fails. Fix issues first.
 - Keep the style's text: pass no `fontsize` or `fontweight`.
 - Write variables and formulas in labels, titles and legends as math text (`"$x$"`,
   `r"$\sin(x)$"`), never as upright text (`"x"`, `"sin(x)"`). The styles set math variables in
-  Arial Italic and function names, numbers and operators upright.
+  Arial Italic (Bold Italic in GraphPadPrism) and function names, numbers and operators upright.
 - `personal_demo.py` checks each figure with `mpp.assert_figure(fig, warnings_as_errors=True)`
-  before saving it.
+  before saving it, and `styles_demo.py` each `graphpadprism_*` figure with
+  `assert_figure(fig, style="GraphPadPrism", warnings_as_errors=True)`.
 - Save every figure with `save()` from `examples/_common.py`, which calls
   `mplplots.save_figure`: PNG at 600 dpi, SVG and PDF, side by side in `examples/`, uncropped and
   without timestamps, so rerunning an unchanged script reproduces the files byte for byte.
 - Render with Matplotlib 3.11.2: another version writes its version string into every file.
-  Rendering needs Arial Regular and Italic installed; the scripts exit without them. After
-  changing a style, the toolkit or a script, rerun all three scripts and commit all three
-  formats. In `README.md`, show each image at 100 pixels per inch of figure width.
+  Rendering needs Arial Regular and Italic installed, and Arial Bold and Bold Italic for
+  `styles_demo.py`; the scripts exit without them. After changing a style, the toolkit or a
+  script, rerun all three scripts and commit all three formats. In `README.md`, show each image
+  at 100 pixels per inch of figure width.
 
 ## Agent Skill, Rules and Style Guide
 

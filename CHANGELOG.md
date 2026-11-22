@@ -8,11 +8,25 @@ All notable changes to mplplots are recorded here. The format follows
 
 ### Changed
 
+- GraphPadPrism style: reproduces the default graphs of GraphPad Prism 11, with every value that
+  comes from Prism measured from the SVG and PDF files that Prism 11 exports. Figures look
+  different: text is Arial Bold, with 11 pt tick labels, 12 pt axis labels, figure-level labels
+  and legend, and 14 pt axes and figure titles (the legend is bold, where Prism draws it
+  regular); axis lines and ticks are 1.44 pt wide (Prism's "1 pt"), with outward ticks reaching
+  5.4 pt beyond the axis line; minor ticks are off, and 2.7 pt long when turned on; data lines,
+  error bars, and caps are 0.72 pt (Prism's "1/2 pt"), data lines have round ends, and caps are
+  6.48 pt long; symbols are 5.76 pt across; bars given an edge color get a 2.16 pt border; tick
+  labels, axis labels, the title, and legend rows sit at Prism's distances. The README lists
+  where the style departs from Prism, such as Prism's legend outside the plot on the right.
 - `check_figure` and `assert_figure` read every text size and weight from the style file: the
   `font-size` rule accepts each size the style sets for a kind of text (`font.size`,
   `axes.labelsize`, `axes.titlesize`, the tick label, legend, and figure text sizes), and
-  `font-weight` each weight it sets, in place of `font.size` and regular alone. Both packaged
-  styles check as before.
+  `font-weight` each weight it sets, in place of `font.size` and regular alone. A figure in the
+  GraphPadPrism style passes with the style's 11, 12, and 14 pt bold text. The Personal style
+  checks as before.
+- The `graphpadprism_*` README images use Prism's 3 by 2 in plot area (2 by 2 in for the bar
+  chart) and black bar borders, and pass `assert_figure` against the style; the ocean, grouped
+  bar, and error bar images place their legend beside the plot, close to where Prism puts it.
 
 ### Fixed
 

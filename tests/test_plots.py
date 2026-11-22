@@ -150,7 +150,7 @@ def test_box_axes_reads_the_axes_line_width_of_the_active_style() -> None:
     with mplplots.context("GraphPadPrism"):
         _, ax = plt.subplots()
         box_axes(ax)
-        assert {spine.get_linewidth() for spine in ax.spines.values()} == {1.0}
+        assert {spine.get_linewidth() for spine in ax.spines.values()} == {1.44}
 
 
 def test_box_axes_turns_off_top_and_right_ticks() -> None:

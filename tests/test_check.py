@@ -163,6 +163,15 @@ def test_the_expected_values_follow_the_named_style() -> None:
     assert "spine-width" in rules(check_figure(fig, style="Personal"))
 
 
+def test_the_text_sizes_and_weights_of_each_packaged_style() -> None:
+    personal = check._Expected.read("Personal")
+    assert personal.font_sizes == (8.0,)
+    assert personal.font_weights == {400}
+    prism = check._Expected.read("GraphPadPrism")
+    assert prism.font_sizes == (11.0, 12.0, 14.0)
+    assert prism.font_weights == {700}
+
+
 def test_personal_messages_name_its_one_size_and_regular(clean: tuple[Figure, Axes]) -> None:
     fig, ax = clean
     ax.set_title("Title", fontsize=10)
@@ -171,6 +180,59 @@ def test_personal_messages_name_its_one_size_and_regular(clean: tuple[Figure, Ax
     assert size.message == "axes 0 title 'Title': font size 10 pt, expected 8 pt"
     (weight,) = found(fig, "font-weight")
     assert weight.message == "axes 0 x label 'Time (s)': font weight bold, expected regular"
+
+
+def prism_figure() -> tuple[Figure, Axes]:
+    """A GraphPadPrism figure with every kind of text at the size and weight the style gives it."""
+    mplplots.use("GraphPadPrism")
+    fig = plt.figure(figsize=(5.0, 3.5))
+    ax = mplplots.add_axes_inches(fig, 0.9, 0.7, 2.5, 2.0)
+    ax.plot([0, 1], [0, 1], color="#4f9d58", label="Control")
+    ax.set(xlim=(0, 1), ylim=(0, 1))
+    ax.set_title("Response")
+    ax.set_xlabel("Time (h)")
+    ax.set_ylabel("Signal")
+    ax.text(0.1, 0.8, "$n = 6$")
+    mplplots.legend_inches(ax, 3.8, 2.7, title="Group")
+    mplplots.suptitle_inches(fig, "Overview")
+    fig.supylabel("Figure label", x=0.0, ha="left")
+    return fig, ax
+
+
+def test_prism_text_passes_against_the_prism_style() -> None:
+    fig, _ = prism_figure()
+    fig.draw_without_rendering()
+    texts = [text for text in fig.findobj(Text) if text.get_visible() and text.get_text()]
+    assert {text.get_fontsize() for text in texts} == {11.0, 12.0, 14.0}
+    assert {text.get_fontweight() for text in texts} == {"bold"}
+    checked = {"font-size", "font-weight", "font-family"}
+    assert not rules(check_figure(fig, style="GraphPadPrism")) & checked
+    # The same texts break the Personal style's 8 pt regular text.
+    assert {"font-size", "font-weight"} <= rules(check_figure(fig, style="Personal"))
+
+
+def test_prism_text_at_another_size_or_weight_is_reported() -> None:
+    fig, ax = prism_figure()
+    ax.set_title("Response", fontsize=13)
+    ax.set_xlabel("Time (h)", fontweight="normal")
+    ax.tick_params(axis="y", labelsize=8)
+    sizes = [issue.message for issue in found(fig, "font-size", style="GraphPadPrism")]
+    assert sizes[0] == "axes 0 title 'Response': font size 13 pt, expected 11, 12 or 14 pt"
+    assert sizes[1].startswith("axes 0 y tick labels '0.0', ")
+    assert sizes[1].endswith(": font size 8 pt, expected 11, 12 or 14 pt")
+    assert len(sizes) == 2
+    (weight,) = found(fig, "font-weight", style="GraphPadPrism")
+    assert weight.message == "axes 0 x label 'Time (h)': font weight normal, expected bold"
+
+
+def test_prism_allows_regular_legend_text_only_on_request() -> None:
+    # Prism draws its legend in regular type, which the style cannot express.
+    fig, ax = prism_figure()
+    mplplots.legend_inches(ax, 3.8, 2.7, title="Group", prop={"weight": "normal"})
+    (weight,) = found(fig, "font-weight", style="GraphPadPrism")
+    assert weight.message == "axes 0 legend label 'Control': font weight normal, expected bold"
+    issues = check_figure(fig, style="GraphPadPrism", allow_font_weights=["normal"])
+    assert "font-weight" not in rules(issues)
 
 
 def test_text_sizes_and_weights_come_from_the_style_file(
@@ -685,7 +747,7 @@ def test_a_color_bar_outline_is_as_wide_as_a_minor_tick() -> None:
 
 
 def test_a_color_bar_outline_follows_the_style_that_is_checked() -> None:
-    # GraphPadPrism draws axis lines and minor ticks at 1 pt, so the default outline passes.
+    # GraphPadPrism draws axis lines and minor ticks at 1.44 pt, so the default outline passes.
     with mplplots.context("GraphPadPrism"):
         fig = plt.figure(figsize=(3.0, 2.0))
         ax = mplplots.add_axes_inches(fig, 0.6, 0.4, 1.8, 1.4)
