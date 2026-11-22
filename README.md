@@ -106,7 +106,7 @@ plt.style.use("mplplots.styles.Personal")  # or "mplplots.styles.GraphPadPrism"
   </tr>
   <tr>
     <td>A 2 by 2 <code>grid_inches</code> layout with shared axes</td>
-    <td>Bars, replicates, 95% confidence intervals, and <code>significance_stars</code></td>
+    <td>Bars, replicates, 95% t intervals, and <code>significance_stars</code></td>
   </tr>
   <tr>
     <td><img src="examples/personal_mean_sem.png" alt="Mean and SEM bands with a dashed second state and a threshold line" width="450"></td>

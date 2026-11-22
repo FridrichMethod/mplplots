@@ -255,8 +255,12 @@ plt.close(fig)
 - **E2.** The unit of replication is the independent replicate, never the frame, cell or pixel.
   Reduce each replicate to one value first, or resample whole replicates. Samples within one
   replicate are correlated, so an interval over them is spuriously narrow.
-- **E3.** A published interval at small n is a BCa bootstrap interval with at least 10,000
-  resamples. A plain percentile bootstrap undercovers at small n.
+- **E3.** The 95% interval of a mean is the t interval, mean +/- t(0.975, n - 1) SEM, which is
+  exact for normally distributed replicates. A bootstrap interval of a mean is no better, even
+  with BCa correction and skewed data, and too narrow at small n: it covers about 85% at n = 5
+  or 6. A statistic other than the mean, such as a median or a ratio, takes a BCa interval with
+  at least 10,000 resamples from 20 replicates on; below that, it is shown by its individual
+  values (E4). The caption names the interval.
 - **E4.** With few replicates, the individual values are overlaid: a summary hides a bimodal set.
 - **E5.** Significance stars come from the multiplicity-corrected value of a comparison family
   (`significance_stars`: `***` below 0.001, `**` below 0.01, `*` below 0.05, otherwise `n.s.`),
@@ -272,11 +276,11 @@ plt.close(fig)
 ```python
 from matplotlib.ticker import NullLocator
 
-# One value per replicate and 95% BCa intervals (10,000 resamples) from the analysis (E2, E3).
+# One value per replicate and 95% t intervals (2.571 SEM at n = 6) from the analysis (E2, E3).
 groups, pairs = ["Reference", "Treated"], [GRAY, GREEN]
 replicates = [np.array([1.0, 1.2, 0.9, 1.1, 1.05, 0.95]), np.array([1.8, 2.1, 1.6, 2.0, 1.9, 2.2])]
 means = np.array([values.mean() for values in replicates])
-ci_low, ci_high = np.array([0.96, 1.79]), np.array([1.11, 2.07])
+ci_low, ci_high = np.array([0.92, 1.71]), np.array([1.15, 2.16])
 q = 0.004  # corrected over the comparison family (E5)
 positions, yerr = np.arange(len(groups)), [means - ci_low, ci_high - means]
 fills, borders = [pair.fill for pair in pairs], [pair.edge for pair in pairs]
@@ -434,7 +438,8 @@ test_palette_is_sound()
 - Colors come from the tested project palette; series on one axis differ without color (C1-C7).
 - Figure size, axis lengths and margins are named inch constants on the grid (S1, S2).
 - No panel letters, no `supxlabel`, and a shared y label from `add_shared_ylabel` (S6, S7).
-- Intervals are 95% BCa over replicates, or a SEM band that the caption names (E1 to E3).
+- Intervals of a mean are 95% t intervals over replicates, BCa intervals serve another statistic
+  from n = 20, and a SEM band is named in the caption (E1 to E3).
 - Few replicates are shown individually; stars come from corrected values (E4, E5).
 - Distributions use `plot_distribution`, and the caption gives the bin width and denominator (E7).
 - `mpp.assert_figure(fig)` passes, and each `ignore` has a stated reason.

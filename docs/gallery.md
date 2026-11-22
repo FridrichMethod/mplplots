@@ -42,7 +42,7 @@ Personal image of the [style comparison](#style-comparison). Each figure sets it
   </tr>
   <tr>
     <td>A 2 by 2 <code>grid_inches</code> layout with shared axes and <code>add_shared_ylabel</code></td>
-    <td>Filled and hollow bars, 95% confidence intervals, replicates, and <code>significance_stars</code></td>
+    <td>Filled and hollow bars, 95% t intervals, replicates, and <code>significance_stars</code></td>
   </tr>
 </table>
 

@@ -38,6 +38,12 @@ All notable changes to mplplots are recorded here. The format follows
   major ticks the 2.5 pt length and leaves its minor ticks as the style draws them. Step 4 of the
   skill's workflow and of the rules snippet calls `auto_ticks`, and so do the examples of the
   style guide and the skill.
+- Style guide: rule E3 asks for the t interval, mean +/- t(0.975, n - 1) SEM, for every mean, in
+  place of a BCa bootstrap interval, which covers only about 85% at n = 5 or 6 and is no better
+  than the t interval at larger n, even for skewed data. A BCa interval with at least 10,000
+  resamples serves a statistic other than the mean, such as a median or a ratio, from 20
+  replicates on; below that, such a statistic is shown by its individual values. The
+  `personal_bars` gallery image draws t intervals, and its captions name them.
 - The Personal gallery images and the palette figures with numeric axes set their ticks with
   `auto_ticks`, with limits that leave five or more major intervals.
 - The README is a short introduction; the reference documentation (styles, ticks, layout, colors,

@@ -7,7 +7,6 @@ writes the same files.
 """
 
 import itertools
-from statistics import NormalDist
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -43,37 +42,28 @@ ERROR_BAR_WIDTH = 0.8
 DOTS: dict[str, Any] = {"s": 22, "linewidths": 0.5, "alpha": mpp.SCATTER_ALPHA}
 
 
-def bca_interval(
-    values: NDArray[np.float64],
-    rng: np.random.Generator,
-    *,
-    resamples: int = 10_000,
-    level: float = 0.95,
-) -> tuple[float, float]:
-    """Return the BCa bootstrap interval of the mean of independent replicates (E3).
+# The 0.975 quantiles of Student's t with n - 1 degrees of freedom, t(0.975, n - 1), for n = 2
+# to 20 replicates: the half-width of a two-sided 95% interval in SEM, as
+# scipy.stats.t.ppf(0.975, n - 1) gives them.
+T_975 = (
+    12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262, 2.228,
+    2.201, 2.179, 2.160, 2.145, 2.131, 2.120, 2.110, 2.101, 2.093,
+)  # fmt: skip
+
+
+def t_interval(values: NDArray[np.float64]) -> tuple[float, float]:
+    """Return the 95% t interval of the mean of independent replicates (E3).
 
     Args:
-        values: One value per independent replicate.
-        rng: The random generator that draws the resamples.
-        resamples: The number of bootstrap resamples.
-        level: The coverage of the interval.
+        values: One value per independent replicate, 2 to 20 of them.
 
     Returns:
-        The lower and upper ends of the interval.
+        The lower and upper ends of the interval, the mean -/+ t(0.975, n - 1) SEM.
     """
     n = values.size
-    means = values[rng.integers(0, n, size=(resamples, n))].mean(axis=1)
-    normal = NormalDist()
-    below = np.clip(np.mean(means < values.mean()), 1 / resamples, 1 - 1 / resamples)
-    bias = normal.inv_cdf(float(below))
-    # Acceleration from the jackknife means, each leaving one replicate out.
-    jackknife = (values.sum() - values) / (n - 1)
-    spread = jackknife.mean() - jackknife
-    acceleration = float(np.sum(spread**3) / (6.0 * np.sum(spread**2) ** 1.5))
-    ends = (normal.inv_cdf((1 - level) / 2), normal.inv_cdf((1 + level) / 2))
-    tails = [normal.cdf(bias + (bias + z) / (1 - acceleration * (bias + z))) for z in ends]
-    low, high = np.quantile(means, tails)
-    return float(low), float(high)
+    half_width = T_975[n - 2] * float(values.std(ddof=1)) / np.sqrt(n)
+    mean = float(values.mean())
+    return mean - half_width, mean + half_width
 
 
 def permutation_p(first: NDArray[np.float64], second: NDArray[np.float64]) -> float:
@@ -238,7 +228,7 @@ replicates = {
     for group, levels in group_means.items()
     for state, level in zip(("Resting", "Stimulated"), levels)
 }
-intervals = {key: bca_interval(values, rng) for key, values in replicates.items()}
+intervals = {key: t_interval(values) for key, values in replicates.items()}
 q_values = dict(
     zip(
         groups,
