@@ -549,15 +549,16 @@ mpp.assert_figure(fig, ignore={"open-spines"})
 ```
 
 Both take `style=` to check against another packaged style (`"Personal"` by default), `ignore=`
-to skip rule ids, and `allow_font_sizes=` for sizes accepted besides the style's `font.size`. Pass
-`ignore` only with the reason in a comment. They inspect only drawn artists and handle polar and
+to skip rule ids, `allow_font_sizes=` for sizes accepted besides the style's `font.size`, and
+`allow_font_weights=` for weights accepted besides regular, such as a bold callout. Pass any of
+the three only with the reason in a comment. They inspect only drawn artists and handle polar and
 3D axes, colorbars, twin axes, and log scales. `mplplots.RULES` maps each rule id to a one-line
 description.
 
 | Rule id | Severity | Reports |
 | --- | --- | --- |
 | `font-size` | error | Text whose size is neither the style's `font.size` nor in `allow_font_sizes` |
-| `font-weight` | error | Text whose weight is not regular |
+| `font-weight` | error | Text whose weight is neither regular nor in `allow_font_weights` |
 | `font-family` | error | Text that resolves to a font outside the style's `font.sans-serif` list |
 | `font-fallback` | warning | The style's first-choice font is not installed, so text renders in a fallback (once per figure) |
 | `script-glyph` | error | Text with a precomposed superscript or subscript character, such as U+00B2; write `$^2$` |

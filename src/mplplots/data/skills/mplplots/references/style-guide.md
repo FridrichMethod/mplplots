@@ -304,7 +304,8 @@ assert [path.name for path in paths][-1] == "signal_caption.txt"  # after the PN
 artists, with the expected values read from the style file (`style=` names another style).
 `mpp.assert_figure(fig)` raises `StyleError` listing the errors and emits a `StyleWarning` per
 warning (`warnings_as_errors=True` fails on those too). Run one before every save, fix what it
-reports, and pass `ignore` (or `allow_font_sizes`) only with the reason in a comment.
+reports, and pass `ignore`, `allow_font_sizes` or `allow_font_weights` (a bold callout that a
+figure emphasizes on purpose) only with the reason in a comment.
 
 | Rule id | Severity | Enforces |
 | --- | --- | --- |

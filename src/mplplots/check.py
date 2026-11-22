@@ -196,6 +196,7 @@ class _Context:
     scene: _Scene
     expected: _Expected
     font_sizes: tuple[float, ...]
+    font_weights: frozenset[int]
 
 
 # --- Collecting the drawn artists ---------------------------------------------------------------
@@ -496,16 +497,20 @@ def _check_font_size(context: _Context) -> Iterator[tuple[str, str]]:
     return _texts(context, problem)
 
 
+def _numeric_weight(weight: int | str) -> int | str:
+    """Return a font weight as a number; a name that Matplotlib does not know stays as it is."""
+    return font_manager.weight_dict.get(weight, weight) if isinstance(weight, str) else weight
+
+
 def _check_font_weight(context: _Context) -> Iterator[tuple[str, str]]:
-    """Report each text whose weight is not regular."""
+    """Report each text whose weight is neither regular nor an allowed weight."""
 
     def problem(item: _Text) -> str | None:
-        """Return the text's weight if it is not regular, else ``None``."""
+        """Return the text's wrong weight, or ``None`` if it is allowed."""
         weight = item.text.get_fontweight()
-        numeric = (
-            font_manager.weight_dict.get(weight, weight) if isinstance(weight, str) else weight
-        )
-        return None if numeric == _REGULAR_WEIGHT else f"font weight {weight}, expected regular"
+        if _numeric_weight(weight) in context.font_weights:
+            return None
+        return f"font weight {weight}, expected regular"
 
     return _texts(context, problem)
 
@@ -812,12 +817,31 @@ def _rule_ids(ignore: Collection[str]) -> frozenset[str]:
     return ids
 
 
+def _font_weights(allowed: Collection[int | str]) -> frozenset[int]:
+    """Return regular and the allowed font weights as numbers.
+
+    Raises:
+        ValueError: If a name is not a font weight that Matplotlib knows.
+    """
+    weights = {
+        _numeric_weight(weight) for weight in ((allowed,) if isinstance(allowed, str) else allowed)
+    }
+    unknown = sorted(weight for weight in weights if isinstance(weight, str))
+    if unknown:
+        raise ValueError(
+            f"unknown font weight {', '.join(map(repr, unknown))};"
+            f" choose from {', '.join(font_manager.weight_dict)} or give a number"
+        )
+    return frozenset({_REGULAR_WEIGHT, *(int(weight) for weight in weights)})
+
+
 def check_figure(
     fig: Figure,
     *,
     style: str = DEFAULT_STYLE,
     ignore: Collection[str] = (),
     allow_font_sizes: Collection[float] = (),
+    allow_font_weights: Collection[int | str] = (),
 ) -> list[Issue]:
     """Check a figure against a packaged style and the style guide's rules.
 
@@ -831,19 +855,23 @@ def check_figure(
         style: The style whose file holds the expected values, one of ``STYLES``.
         ignore: Rule ids (keys of ``RULES``) to skip.
         allow_font_sizes: Font sizes in points accepted besides the style's ``font.size``.
+        allow_font_weights: Font weights accepted besides regular, as names (``"bold"``) or
+            numbers (``500``), for text that the figure emphasizes on purpose.
 
     Returns:
         The issues found, ordered by rule as in ``RULES``; an empty list for a clean figure.
 
     Raises:
-        ValueError: If ``style`` is not a packaged style or ``ignore`` holds an unknown rule id.
+        ValueError: If ``style`` is not a packaged style, ``ignore`` holds an unknown rule id or
+            ``allow_font_weights`` holds a name that is not a font weight.
     """
     ignored = _rule_ids(ignore)
+    weights = _font_weights(allow_font_weights)
     expected = _Expected.read(style)
     with _TickRecorder(_every_axes(fig)) as recorder:
         fig.draw_without_rendering()
     sizes = (expected.font_size, *(float(size) for size in allow_font_sizes))
-    context = _Context(fig, _scene(fig, recorder.drawn), expected, sizes)
+    context = _Context(fig, _scene(fig, recorder.drawn), expected, sizes, weights)
     return [
         Issue(rule, _SEVERITY[rule], f"{subject}: {problem}")
         for rule, check in _CHECKS.items()
@@ -858,6 +886,7 @@ def assert_figure(
     style: str = DEFAULT_STYLE,
     ignore: Collection[str] = (),
     allow_font_sizes: Collection[float] = (),
+    allow_font_weights: Collection[int | str] = (),
     warnings_as_errors: bool = False,
 ) -> None:
     """Raise if a figure breaks a rule of a packaged style; warn about the rest.
@@ -867,15 +896,24 @@ def assert_figure(
         style: The style whose file holds the expected values, one of ``STYLES``.
         ignore: Rule ids (keys of ``RULES``) to skip.
         allow_font_sizes: Font sizes in points accepted besides the style's ``font.size``.
+        allow_font_weights: Font weights accepted besides regular, as names (``"bold"``) or
+            numbers (``500``), for text that the figure emphasizes on purpose.
         warnings_as_errors: Raise for warnings as well as errors.
 
     Raises:
         StyleError: If ``check_figure`` reports an error, or a warning when
             ``warnings_as_errors`` is true. Its message has one line per issue,
             ``rule: message``.
-        ValueError: If ``style`` is not a packaged style or ``ignore`` holds an unknown rule id.
+        ValueError: If ``style`` is not a packaged style, ``ignore`` holds an unknown rule id or
+            ``allow_font_weights`` holds a name that is not a font weight.
     """
-    issues = check_figure(fig, style=style, ignore=ignore, allow_font_sizes=allow_font_sizes)
+    issues = check_figure(
+        fig,
+        style=style,
+        ignore=ignore,
+        allow_font_sizes=allow_font_sizes,
+        allow_font_weights=allow_font_weights,
+    )
     failing = [issue for issue in issues if warnings_as_errors or issue.severity == "error"]
     if failing:
         raise StyleError("\n".join(f"{issue.rule}: {issue.message}" for issue in failing))

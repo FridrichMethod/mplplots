@@ -117,6 +117,22 @@ def test_allow_font_sizes(clean: tuple[Figure, Axes]) -> None:
     assert "font-size" not in rules(check_figure(fig, allow_font_sizes=[6]))
 
 
+def test_allow_font_weights(clean: tuple[Figure, Axes]) -> None:
+    fig, ax = clean
+    ax.text(0.2, 0.5, "medium", fontweight=500)
+    ax.text(0.6, 0.5, "bold", fontweight="bold")
+    assert "font-weight" in rules(check_figure(fig))
+    # A weight is allowed by name or by number, whichever way the text gives it.
+    (issue,) = [i for i in check_figure(fig, allow_font_weights=[700]) if i.rule == "font-weight"]
+    assert "'medium'" in issue.message
+    assert "font-weight" not in rules(check_figure(fig, allow_font_weights=["medium", "bold"]))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", StyleWarning)
+        assert_figure(fig, allow_font_weights=[500, 700])  # Does not raise.
+    with pytest.raises(ValueError, match="heavyish"):
+        check_figure(fig, allow_font_weights=["heavyish"])
+
+
 def test_hidden_artists_are_ignored(clean: tuple[Figure, Axes]) -> None:
     fig, ax = clean
     ax.set_title("Hidden", fontsize=20)
