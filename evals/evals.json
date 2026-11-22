@@ -26,6 +26,7 @@
         "each color bar outline is 0.6 pt wide",
         "the 20,000-point scatter is drawn with rasterized=True and is not subsampled",
         "the sample names keep the style's font size",
+        "the figure's colors come from color maps, and no palette module or check_palette test is added for them",
         "check_figure on each saved figure reports no error and no text-overlap warning"
       ]
     },

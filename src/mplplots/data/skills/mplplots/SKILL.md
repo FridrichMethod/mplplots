@@ -37,8 +37,9 @@ Matplotlib's cache directory (`matplotlib.get_cachedir()`) so it finds them.
 ## Workflow
 
 1. `import mplplots as mpp` and `mpp.use()`, before the first figure is created.
-2. Take colors from the project's palette module of `ColorPair` roles. If the project has none,
-   create one with a `check_palette` test (guide: "A project palette").
+2. Take named colors (lines, bars, groups) from the project's palette module of `ColorPair`
+   roles. If the project has none, create one with a `check_palette` test (guide: "A project
+   palette"). A figure colored only by color maps (C8) needs no palette.
 3. Lay the figure out in round inches with `mpp.grid_inches` or `mpp.add_axes_inches`.
 4. Draw, following the text and mark rules: no `fontsize` or `fontweight`, variables as math
    text, explicit line widths when curves share a panel, reference lines with `REFERENCE_LINE`.

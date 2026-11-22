@@ -154,7 +154,9 @@ plt.close(fig)
 
 - **C1.** A project defines one palette module that maps each role to a `ColorPair(fill, edge)`.
   Figure code takes colors from it, never from Matplotlib's default cycle, which the style
-  keeps: a curve drawn without a color gets a cycle color, and `check_figure` reports it.
+  keeps: a curve drawn without a color gets a cycle color, and `check_figure` reports it. A
+  figure whose colors all come from a color map (C8) takes none from the palette, and a project
+  whose figures are all such needs no palette module.
 - **C2.** The edge carries identity: lines, marker edges, bar borders. The fill is its pale
   partner, drawn under alpha: bands, bar faces, scatter faces. An edge is darker than its fill.
 - **C3.** Alphas: `SCATTER_ALPHA` 0.6 for dots, histogram and density fills; `BAND_ALPHA` 0.5 for
@@ -384,7 +386,7 @@ plt.close(fig)
 
 ## A project palette
 
-A project keeps its colors in one module (C1), with neutral role names and at most two
+A project keeps its named colors in one module (C1), with neutral role names and at most two
 lightness levels per hue (C4):
 
 ```python
@@ -435,7 +437,8 @@ test_palette_is_sound()
   with an axis shorter than about 1 in, and a color bar, keep Matplotlib's ticks (L2).
 - Curves sharing a panel have explicit widths, bars explicit edges; proxies copy them (L4, L8).
 - Reference lines use `REFERENCE_LINE`, and the reference series has the highest `zorder` (L5, L6).
-- Colors come from the tested project palette; series on one axis differ without color (C1-C7).
+- Named colors come from the tested project palette, and a figure colored only by color maps
+  needs none; series on one axis differ without color (C1-C8).
 - Figure size, axis lengths and margins are named inch constants on the grid (S1, S2).
 - No panel letters, no `supxlabel`, and a shared y label from `add_shared_ylabel` (S6, S7).
 - Intervals of a mean are 95% t intervals over replicates, BCa intervals serve another statistic

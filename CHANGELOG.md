@@ -44,6 +44,9 @@ All notable changes to mplplots are recorded here. The format follows
   resamples serves a statistic other than the mean, such as a median or a ratio, from 20
   replicates on; below that, such a statistic is shown by its individual values. The
   `personal_bars` gallery image draws t intervals, and its captions name them.
+- Step 2 of the skill's workflow and of the rules snippet takes named colors from the project
+  palette, and a figure colored only by color maps needs no palette; rule C1 of the style guide
+  says the same.
 - The Personal gallery images and the palette figures with numeric axes set their ticks with
   `auto_ticks`, with limits that leave five or more major intervals.
 - The README is a short introduction; the reference documentation (styles, ticks, layout, colors,

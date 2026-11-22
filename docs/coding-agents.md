@@ -4,8 +4,8 @@ mplplots ships an agent skill for Claude Code and Codex, a rules snippet for a p
 `AGENTS.md`, and the [style guide](../src/mplplots/data/skills/mplplots/references/style-guide.md):
 the Personal style's rules for typography, lines and marks, color, layout, statistics, and export,
 each with an id (T1, L4, C7, ...). The [skill](../src/mplplots/data/skills/mplplots/SKILL.md)
-gives an agent a six-step workflow: apply the style, take colors from the project palette, lay out
-in inches, draw and set the ticks with `auto_ticks`, `assert_figure`, `save_figure`.
+gives an agent a six-step workflow: apply the style, take named colors from the project palette,
+lay out in inches, draw and set the ticks with `auto_ticks`, `assert_figure`, `save_figure`.
 
 ## Installing the skill and the rules
 

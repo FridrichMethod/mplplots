@@ -106,7 +106,8 @@ unknown colormap name, `get_colors` raises `ValueError`.
 `mplplots.colors` holds the color rules of the Personal style. A project keeps its colors in one
 palette module that maps each role (a condition, a sample, a reference) to a `ColorPair`. The
 edge carries the role's identity: lines, marker edges, bar borders. The fill is its pale partner,
-drawn under alpha: bands, bar faces, scatter faces.
+drawn under alpha: bands, bar faces, scatter faces. A figure colored only by color maps takes no
+color from the palette and needs none (style guide rule C1).
 
 ```python
 import mplplots as mpp

@@ -4,8 +4,8 @@ Figures use the Personal style of mplplots. Use the `mplplots` skill to create, 
 review a figure, and follow these steps:
 
 1. `import mplplots as mpp` and `mpp.use()` before the first figure is created.
-2. Take colors from the project's palette module of `ColorPair` roles; if there is none, create
-   it with a `check_palette` test.
+2. Take named colors from the project's palette module of `ColorPair` roles; if there is none,
+   create it with a `check_palette` test. A figure colored only by color maps needs no palette.
 3. Lay the figure out in round inches with `mpp.grid_inches` or `mpp.add_axes_inches`.
 4. Draw with the style's text and marks: no `fontsize` or `fontweight`, variables as math text.
    Then call `mpp.auto_ticks(ax)` on each panel.
