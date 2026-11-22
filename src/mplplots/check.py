@@ -639,9 +639,14 @@ def _axes_box_inches(ax: _AxesBase, fig: Figure, renderer: RendererBase | None) 
     At each draw, a fixed aspect (``imshow``, ``set_aspect``, ``set_box_aspect``, polar and 3D
     axes) shrinks the drawn axes inside this box, so the box, not the shrunk axes, is what the
     layout chose. An axes locator, as ``add_axes_inches`` and ``grid_inches`` set, returns the
-    box at each draw; without a locator, the original position is the box.
+    box at each draw; without a locator, the original position is the box. A colour bar with
+    extensions wraps its axes' locator in one that shrinks the box by the extensions, so the
+    locator it wraps, or the original position when it wraps none, gives the box.
     """
     locator = cast("Callable[[_AxesBase, RendererBase], BboxBase] | None", ax.get_axes_locator())
+    if hasattr(ax, "_colorbar"):
+        # Matplotlib's private colour bar locator keeps the locator it replaced here.
+        locator = getattr(locator, "_orig_locator", locator)
     if locator is None:
         position: BboxBase = ax.get_position(original=True)
     elif renderer is not None:

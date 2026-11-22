@@ -538,6 +538,35 @@ def test_fixed_aspect_axes_placed_in_inches_are_on_the_grid() -> None:
     assert not found(fig, "round-inches")
 
 
+@pytest.mark.parametrize("extend", ["min", "max", "both"])
+def test_a_colour_bar_with_extensions_is_measured_by_the_box_it_was_given(extend: str) -> None:
+    # Matplotlib shrinks a colour bar's axes by its extensions at each draw; the layout is the
+    # box the axes were given, with or without an axes locator.
+    mplplots.use()
+    fig, (ax, cax) = mplplots.grid_inches(
+        1, 2, width=[2.0, 0.1], height=1.5, wspace=0.15, right=0.6
+    )
+    image = ax.imshow(np.arange(21.0).reshape(3, 7), aspect="auto")
+    fig.colorbar(image, cax=cax, extend=extend)
+    assert not found(fig, "round-inches")
+
+    fig = plt.figure(figsize=(3.0, 2.0))
+    ax = fig.add_axes((0.2, 0.2, 0.6, 0.7))  # 0.6, 0.4 in; 1.8 x 1.4 in
+    cax = fig.add_axes((0.85, 0.2, 0.05, 0.7))  # 2.55, 0.4 in; 0.15 x 1.4 in
+    fig.colorbar(ax.imshow(np.zeros((3, 7)), aspect="auto"), cax=cax, extend=extend)
+    assert not found(fig, "round-inches")
+
+
+def test_a_colour_bar_with_extensions_placed_off_the_grid_is_reported() -> None:
+    mplplots.use()
+    fig = plt.figure(figsize=(3.0, 2.0))
+    ax = mplplots.add_axes_inches(fig, 0.6, 0.4, 1.8, 1.4)
+    cax = mplplots.add_axes_inches(fig, 2.53, 0.4, 0.1, 1.4)
+    fig.colorbar(ax.imshow(np.zeros((3, 7)), aspect="auto"), cax=cax, extend="both")
+    (issue,) = found(fig, "round-inches")
+    assert "position (2.53, 0.4) in and size 0.1 x 1.4 in" in issue.message
+
+
 def test_a_fixed_aspect_axes_placed_off_the_grid_is_reported() -> None:
     mplplots.use()
     fig = plt.figure(figsize=(3.0, 2.0))
