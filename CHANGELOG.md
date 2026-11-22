@@ -16,8 +16,8 @@ All notable changes to mplplots are recorded here. The format follows
   5.4 pt beyond the axis line; minor ticks are off, and 2.7 pt long when turned on; data lines,
   error bars, and caps are 0.72 pt (Prism's "1/2 pt"), data lines have round ends, and caps are
   6.48 pt long; symbols are 5.76 pt across; bars given an edge color get a 2.16 pt border; tick
-  labels, axis labels, the title, and legend rows sit at Prism's distances. The README lists
-  where the style departs from Prism, such as Prism's legend outside the plot on the right.
+  labels, axis labels, the title, and legend rows sit at Prism's distances. `docs/styles.md`
+  lists where the style departs from Prism, such as Prism's legend outside the plot on the right.
 - Personal style: minor ticks split each major interval in two (`xtick.minor.ndivs` and
   `ytick.minor.ndivs` 2), one minor tick between major ticks instead of Matplotlib's three or
   four. `auto_ticks` sets its own minor ticks on linear numeric axes as before. Other axes in the
@@ -29,7 +29,7 @@ All notable changes to mplplots are recorded here. The format follows
   `font-weight` each weight it sets, in place of `font.size` and regular alone. A figure in the
   GraphPadPrism style passes with the style's 11, 12, and 14 pt bold text. The Personal style
   checks as before.
-- The `graphpadprism_*` README images use Prism's 3 by 2 in plot area (2 by 2 in for the bar
+- The `graphpadprism_*` gallery images use Prism's 3 by 2 in plot area (2 by 2 in for the bar
   chart) and black bar borders, and pass `assert_figure` against the style; the ocean, grouped
   bar, and error bar images place their legend beside the plot, close to where Prism puts it.
 - Style guide: rule L2 asks for `auto_ticks` on each panel after plotting, with limits that leave
@@ -40,6 +40,8 @@ All notable changes to mplplots are recorded here. The format follows
   style guide and the skill.
 - The Personal gallery images and the palette figures with numeric axes set their ticks with
   `auto_ticks`, with limits that leave five or more major intervals.
+- The README is a short introduction; the reference documentation (styles, ticks, layout, colors,
+  plot helpers, saving, checking, coding agents, gallery, development) lives in `docs/`.
 
 ### Fixed
 

@@ -39,6 +39,12 @@ Do not commit or push if either fails. Fix issues first.
   the bottom, merge that PR, then tag the merged commit on `main` as `vX.Y.Z` (annotated) and
   publish a GitHub release from the tag with that version's changelog section as its notes.
 
+## Documentation
+
+- `README.md` is a short introduction; the reference documentation lives in `docs/`, one page per
+  topic, indexed in both `docs/README.md` and the Documentation table of `README.md`, so a new or
+  renamed page goes into both. A change to the API or a style updates the matching page.
+
 ## Code Style
 
 - Ruff for linting and formatting (line length 100, Google-style docstrings)
@@ -66,10 +72,15 @@ Do not commit or push if either fails. Fix issues first.
 - `mplplots.use` and `mplplots.context` first return every key that any packaged style sets to
   Matplotlib's default, then apply the style, so switching styles in a session gives the style
   alone. `tests/test_styles.py` checks every pair of packaged styles.
-- Adding a style takes: the file; a row in the style table of `README.md` with its own "What the
-  style changes" table; one gallery image; and assertions in `tests/test_styles.py`.
-- A change to a style goes together with its "What the style changes" table in `README.md` and
-  its assertions in `tests/test_styles.py`. `check_figure` reads its expected values from the
+- The style table and each style's "What the style changes" table live in `docs/styles.md`;
+  `README.md` keeps only a short summary of the styles.
+- Adding a style takes: the file; a row in the style table of `docs/styles.md` with its own "What
+  the style changes" table; a paragraph under "Minor ticks of the styles" in `docs/ticks.md`; its
+  name in `README.md` (the style count in the first paragraph, the "Two styles" bullet, and the
+  Styles row of the Documentation table); one image in `docs/gallery.md`; and assertions in
+  `tests/test_styles.py`.
+- A change to a style goes together with its "What the style changes" table in `docs/styles.md`
+  and its assertions in `tests/test_styles.py`. `check_figure` reads its expected values from the
   style file, so the checker follows the change.
 
 ### Personal
@@ -104,18 +115,18 @@ Do not commit or push if either fails. Fix issues first.
   are 6.48 pt long; filled symbols are 5.76 pt across; bars given an edge color get Prism's
   2.16 pt border (`patch.linewidth`). The pads put tick labels, axis labels and the title where
   Prism puts them.
-- Where the style departs from Prism is listed in `README.md` under "What the GraphPadPrism
-  style changes": among others, Prism's regular legend text, its legend outside the plot on the
-  right, its 1.44 pt border on hollow symbols (only `errorbar.capthick`, new in Matplotlib 3.11,
-  sets the caps apart from it, so the style leaves the border at 0.72 pt), its bar borders drawn
-  inside the bar, and the font weight notices that its bold math logs.
+- Where the style departs from Prism is listed in `docs/styles.md` under "Where the style
+  departs from Prism": among others, Prism's regular legend text, its legend outside the plot
+  on the right, its 1.44 pt border on hollow symbols (only `errorbar.capthick`, new in
+  Matplotlib 3.11, sets the caps apart from it, so the style leaves the border at 0.72 pt), its
+  bar borders drawn inside the bar, and the font weight notices that its bold math logs.
 - It saves at 600 dpi (`savefig.dpi`), embeds TrueType fonts in PDF and PostScript
   (`pdf.fonttype` and `ps.fonttype` 42), stores SVG text as paths, sets no figure size, and does
   not crop saved figures (no `savefig.bbox`), so a saved file has exactly the figure's size.
 
 ## Rendering Figures
 
-- The README images come from three scripts in `examples/`:
+- The images of `README.md` and `docs/` come from three scripts in `examples/`:
   - `styles_demo.py` writes `default_style`, which shows Matplotlib's defaults, and the five
     `graphpadprism_*` figures in the GraphPadPrism style.
   - `personal_demo.py` writes the five `personal_*` figures in the Personal style.
@@ -141,8 +152,11 @@ Do not commit or push if either fails. Fix issues first.
 - Render with Matplotlib 3.11.2: another version writes its version string into every file.
   Rendering needs Arial Regular and Italic installed, and Arial Bold and Bold Italic for
   `styles_demo.py`; the scripts exit without them. After changing a style, the toolkit or a
-  script, rerun all three scripts and commit all three formats. In `README.md`, show each image
-  at 100 pixels per inch of figure width.
+  script, rerun all three scripts and commit all three formats.
+- `docs/gallery.md` shows the gallery images, `docs/colors.md` the palette swatches and the
+  `get_colors` figure, and `README.md` a selection, each at 100 pixels per inch of figure width.
+  An image shown in both `README.md` and a docs page has the same alt text and width in both, so
+  change them together.
 
 ## Agent Skill, Rules and Style Guide
 
