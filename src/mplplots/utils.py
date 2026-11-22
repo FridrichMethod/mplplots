@@ -149,7 +149,7 @@ def legend_inches(
     figure is resized and at any dpi.
 
     Args:
-        ax: The axes whose labelled artists the legend lists.
+        ax: The axes whose labeled artists the legend lists.
         x: Distance from the figure's left edge to the ``loc`` point, in inches.
         y: Distance from the figure's bottom edge to the ``loc`` point, in inches.
         loc: The corner, edge midpoint, or center of the legend box that sits at (x, y).

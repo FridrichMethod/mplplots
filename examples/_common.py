@@ -46,7 +46,7 @@ def save(fig: Figure, name: str) -> None:
     """Save fig uncropped as ``examples/<name>.png`` (600 dpi), ``.svg`` and ``.pdf``.
 
     Args:
-        fig: The figure to save; it is closed afterwards.
+        fig: The figure to save; it is closed afterward.
         name: The file name without extension.
     """
     mplplots.save_figure(fig, OUT / name, formats=FORMATS, dpi=DPI)

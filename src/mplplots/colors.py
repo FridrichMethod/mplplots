@@ -1,4 +1,4 @@
-"""Colour pairs, lightness helpers, contrast and the alpha and line constants of the style.
+"""Color pairs, lightness helpers, contrast and the alpha and line constants of the style.
 
 A project's palette maps each role to a ``ColorPair``: the edge carries the role's identity
 (lines, marker edges, bar borders) and the fill is its pale partner, drawn under alpha (bands,
@@ -46,7 +46,7 @@ REFERENCE_LINE: Mapping[str, Any] = MappingProxyType({
     "linestyle": "--",
     "linewidth": 0.8,
 })
-"""Keyword arguments for a reference or threshold line (y = x, a cutoff): dashed grey 0.8 pt.
+"""Keyword arguments for a reference or threshold line (y = x, a cutoff): dashed gray 0.8 pt.
 
 Read-only; use it as ``ax.axhline(0.5, **REFERENCE_LINE)``.
 """
@@ -60,13 +60,13 @@ lengths by the line width (``lines.scale_dashes``, which no packaged style chang
 
 
 class ColorPair(NamedTuple):
-    """The two colours of a palette role.
+    """The two colors of a palette role.
 
     It unpacks as ``fill, edge = pair``.
 
     Attributes:
-        fill: The pale colour drawn under alpha: bands, bar faces, scatter faces.
-        edge: The darker colour that carries identity: lines, marker edges, bar borders.
+        fill: The pale color drawn under alpha: bands, bar faces, scatter faces.
+        edge: The darker color that carries identity: lines, marker edges, bar borders.
     """
 
     fill: str
@@ -74,16 +74,16 @@ class ColorPair(NamedTuple):
 
 
 def _shift_lightness(color: ColorType, factor: float) -> str:
-    """Multiply the HLS lightness of a colour by a factor.
+    """Multiply the HLS lightness of a color by a factor.
 
     The new lightness is clipped to [0, 1]; hue and saturation are kept.
 
     Args:
-        color: Any Matplotlib colour. Its alpha channel is ignored.
+        color: Any Matplotlib color. Its alpha channel is ignored.
         factor: The factor; above 1 lightens, below 1 darkens.
 
     Returns:
-        The shifted colour as a lowercase ``#rrggbb`` string.
+        The shifted color as a lowercase ``#rrggbb`` string.
     """
     hue, lightness, saturation = rgb_to_hls(*mcolors.to_rgb(color))
     shifted = max(0.0, min(1.0, lightness * float(factor)))
@@ -91,17 +91,17 @@ def _shift_lightness(color: ColorType, factor: float) -> str:
 
 
 def lighten(color: ColorType, amount: float = 0.4) -> str:
-    """Return a lighter variant of a colour.
+    """Return a lighter variant of a color.
 
     The HLS lightness is multiplied by ``1 + amount`` and clipped to [0, 1]. Use it to derive a
-    further member of a hue family instead of adding a new colour constant.
+    further member of a hue family instead of adding a new color constant.
 
     Args:
-        color: Any Matplotlib colour. Its alpha channel is ignored.
+        color: Any Matplotlib color. Its alpha channel is ignored.
         amount: The relative increase in lightness.
 
     Returns:
-        The lighter colour as a lowercase ``#rrggbb`` string.
+        The lighter color as a lowercase ``#rrggbb`` string.
 
     Examples:
         >>> lighten("#dd6692", 0.3)
@@ -111,16 +111,16 @@ def lighten(color: ColorType, amount: float = 0.4) -> str:
 
 
 def darken(color: ColorType, amount: float = 0.3) -> str:
-    """Return a darker variant of a colour.
+    """Return a darker variant of a color.
 
     The HLS lightness is multiplied by ``1 - amount`` and clipped to [0, 1].
 
     Args:
-        color: Any Matplotlib colour. Its alpha channel is ignored.
+        color: Any Matplotlib color. Its alpha channel is ignored.
         amount: The relative decrease in lightness.
 
     Returns:
-        The darker colour as a lowercase ``#rrggbb`` string.
+        The darker color as a lowercase ``#rrggbb`` string.
 
     Examples:
         >>> darken("#006d2c", 0.25)
@@ -159,10 +159,10 @@ def _luminance(rgb: tuple[float, float, float]) -> float:
 
 
 def relative_luminance(color: ColorType) -> float:
-    """Return the WCAG 2 relative luminance of a colour.
+    """Return the WCAG 2 relative luminance of a color.
 
     Args:
-        color: Any Matplotlib colour. Its alpha channel is ignored.
+        color: Any Matplotlib color. Its alpha channel is ignored.
 
     Returns:
         The relative luminance, from 0 for black to 1 for white.
@@ -219,7 +219,7 @@ def _format_below(value: float, limit: float) -> str:
 def contrast_ratio(
     color: ColorType, background: ColorType = "white", *, alpha: float = 1.0
 ) -> float:
-    """Return the WCAG 2 contrast ratio of a colour drawn at an alpha over a background.
+    """Return the WCAG 2 contrast ratio of a color drawn at an alpha over a background.
 
     ``color`` is composited over ``background`` at ``alpha`` in encoded sRGB, as Matplotlib
     renders it, and the result is compared with ``background``. As for a Matplotlib artist whose
@@ -227,8 +227,8 @@ def contrast_ratio(
     stays fully transparent and so has a contrast ratio of 1.
 
     Args:
-        color: Any Matplotlib colour.
-        background: The opaque background colour. Its alpha channel is ignored.
+        color: Any Matplotlib color.
+        background: The opaque background color. Its alpha channel is ignored.
         alpha: The opacity at which ``color`` is drawn, in [0, 1].
 
     Returns:
@@ -258,21 +258,21 @@ def check_palette(
     alpha: float = LINE_ALPHA,
     floors: Mapping[str, float] | None = None,
 ) -> list[str]:
-    """Check a palette of colour pairs for the mechanical invariants of the style.
+    """Check a palette of color pairs for the mechanical invariants of the style.
 
     It reports, with one message per violation that names the role or roles:
 
     - an edge that is not darker (lower relative luminance) than its own fill;
     - an edge whose ``contrast_ratio(edge, alpha=alpha)`` on white is below the role's floor,
       which is ``floors[role]`` if given and ``min_edge_contrast`` otherwise;
-    - an edge colour that several roles share, one message per shared colour.
+    - an edge color that several roles share, one message per shared color.
 
     Args:
-        palette: The palette, mapping each role name to its colour pair.
+        palette: The palette, mapping each role name to its color pair.
         min_edge_contrast: The contrast floor for a role without its own floor.
         alpha: The opacity at which edges are drawn, ``LINE_ALPHA`` by default.
         floors: Per-role contrast floors, for a lighter warm hue that is a documented exception
-            and carries a non-colour cue. Roles not in ``palette`` are ignored.
+            and carries a non-color cue. Roles not in ``palette`` are ignored.
 
     Returns:
         The messages: those about single roles in palette order, then those about shared
@@ -280,7 +280,7 @@ def check_palette(
         decimals, or to as many more as show it below the floor.
 
     Raises:
-        ValueError: If ``alpha`` is not in [0, 1] or a colour is not a valid Matplotlib colour.
+        ValueError: If ``alpha`` is not in [0, 1] or a color is not a valid Matplotlib color.
 
     Examples:
         >>> check_palette({"green": ColorPair(fill="#c7e9c0", edge="#4f9d58")})
@@ -304,5 +304,5 @@ def check_palette(
     for edge, roles in roles_by_edge.items():
         if len(roles) > 1:
             names = ", ".join(repr(role) for role in roles[:-1]) + f" and {roles[-1]!r}"
-            messages.append(f"{names} share the edge colour {edge}")
+            messages.append(f"{names} share the edge color {edge}")
     return messages

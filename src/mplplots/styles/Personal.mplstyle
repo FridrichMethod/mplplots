@@ -52,7 +52,7 @@ legend.loc: upper right
 legend.title_fontsize: 8
 
 # A bare plot call draws a 2 pt line; give each curve its width when several share a panel.
-# Markers are black unless the call sets their face and edge colours.
+# Markers are black unless the call sets their face and edge colors.
 lines.linewidth: 2.0
 lines.markeredgecolor: black
 lines.markerfacecolor: black

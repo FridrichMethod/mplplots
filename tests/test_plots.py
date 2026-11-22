@@ -89,7 +89,7 @@ def test_plot_mean_sem_takes_a_linestyle() -> None:
     assert line.is_dashed()
 
 
-def test_plot_distribution_plots_percent_at_bin_centres() -> None:
+def test_plot_distribution_plots_percent_at_bin_centers() -> None:
     _, ax = plt.subplots()
     proxy = plot_distribution(ax, [0, 1, 2, 3], [10, 30, 60], 200, fill=FILL, edge=EDGE)
     (line,) = ax.lines

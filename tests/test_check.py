@@ -298,7 +298,7 @@ def test_legend_titles_figure_titles_and_colorbar_labels_are_checked() -> None:
     fig.suptitle("Overview", y=1.0, va="top", fontsize=10)
     messages = [issue.message for issue in found(fig, "font-size")]
     assert any(message.startswith("axes 0 legend title 'Group': ") for message in messages)
-    assert any(message.startswith("axes 1 (colour bar) y label 'Level': ") for message in messages)
+    assert any(message.startswith("axes 1 (color bar) y label 'Level': ") for message in messages)
     assert any(message.startswith("figure title 'Overview': ") for message in messages)
     assert len(messages) == 3
 
@@ -421,7 +421,7 @@ def test_artists_added_to_the_figure_are_checked(clean: tuple[Figure, Axes]) -> 
     fig.add_artist(
         Annotation("Arrow", xy=(0.5, 0.3), xycoords="figure fraction", fontweight="bold")
     )
-    fig.add_artist(Line2D([0.1, 0.9], [0.05, 0.05]))  # Matplotlib's default line colour, C0.
+    fig.add_artist(Line2D([0.1, 0.9], [0.05, 0.05]))  # Matplotlib's default line color, C0.
     fig.add_artist(Legend(fig, [ax.lines[0]], ["Key"], frameon=True))
     sub = fig.subfigures(1, 1, squeeze=False)[0, 0]
     sub.add_artist(Text(0.5, 0.9, "Sub", fontsize=10))
@@ -472,15 +472,15 @@ def test_the_right_spine_of_a_twin_axis_is_not_open(clean: tuple[Figure, Axes]) 
     assert not found(fig, "open-spines")
 
 
-def test_marks_that_show_no_default_colour_pass(clean: tuple[Figure, Axes]) -> None:
+def test_marks_that_show_no_default_color_pass(clean: tuple[Figure, Axes]) -> None:
     fig, ax = clean
     ax.plot([0, 1], [1, 0], "o")  # The style's markers are black; the C0 line is not drawn.
-    ax.scatter([0, 1], [0, 1], c=[0.0, 1.0])  # Colour-mapped.
+    ax.scatter([0, 1], [0, 1], c=[0.0, 1.0])  # Color-mapped.
     ax.plot([0, 1], [0.2, 0.2], color="C0", visible=False)
     assert not found(fig, "default-color")
 
 
-def test_default_colours_in_bars_and_bands_are_reported(clean: tuple[Figure, Axes]) -> None:
+def test_default_colors_in_bars_and_bands_are_reported(clean: tuple[Figure, Axes]) -> None:
     fig, ax = clean
     ax.bar([0.5], [0.5], width=0.2)
     ax.fill_between([0, 1], [0, 0.1], [0.2, 0.3])
@@ -524,7 +524,7 @@ def test_axes_in_subfigures_are_measured_in_inches() -> None:
 
 def test_fixed_aspect_axes_placed_in_inches_are_on_the_grid() -> None:
     # A fixed aspect shrinks the drawn axes inside the box that the axes locator places; the
-    # box, not the shrunk axes, is the layout. The colour bar recipe of add_axes_inches.
+    # box, not the shrunk axes, is the layout. The color bar recipe of add_axes_inches.
     mplplots.use()
     fig, (ax, cax) = mplplots.grid_inches(
         1, 2, width=[2.0, 0.1], height=1.5, wspace=0.15, right=0.6, top=0.35
@@ -539,8 +539,8 @@ def test_fixed_aspect_axes_placed_in_inches_are_on_the_grid() -> None:
 
 
 @pytest.mark.parametrize("extend", ["min", "max", "both"])
-def test_a_colour_bar_with_extensions_is_measured_by_the_box_it_was_given(extend: str) -> None:
-    # Matplotlib shrinks a colour bar's axes by its extensions at each draw; the layout is the
+def test_a_color_bar_with_extensions_is_measured_by_the_box_it_was_given(extend: str) -> None:
+    # Matplotlib shrinks a color bar's axes by its extensions at each draw; the layout is the
     # box the axes were given, with or without an axes locator.
     mplplots.use()
     fig, (ax, cax) = mplplots.grid_inches(
@@ -557,7 +557,7 @@ def test_a_colour_bar_with_extensions_is_measured_by_the_box_it_was_given(extend
     assert not found(fig, "round-inches")
 
 
-def test_a_colour_bar_with_extensions_placed_off_the_grid_is_reported() -> None:
+def test_a_color_bar_with_extensions_placed_off_the_grid_is_reported() -> None:
     mplplots.use()
     fig = plt.figure(figsize=(3.0, 2.0))
     ax = mplplots.add_axes_inches(fig, 0.6, 0.4, 1.8, 1.4)

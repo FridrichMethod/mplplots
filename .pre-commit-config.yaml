@@ -12,6 +12,25 @@ repos:
       - id: check-added-large-files
         args: ["--maxkb=40000"]
 
+  # Code and documentation are in American English and ASCII (AGENTS.md, Code Style).
+  - repo: local
+    hooks:
+      - id: ascii-only
+        name: ASCII characters only
+        language: pygrep
+        entry: '[^\x00-\x7F]'
+        types: [text]
+        exclude: ^examples/.*\.svg$
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.3
+    hooks:
+      - id: codespell
+        name: American spelling
+        # GREYS is named after the Matplotlib colormap Greys that it samples.
+        args: [--builtin, en-GB_to_en-US, --ignore-words-list, greys]
+        exclude: ^examples/.*\.svg$
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.5
     hooks:

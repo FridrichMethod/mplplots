@@ -1,6 +1,6 @@
 """Demonstrate the Personal style and the figure toolkit: the Personal gallery.
 
-Every figure takes its colours from a small demo palette of ``ColorPair`` roles, is laid out in
+Every figure takes its colors from a small demo palette of ``ColorPair`` roles, is laid out in
 round inches with ``grid_inches`` or ``add_axes_inches``, and passes ``assert_figure`` before it
 is saved. The data are seeded random numbers, so a rerun writes the same files.
 """
@@ -83,7 +83,7 @@ def permutation_p(first: NDArray[np.float64], second: NDArray[np.float64]) -> fl
         second: The replicate values of the other group.
 
     Returns:
-        The fraction of all relabellings whose mean difference is at least the observed one.
+        The fraction of all relabelings whose mean difference is at least the observed one.
     """
     pooled = np.concatenate([first, second])
     labels = np.array(list(itertools.combinations(range(pooled.size), first.size)))
@@ -228,7 +228,7 @@ mpp.assert_figure(fig, warnings_as_errors=True)
 save(fig, "personal_distribution")
 
 # ---------------------------------------------------------------------------
-# 5. Bars: fill and edge, a hollow second state, 95 % CI and significance stars
+# 5. Bars: fill and edge, a hollow second state, 95% CI and significance stars
 # ---------------------------------------------------------------------------
 rng = np.random.default_rng(4)
 groups = {"Reference": REFERENCE, "Treated": TREATED, "Variant": VARIANT}

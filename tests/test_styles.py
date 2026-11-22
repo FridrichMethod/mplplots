@@ -292,7 +292,7 @@ class TestPersonalStyle:
             texts = [text for text in fig.findobj(Text) if text.get_text()]
             plt.close(fig)
         fonts = {(text.get_fontsize(), text.get_fontweight()) for text in texts}
-        assert len(texts) > 10  # the labelled elements above plus the tick labels
+        assert len(texts) > 10  # the labeled elements above plus the tick labels
         assert fonts == {(8, "normal")}
 
     def test_saved_figure_keeps_its_size(self) -> None:
@@ -371,7 +371,7 @@ class TestGraphPadPrismStyle:
             texts = [text for text in fig.findobj(Text) if text.get_text()]
             plt.close(fig)
         fonts = {(text.get_fontsize(), text.get_fontweight()) for text in texts}
-        assert len(texts) > 10  # the labelled elements above plus the tick labels
+        assert len(texts) > 10  # the labeled elements above plus the tick labels
         assert fonts == {(8, "normal")}
 
     def test_pdf_embeds_truetype_and_svg_uses_paths(self) -> None:

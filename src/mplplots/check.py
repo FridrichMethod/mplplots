@@ -106,7 +106,7 @@ _RULE_TABLE: tuple[tuple[str, Severity, str], ...] = (
     (
         "default-color",
         "warning",
-        "A line, patch or collection in a Matplotlib default-cycle colour.",
+        "A line, patch or collection in a Matplotlib default-cycle color.",
     ),
 )
 
@@ -127,7 +127,7 @@ _MINUS_SIGN = "\u2212"
 _PANEL_LETTER = re.compile(r"[A-Za-z]|\([A-Za-z]\)")
 _LEGEND_TEXT_ROLES = frozenset({"legend label", "legend title"})
 _GENERIC_FAMILIES = frozenset({"serif", "sans-serif", "sans", "cursive", "fantasy", "monospace"})
-# Matplotlib's default colour cycle is tab10; these are its ten hex values.
+# Matplotlib's default color cycle is tab10; these are its ten hex values.
 _DEFAULT_COLORS: Mapping[str, str] = {
     mcolors.to_hex(value): name for name, value in mcolors.TABLEAU_COLORS.items()
 }
@@ -320,7 +320,7 @@ def _collect_axes(ax: _AxesBase, owner: str, scene: _Scene) -> None:
     if not ax.get_visible():
         return
     if hasattr(ax, "_colorbar"):
-        owner += " (colour bar)"
+        owner += " (color bar)"
     scene.axes.append((owner, ax))
     for title in (ax.title, getattr(ax, "_left_title", None), getattr(ax, "_right_title", None)):
         if isinstance(title, Text):
@@ -639,13 +639,13 @@ def _axes_box_inches(ax: _AxesBase, fig: Figure, renderer: RendererBase | None) 
     At each draw, a fixed aspect (``imshow``, ``set_aspect``, ``set_box_aspect``, polar and 3D
     axes) shrinks the drawn axes inside this box, so the box, not the shrunk axes, is what the
     layout chose. An axes locator, as ``add_axes_inches`` and ``grid_inches`` set, returns the
-    box at each draw; without a locator, the original position is the box. A colour bar with
+    box at each draw; without a locator, the original position is the box. A color bar with
     extensions wraps its axes' locator in one that shrinks the box by the extensions, so the
     locator it wraps, or the original position when it wraps none, gives the box.
     """
     locator = cast("Callable[[_AxesBase, RendererBase], BboxBase] | None", ax.get_axes_locator())
     if hasattr(ax, "_colorbar"):
-        # Matplotlib's private colour bar locator keeps the locator it replaced here.
+        # Matplotlib's private color bar locator keeps the locator it replaced here.
         locator = getattr(locator, "_orig_locator", locator)
     if locator is None:
         position: BboxBase = ax.get_position(original=True)
@@ -736,7 +736,7 @@ def _check_panel_letter(context: _Context) -> Iterator[tuple[str, str]]:
 
 
 def _shown_colors(mark: Artist) -> list[Any]:
-    """Return the colours a line, patch or collection draws; none for a colour-mapped one."""
+    """Return the colors a line, patch or collection draws; none for a color-mapped one."""
     if isinstance(mark, Line2D):
         colors: list[Any] = []
         if mark.get_linestyle() not in _NO_LINE and mark.get_linewidth() > 0:
@@ -758,7 +758,7 @@ def _shown_colors(mark: Artist) -> list[Any]:
 
 
 def _default_color(mark: Artist) -> str | None:
-    """Return the first default-cycle colour that a mark shows, or ``None``."""
+    """Return the first default-cycle color that a mark shows, or ``None``."""
     for color in _shown_colors(mark):
         rgba = mcolors.to_rgba(color)
         if rgba[3] > 0:
@@ -769,14 +769,14 @@ def _default_color(mark: Artist) -> str | None:
 
 
 def _check_default_color(context: _Context) -> Iterator[tuple[str, str]]:
-    """Report each mark that shows a colour of Matplotlib's default cycle."""
+    """Report each mark that shows a color of Matplotlib's default cycle."""
     for owner, mark in context.scene.marks:
         value = _default_color(mark)
         if value is not None:
             yield (
                 f"{owner} {_mark_name(mark)}",
-                f"colour {value} ({_DEFAULT_COLORS[value]}) is from Matplotlib's default cycle;"
-                " take colours from the project's palette",
+                f"color {value} ({_DEFAULT_COLORS[value]}) is from Matplotlib's default cycle;"
+                " take colors from the project's palette",
             )
 
 
@@ -823,7 +823,7 @@ def check_figure(
 
     The figure is drawn once without output, so that tick labels exist and text extents are
     known. Only drawn artists are inspected: visible, with visible ancestors, and for text,
-    non-empty. Unusual figures (polar and 3D axes, colour bars, twin axes, hidden or empty axes,
+    non-empty. Unusual figures (polar and 3D axes, color bars, twin axes, hidden or empty axes,
     log scales, images) are checked as far as the rules apply to them.
 
     Args:

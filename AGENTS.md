@@ -23,8 +23,8 @@ Matplotlib styles (Personal by default) and a toolkit for publication figures.
 
 Always run these before `git commit` and `git push`:
 
-1. `pre-commit run --all-files` — must pass with no errors
-2. `pytest` — all tests must pass
+1. `pre-commit run --all-files`: must pass with no errors
+2. `pytest`: all tests must pass
 
 Do not commit or push if either fails. Fix issues first.
 
@@ -46,6 +46,10 @@ Do not commit or push if either fails. Fix issues first.
 - `src/` layout with `mplplots` package
 - Tests in `tests/` using pytest (no docstrings required in tests)
 - Type annotations on all public functions
+- American English (color, center, gray, labeled) and ASCII characters in code, comments,
+  docstrings, messages and documentation. A non-ASCII character that a figure needs is written
+  as an escape (`"\u00c5"`, `"\u2014"`). The palette `GREYS` keeps the spelling of the Matplotlib
+  colormap `Greys` that it samples. Pre-commit checks both (`ascii-only` and `codespell`).
 
 ## Styles
 

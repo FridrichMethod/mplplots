@@ -471,7 +471,7 @@ PALETTES: Mapping[str, tuple[str, ...]] = MappingProxyType({
 def set_palette(palette: str | Sequence[str]) -> None:
     """Set matplotlib's default color cycle (``rcParams["axes.prop_cycle"]``) to a palette.
 
-    Axes created afterwards cycle through the palette's colors for new lines, bars, etc. Only
+    Axes created afterward cycle through the palette's colors for new lines, bars, etc. Only
     ``axes.prop_cycle`` is changed, so this composes with ``plt.rc_context()`` and
     ``plt.style.context()``: called inside such a block, the previous cycle is restored on exit.
 

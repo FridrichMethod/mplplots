@@ -31,7 +31,7 @@ def swatches(
     cell: tuple[float, float],
     gap: float,
 ) -> None:
-    """Draw one labelled row of color swatches per palette, top to bottom.
+    """Draw one labeled row of color swatches per palette, top to bottom.
 
     Args:
         fig: The figure to draw on.
@@ -66,7 +66,7 @@ ax = add_axes_inches(fig, 0.5, 0.4, 3, 2)
 for i, color in enumerate(CUSTOM):
     ax.plot(x, np.sin(x + i * 0.3), color=color, linewidth=1.2, label=f"Line {i}")
 auto_ticks(ax, left=0)
-ax.set_title("CUSTOM palette — multi-line plot")
+ax.set_title("CUSTOM palette \u2014 multi-line plot")
 legend_inches(ax, 3.6, 2.4)
 save(fig, "custom_multiline")
 
@@ -92,7 +92,7 @@ for i, cmap_name in enumerate(["coolwarm", "viridis", "YlGnBu"]):
 save(fig, "get_colors_demo")
 
 # ---------------------------------------------------------------------------
-# 4. Full catalogue — all 25 custom-style palettes as swatches
+# 4. Full catalog: all 25 custom-style palettes as swatches
 # ---------------------------------------------------------------------------
 ALL_NAMES = [
     "CUSTOM",
@@ -135,7 +135,7 @@ suptitle_inches(fig, "All 25 custom-style palettes")
 save(fig, "all_palettes")
 
 # ---------------------------------------------------------------------------
-# 5. Scatter plot — comparing three palette styles
+# 5. Scatter plot: comparing three palette styles
 # ---------------------------------------------------------------------------
 rng = np.random.default_rng(42)
 fig = plt.figure(figsize=(5.5, 1.7))
@@ -146,7 +146,7 @@ for i, name in enumerate(["OCEAN", "ROSE", "FOREST"]):
         xs = rng.normal(j, 0.3, 20)
         ys = rng.normal(j * 0.5, 0.4, 20)
         ax.scatter(xs, ys, color=c, s=10, alpha=0.8, edgecolors="none")
-    ax.set_title(f"{name} — scatter")
+    ax.set_title(f"{name} \u2014 scatter")
     ax.set_xticks([])
     ax.set_yticks([])
 save(fig, "scatter_comparison")
@@ -164,7 +164,7 @@ for i in range(6):
     ax.fill_between(x, base, base + y, color=spring[i], alpha=0.85, label=f"Layer {i}")
     base += y
 auto_ticks(ax, left=0, right=4, bottom=0)
-ax.set_title("SPRING palette — stacked area chart")
+ax.set_title("SPRING palette \u2014 stacked area chart")
 legend_inches(ax, 3.6, 2.15)
 save(fig, "spring_area")
 
@@ -176,7 +176,7 @@ ax = add_axes_inches(fig, 0.25, 0.1, 2, 2)
 candy = palettes.CANDY
 sizes = [22, 18, 15, 13, 10, 8, 7, 4, 2, 1]
 ax.pie(sizes, colors=candy[:10], startangle=90, wedgeprops={"edgecolor": "white", "linewidth": 1.5})
-ax.set_title("CANDY palette — pie chart")
+ax.set_title("CANDY palette \u2014 pie chart")
 save(fig, "candy_pie")
 
 # ---------------------------------------------------------------------------
@@ -188,7 +188,7 @@ dusk = palettes.DUSK
 categories = [f"Item {chr(65 + i)}" for i in range(11)]
 values = [45, 38, 35, 30, 28, 24, 20, 18, 14, 10, 6]
 ax.barh(categories, values, color=dusk)
-ax.set_title("DUSK palette — horizontal bar chart")
+ax.set_title("DUSK palette \u2014 horizontal bar chart")
 ax.invert_yaxis()
 auto_ticks(ax, left=0)
 save(fig, "dusk_hbar")

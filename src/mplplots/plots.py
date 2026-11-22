@@ -1,8 +1,8 @@
 """Plot primitives that each draw one element of the style.
 
-- ``plot_mean_sem`` draws a mean curve in the edge colour over a ``mean ± sem`` band in the fill
-  colour.
-- ``plot_distribution`` draws pre-binned counts as a filled curve through the bin centres, in
+- ``plot_mean_sem`` draws a mean curve in the edge color over a ``mean +/- sem`` band in the fill
+  color.
+- ``plot_distribution`` draws pre-binned counts as a filled curve through the bin centers, in
   percent of samples per bin.
 - ``significance_stars`` maps a p or q value to its significance label.
 - ``box_axes`` frames a panel with all four spines, the explicit exception to the open axes of
@@ -83,11 +83,11 @@ def plot_mean_sem(
     line_alpha: float = LINE_ALPHA,
     zorder: float = 3.0,
 ) -> Line2D:
-    """Draw a mean curve over a ``mean ± sem`` band.
+    """Draw a mean curve over a ``mean +/- sem`` band.
 
-    The band is borderless, in the fill colour, at ``zorder``; the curve is in the edge colour,
+    The band is borderless, in the fill color, at ``zorder``; the curve is in the edge color,
     which carries the series' identity, at ``zorder + 1``. A second variable within one hue
-    takes another line style, such as ``SECONDARY_LINESTYLE``, rather than another colour.
+    takes another line style, such as ``SECONDARY_LINESTYLE``, rather than another color.
     Points masked in any input are left out of the band and the curve.
 
     Args:
@@ -95,8 +95,8 @@ def plot_mean_sem(
         x: The x values.
         mean: The mean at each x value.
         sem: The standard error of the mean at each x value.
-        fill: The band colour.
-        edge: The curve colour.
+        fill: The band color.
+        edge: The curve color.
         label: The legend label of the curve; ``None`` leaves the curve out of the legend.
         linewidth: The curve width in points.
         linestyle: The curve style.
@@ -144,11 +144,11 @@ def plot_distribution(
     linewidth: float = 1.0,
     zorder: float = 2.0,
 ) -> Patch:
-    """Draw a pre-binned distribution as a filled curve through the bin centres.
+    """Draw a pre-binned distribution as a filled curve through the bin centers.
 
     The y value of each bin is ``100 * counts / n_total``, the percent of all samples that fall
     in the bin, so series with different sample counts stay comparable on a shared bin grid.
-    The counts are plotted at the bin centres as they are, without a staircase and without
+    The counts are plotted at the bin centers as they are, without a staircase and without
     smoothing, so peak heights stay those of the histogram. Peak heights depend on the bin
     width, so the caption names the bin width and the denominator.
 
@@ -161,8 +161,8 @@ def plot_distribution(
         counts: The number of samples in each bin.
         n_total: The total number of samples the histogram was built from, including any that
             fall outside the binned range.
-        fill: The colour of the wash under the curve.
-        edge: The curve colour.
+        fill: The color of the wash under the curve.
+        edge: The curve color.
         alpha: The opacity of the wash.
         linewidth: The curve width in points.
         zorder: The drawing order of the wash; the curve is drawn just above it.
@@ -183,11 +183,11 @@ def plot_distribution(
         )
     if n_total <= 0:
         raise ValueError(f"n_total must be positive, got {n_total}")
-    centres = 0.5 * (edge_values[:-1] + edge_values[1:])
+    centers = 0.5 * (edge_values[:-1] + edge_values[1:])
     percent = 100.0 * count_values / float(n_total)
     face = mcolors.to_rgba(fill, alpha)
-    ax.fill_between(centres, percent, facecolor=face, linewidth=0, zorder=zorder)
-    ax.plot(centres, percent, color=edge, linewidth=linewidth, zorder=zorder + 0.1)
+    ax.fill_between(centers, percent, facecolor=face, linewidth=0, zorder=zorder)
+    ax.plot(centers, percent, color=edge, linewidth=linewidth, zorder=zorder + 0.1)
     return Patch(facecolor=face, edgecolor=edge, linewidth=linewidth)
 
 

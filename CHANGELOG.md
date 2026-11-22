@@ -58,7 +58,7 @@ smaller regular text, thinner lines, and saved files that are neither resized no
   figure-level labels, and legend titles. It was bold, with a 14 pt base, 12 pt axis labels,
   16 pt titles, 10 pt tick labels, and an 8 pt legend. (#7)
 - GraphPadPrism style: saved files are 600 dpi (`savefig.dpi`); the screen stays at 300 dpi. (#7)
-- GraphPadPrism style: no figure size is set (it was 4.5 × 3 in). (#7)
+- GraphPadPrism style: no figure size is set (it was 4.5 by 3 in). (#7)
 - GraphPadPrism style: saved figures are not cropped (`savefig.bbox: tight` removed), so a file
   has exactly the figure's size. Pass `bbox_inches="tight"` to `savefig` to crop. (#9)
 - GraphPadPrism style: PDF and PostScript embed fonts as TrueType (Type 42) instead of Type 3,
@@ -78,7 +78,7 @@ smaller regular text, thinner lines, and saved files that are neither resized no
 ### Fixed
 
 - `auto_ticks` prefers the smaller tick spacing when two spacings give the same number of
-  intervals, so an unset limit moves out only to the nearest major tick. Data from 0 to 2π with
+  intervals, so an unset limit moves out only to the nearest major tick. Data from 0 to 2 pi with
   `left=0` now ends at 8 instead of 10. (#6)
 
 ## [0.1.0]

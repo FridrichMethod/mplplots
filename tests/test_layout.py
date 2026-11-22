@@ -138,8 +138,8 @@ def test_shared_ylabel_sits_labelpad_from_the_tick_labels() -> None:
     gap_pt = (ink_left - label.get_window_extent().x1) * 72 / fig.dpi
     assert gap_pt == pytest.approx(3.0, abs=0.5)
     boxes = [ax.get_position() for ax in axes]
-    centre = (min(box.y0 for box in boxes) + max(box.y1 for box in boxes)) / 2
-    assert label.get_position()[1] == pytest.approx(centre)
+    center = (min(box.y0 for box in boxes) + max(box.y1 for box in boxes)) / 2
+    assert label.get_position()[1] == pytest.approx(center)
     assert label.get_rotation() == 90
 
 

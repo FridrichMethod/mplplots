@@ -86,7 +86,7 @@ ax.set_xticks(x_pos + width, groups)
 ax.xaxis.set_minor_locator(ticker.NullLocator())
 ax.set_xlim(x_pos[0] + width - 0.5, x_pos[-1] + width + 0.5)
 ax.set_ylabel("Value")
-ax.set_title("AUTUMN palette — grouped bar chart")
+ax.set_title("AUTUMN palette \u2014 grouped bar chart")
 legend_inches(ax, 3.1, 1.9)
 save(fig, "graphpadprism_grouped_bar")
 
@@ -114,7 +114,7 @@ for i in range(5):
 auto_ticks(ax)
 ax.set_xlabel("$X$ measure")
 ax.set_ylabel("$Y$ measure")
-ax.set_title("CORAL palette — error bars")
+ax.set_title("CORAL palette \u2014 error bars")
 legend_inches(ax, 3.1, 1.9)
 save(fig, "graphpadprism_errorbar")
 

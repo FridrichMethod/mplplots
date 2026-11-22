@@ -1,6 +1,6 @@
 ---
 name: mplplots
-description: Use when creating, restyling or reviewing Matplotlib or Seaborn figures in a project that has mplplots installed, including publication figures, multi-panel layouts, colour choices, statistics panels and figure export to PNG, PDF or SVG.
+description: Use when creating, restyling or reviewing Matplotlib or Seaborn figures in a project that has mplplots installed, including publication figures, multi-panel layouts, color choices, statistics panels and figure export to PNG, PDF or SVG.
 ---
 
 # mplplots
@@ -11,7 +11,7 @@ done when `mpp.assert_figure(fig)` passes and its saved PNG looks right at print
 
 The rules behind each step, each with an id (T1, L4, C7, S5, ...), are in
 `references/style-guide.md` beside this file. Read its section for the kind of panel at hand
-(typography, lines and marks, colour, layout, statistics, export) before drawing it.
+(typography, lines and marks, color, layout, statistics, export) before drawing it.
 
 ## When to use
 
@@ -37,7 +37,7 @@ Matplotlib's cache directory (`matplotlib.get_cachedir()`) so it finds them.
 ## Workflow
 
 1. `import mplplots as mpp` and `mpp.use()`, before the first figure is created.
-2. Take colours from the project's palette module of `ColorPair` roles. If the project has none,
+2. Take colors from the project's palette module of `ColorPair` roles. If the project has none,
    create one with a `check_palette` test (guide: "A project palette").
 3. Lay the figure out in round inches with `mpp.grid_inches` or `mpp.add_axes_inches`.
 4. Draw, following the text and mark rules: no `fontsize` or `fontweight`, variables as math
@@ -77,7 +77,7 @@ paths = mpp.save_figure(fig, "figures/decay", caption=caption)  # 6: PNG, PDF, S
 ```
 
 `paths[0]` is the PNG. Open it and look at it at print size: text that collides or is cut off, a
-legend over the data, series that cannot be told apart without colour.
+legend over the data, series that cannot be told apart without color.
 
 ## API by task
 
@@ -86,7 +86,7 @@ Every name is importable from `mplplots`; `help(mpp.<name>)` gives the arguments
 | Task | Names |
 | --- | --- |
 | Apply a style | `use`, `context`, `STYLES`, `DEFAULT_STYLE`, `style_path` |
-| Colours | `ColorPair`, `lighten`, `darken`, `contrast_ratio`, `check_palette` |
+| Colors | `ColorPair`, `lighten`, `darken`, `contrast_ratio`, `check_palette` |
 | Alphas and line presets | `SCATTER_ALPHA`, `BAND_ALPHA`, `LINE_ALPHA`, `REFERENCE_LINE`, `SECONDARY_LINESTYLE` |
 | Figure and axes size | `grid_inches`, `figure_size`, `COLUMN_WIDTHS`, `add_axes_inches` |
 | Labels, legends, ticks | `add_shared_ylabel`, `legend_inches`, `align_legends_left`, `suptitle_inches`, `auto_ticks` |
@@ -109,7 +109,7 @@ prints the style guide and `mplplots rules` prints the snippet for a project's `
 | `layout="tight"` or `layout="constrained"` | `layout-engine` error; axis lengths differ between figures | Margins in `grid_inches` (S2, S5) |
 | `fig.tight_layout()` | No `layout-engine` error, as the call leaves no engine behind; a `round-inches` warning, as the axes move off the inch grid | Margins in `grid_inches` (S2, S5) |
 | `fig.savefig` instead of `save_figure` | One format, a date stamp in the PDF and SVG, a crop under a local `savefig.bbox: tight` | `mpp.save_figure` (X1 to X4) |
-| A colour left to Matplotlib | `default-color` warning | A role of the project palette (C1) |
+| A color left to Matplotlib | `default-color` warning | A role of the project palette (C1) |
 | A panel letter such as `"a"` or `"(b)"` | `panel-letter` warning | Letters go in at manuscript assembly (S6) |
 | `fig.supxlabel` for a shared x label | The label sits at the figure edge, far from the ticks | The bottom panel's `set_xlabel` (S7) |
 | A pasted superscript or U+2212 minus | `script-glyph` error, `unicode-minus` warning | `"$^2$"` math text and the ASCII `-` (T5, T6) |

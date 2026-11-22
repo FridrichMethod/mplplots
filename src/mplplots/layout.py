@@ -235,7 +235,7 @@ def add_shared_ylabel(fig: Figure, axes: Sequence[Axes], text: str, **kwargs: An
     This measures the panels' leftmost ink (their tick labels, since the panels carry no y label
     of their own) and puts the label's right edge ``rcParams["axes.labelpad"]`` points to the
     left of it, the gap Matplotlib gives an ordinary ``ax.set_ylabel``. The label is rotated
-    90 degrees and centred on the vertical span of ``axes``.
+    90 degrees and centered on the vertical span of ``axes``.
 
     The label is placed by drawing the figure, so call this after the panels are populated and
     the layout is final.
@@ -257,17 +257,17 @@ def add_shared_ylabel(fig: Figure, axes: Sequence[Axes], text: str, **kwargs: An
         >>> label = add_shared_ylabel(fig, axes, "Signal")
     """
     fig.draw_without_rendering()
-    # Leftmost ink of the panel block and its vertical centre.
+    # Leftmost ink of the panel block and its vertical center.
     boxes = [box for ax in axes if (box := ax.get_tightbbox()) is not None]
     if not boxes:
         raise ValueError("add_shared_ylabel: no drawable axes to measure")
     left_px = min(box.x0 for box in boxes)
     positions = [ax.get_position() for ax in axes]
-    y_centre = 0.5 * (min(pos.y0 for pos in positions) + max(pos.y1 for pos in positions))
+    y_center = 0.5 * (min(pos.y0 for pos in positions) + max(pos.y1 for pos in positions))
 
     label = fig.text(
         0.0,
-        y_centre,
+        y_center,
         text,
         rotation=90,
         ha="left",

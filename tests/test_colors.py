@@ -18,7 +18,7 @@ from mplplots.colors import (
 )
 
 GREEN = ColorPair(fill="#c7e9c0", edge="#4f9d58")
-GREY = ColorPair(fill="#cccccc", edge="#7a7a7a")
+GRAY = ColorPair(fill="#cccccc", edge="#7a7a7a")
 YELLOW = ColorPair(fill="#fff0a6", edge="#e6b800")
 
 CONTRAST_MESSAGE = re.compile(r"contrast (\S+) on white, below the floor (\S+)$")
@@ -87,7 +87,7 @@ def test_color_pair_unpacks() -> None:
 
 
 def test_check_palette_accepts_a_sound_palette() -> None:
-    assert check_palette({"green": GREEN, "grey": GREY}) == []
+    assert check_palette({"green": GREEN, "gray": GRAY}) == []
 
 
 def test_check_palette_reports_an_edge_lighter_than_its_fill() -> None:
@@ -160,7 +160,7 @@ def test_check_palette_rejects_an_alpha_outside_the_unit_interval(alpha: float) 
         check_palette({"green": GREEN}, alpha=alpha)
 
 
-def test_check_palette_compares_edges_as_colours() -> None:
+def test_check_palette_compares_edges_as_colors() -> None:
     upper = ColorPair(fill="#e5f5e0", edge="#4F9D58")
     (message,) = check_palette({"green": GREEN, "upper": upper})
     assert "green" in message
@@ -204,7 +204,7 @@ def test_check_palette_reports_a_transparent_edge() -> None:
 
 def test_check_palette_prints_a_ratio_just_below_the_floor_with_more_digits() -> None:
     # The ratio is 2.995006, which two decimals round up to the floor, 3.00.
-    (message,) = check_palette({"grey": ColorPair(fill="#ffffff", edge="#949494")}, alpha=0.99057)
+    (message,) = check_palette({"gray": ColorPair(fill="#ffffff", edge="#949494")}, alpha=0.99057)
     assert contrast_and_floor(message) == ("2.995", "3")
 
 

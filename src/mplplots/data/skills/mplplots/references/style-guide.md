@@ -17,7 +17,7 @@ mpp.use()  # the Personal style; mpp.use("GraphPadPrism") applies another packag
 
 # Stand-ins for two roles of a project palette (see "A project palette").
 GREEN = mpp.ColorPair(fill="#c7e9c0", edge="#4f9d58")
-GREY = mpp.ColorPair(fill="#cccccc", edge="#7a7a7a")
+GRAY = mpp.ColorPair(fill="#cccccc", edge="#7a7a7a")
 
 x = np.linspace(0.0, 10.0, 101)
 fig, (ax,) = mpp.grid_inches(width=2.5, height=1.5)
@@ -40,9 +40,10 @@ Arial-compatible clone or DejaVu Sans. `mpp.add_custom_fonts(path)` registers fo
   panel or the figure grows: shrinking text to make it fit is how a figure becomes unreadable.
 - **T2.** Titles are short and in sentence case ("Signal after washout", not "Signal After
   Washout"). The caption carries the detail.
-- **T3.** A Greek letter that is part of a name (Cα, β-hairpin) and Å are upright literal
-  characters, written as escapes so the source stays ASCII: `"C\u03b1 RMSF (\u00c5)"`.
-  Math text sets `$\alpha$` in italic, and an italic letter reads as a variable.
+- **T3.** A Greek letter that is part of a name (the alpha of a C-alpha atom, the beta of a
+  beta-hairpin) and the angstrom sign are upright literal characters, written as escapes so the
+  source stays ASCII: `"C\u03b1 RMSF (\u00c5)"`. Math text sets `$\alpha$` in italic, and an
+  italic letter reads as a variable.
 - **T4.** Variables and formulas are math text (`"$x$"`, `r"$\sin(x)$"`). Upright words inside
   math use `\mathrm{}`. The style sets math in the text font: variables in italic, function
   names, numbers and operators upright.
@@ -87,13 +88,13 @@ ax.set_ylabel("Area (\u00c5\u00b2)")  # a precomposed superscript two (T5)
   `MultipleLocator` or `mpp.auto_ticks(ax)`; the style sets only visibility, size and width.
 - **L3.** No grid. If one is needed: alpha 0.18, 0.4 pt, `zorder=0`.
 - **L4.** Give a line width when several curves share a panel: 1.2 pt for mean curves, 1.8 pt
-  for the one emphasised state, 1.0 pt for distribution outlines, 1.4 pt for regression lines.
+  for the one emphasized state, 1.0 pt for distribution outlines, 1.4 pt for regression lines.
   A bare `ax.plot` draws the style's 2 pt.
-- **L5.** Reference and threshold lines (y = x, a cutoff) are dashed, grey 0.55, 0.8 pt:
+- **L5.** Reference and threshold lines (y = x, a cutoff) are dashed, gray 0.55, 0.8 pt:
   `**mpp.REFERENCE_LINE`. A region or domain is a shaded span (`ax.axvspan`), not a line.
 - **L6.** When series overlap, the reference series is drawn last, with the highest `zorder`, so
   no other series hides it.
-- **L7.** Scatter: `s=22`, fill face, edge-colour edge 0.5 pt wide, `alpha=mpp.SCATTER_ALPHA`.
+- **L7.** Scatter: `s=22`, fill face, edge-color edge 0.5 pt wide, `alpha=mpp.SCATTER_ALPHA`.
 - **L8.** Bars set their edge line width explicitly. A legend proxy copies the plotted artist's
   face, edge, line width, line style, alpha, marker and hatch; `mpp.plot_distribution` returns
   such a proxy.
@@ -119,32 +120,32 @@ mpp.assert_figure(fig)
 plt.close(fig)
 ```
 
-## Colour
+## Color
 
 - **C1.** A project defines one palette module that maps each role to a `ColorPair(fill, edge)`.
-  Figure code takes colours from it, never from Matplotlib's default cycle, which the style
-  keeps: a curve drawn without a colour gets a cycle colour, and `check_figure` reports it.
+  Figure code takes colors from it, never from Matplotlib's default cycle, which the style
+  keeps: a curve drawn without a color gets a cycle color, and `check_figure` reports it.
 - **C2.** The edge carries identity: lines, marker edges, bar borders. The fill is its pale
   partner, drawn under alpha: bands, bar faces, scatter faces. An edge is darker than its fill.
 - **C3.** Alphas: `SCATTER_ALPHA` 0.6 for dots, histogram and density fills; `BAND_ALPHA` 0.5 for
-  mean ± SEM and confidence bands; `LINE_ALPHA` 0.95 for curves. Judge a fill at its alpha: one
+  mean +/- SEM and confidence bands; `LINE_ALPHA` 0.95 for curves. Judge a fill at its alpha: one
   that looks right at full opacity can vanish at 0.5.
 - **C4.** A hue has at most two lightness levels, each a fill and edge pair. A further member of
   a family is derived with `lighten()`, not given a new constant. A third level would compress
   the contrast between the two that the comparison rests on.
-- **C5.** A second variable within one hue uses a channel other than colour: the dash pattern
+- **C5.** A second variable within one hue uses a channel other than color: the dash pattern
   `SECONDARY_LINESTYLE`, hollow markers (`facecolor="white"`), hollow bars (`facecolor="none"`).
-- **C6.** Series that share an axis stay distinguishable without colour: keep a marker, line
-  style, hatch, direct label or position cue. Greyscale prints and colour-vision deficiency
+- **C6.** Series that share an axis stay distinguishable without color: keep a marker, line
+  style, hatch, direct label or position cue. Grayscale prints and color-vision deficiency
   remove hue first.
 - **C7.** An edge drawn at `LINE_ALPHA` on white has a contrast ratio of at least 3. A lighter
-  warm hue (yellow, orange) is a per-role exception with its own floor and a non-colour cue
+  warm hue (yellow, orange) is a per-role exception with its own floor and a non-color cue
   (`check_palette(floors=...)`). The ratio is a screening floor, not a replacement for looking
   at the thin lines at print size.
-- **C8.** An identity hue anchors a colour map only when that end of the map denotes the
+- **C8.** An identity hue anchors a color map only when that end of the map denotes the
   identity, and the label or caption states the direction. A magnitude uses its own sequential
   map (the style's default, `viridis`) or diverging map (`RdBu_r` for values around zero).
-- **C9.** A role keeps its colour in every figure of a project, and a hue is not reused for an
+- **C9.** A role keeps its color in every figure of a project, and a hue is not reused for an
   unrelated role within a figure.
 
 ```python
@@ -156,7 +157,7 @@ mpp.plot_mean_sem(
     ax, x, mean + 0.6, sem, fill=GREEN.fill, edge=GREEN.edge, linestyle=dashed, label="Stimulated"
 )
 mpp.plot_mean_sem(
-    ax, x, mean - 0.4, sem, fill=GREY.fill, edge=GREY.edge, label="Reference", zorder=5.0
+    ax, x, mean - 0.4, sem, fill=GRAY.fill, edge=GRAY.edge, label="Reference", zorder=5.0
 )  # the reference on top (L6)
 ax.set(xlim=(0.0, 10.0), xlabel="Time (s)", ylabel="Signal (a.u.)")
 mpp.legend_inches(ax, 3.2, 1.9)  # beside the axes, level with their top
@@ -195,7 +196,7 @@ lighter_edge = mpp.lighten(GREEN.edge, 0.3)  # a further member of the green fam
 
 ```python
 fig, axes = mpp.grid_inches(3, 1, width=3.0, height=0.8, hspace=0.2, sharex=True)
-rows = [(GREY, "-", "Reference", 2), (GREEN, "-", "Resting", 3), (GREEN, dashed, "Stimulated", 4)]
+rows = [(GRAY, "-", "Reference", 2), (GREEN, "-", "Resting", 3), (GREEN, dashed, "Stimulated", 4)]
 for ax, (pair, linestyle, label, tau) in zip(axes, rows):
     ax.plot(x, np.exp(-x / tau), color=pair.edge, linestyle=linestyle, linewidth=1.2, label=label)
     ax.set_ylim(0.0, 1.0)
@@ -213,23 +214,23 @@ plt.close(fig)
 
 ## Statistics
 
-- **E1.** A 95 % confidence interval goes on a panel that compares a few discrete groups, which
-  readers judge by whether the intervals overlap. A ±1 SEM band is only for a dense profile, and
-  its caption says it is not a confidence interval. At small n a 95 % interval is wider than
-  ±1.96 SEM: with n = 6 its half-width is 2.571 SEM.
+- **E1.** A 95% confidence interval goes on a panel that compares a few discrete groups, which
+  readers judge by whether the intervals overlap. A +/-1 SEM band is only for a dense profile, and
+  its caption says it is not a confidence interval. At small n a 95% interval is wider than
+  +/-1.96 SEM: with n = 6 its half-width is 2.571 SEM.
 - **E2.** The unit of replication is the independent replicate, never the frame, cell or pixel.
   Reduce each replicate to one value first, or resample whole replicates. Samples within one
   replicate are correlated, so an interval over them is spuriously narrow.
-- **E3.** A published interval at small n is a BCa bootstrap interval with at least 10 000
+- **E3.** A published interval at small n is a BCa bootstrap interval with at least 10,000
   resamples. A plain percentile bootstrap undercovers at small n.
 - **E4.** With few replicates, the individual values are overlaid: a summary hides a bimodal set.
 - **E5.** Significance stars come from the multiplicity-corrected value of a comparison family
   (`significance_stars`: `***` below 0.001, `**` below 0.01, `*` below 0.05, otherwise `n.s.`),
   and only comparisons discussed in the text are annotated.
 - **E6.** A shift within one group is shown as two dashed median levels and one bare signed
-  value, such as `+0.37 Å`; the interval, effect size and q value go in the caption. The levels
+  value, such as `+0.37 nm`; the interval, effect size and q value go in the caption. The levels
   and the value come from the same estimator, so the gap never disagrees with the number.
-- **E7.** A distribution is drawn from pre-binned counts as a curve through the bin centres,
+- **E7.** A distribution is drawn from pre-binned counts as a curve through the bin centers,
   filled to zero, in percent of samples per bin (`plot_distribution`): no staircase, no kernel
   density, which read as a ladder and flatten sharp peaks. The bin width and the denominator go
   in the caption, and panels that share y share a bin grid.
@@ -237,8 +238,8 @@ plt.close(fig)
 ```python
 from matplotlib.ticker import NullLocator
 
-# One value per replicate and 95 % BCa intervals (10 000 resamples) from the analysis (E2, E3).
-groups, pairs = ["Reference", "Treated"], [GREY, GREEN]
+# One value per replicate and 95% BCa intervals (10,000 resamples) from the analysis (E2, E3).
+groups, pairs = ["Reference", "Treated"], [GRAY, GREEN]
 replicates = [np.array([1.0, 1.2, 0.9, 1.1, 1.05, 0.95]), np.array([1.8, 2.1, 1.6, 2.0, 1.9, 2.2])]
 means = np.array([values.mean() for values in replicates])
 ci_low, ci_high = np.array([0.96, 1.79]), np.array([1.11, 2.07])
@@ -265,7 +266,7 @@ sample_a, sample_b = rng.normal(2.5, 0.6, 5000), rng.normal(3.5, 0.7, 4000)
 (counts_a, _), (counts_b, _) = np.histogram(sample_a, edges), np.histogram(sample_b, edges)
 fig, (ax,) = mpp.grid_inches(width=2.5, height=1.5)
 handles = [
-    mpp.plot_distribution(ax, edges, counts_a, sample_a.size, fill=GREY.fill, edge=GREY.edge),
+    mpp.plot_distribution(ax, edges, counts_a, sample_a.size, fill=GRAY.fill, edge=GRAY.edge),
     mpp.plot_distribution(ax, edges, counts_b, sample_b.size, fill=GREEN.fill, edge=GREEN.edge),
 ]
 ax.legend(handles, ["Reference", "Treated"])
@@ -322,7 +323,7 @@ reports, and pass `ignore` (or `allow_font_sizes`) only with the reason in a com
 | `panel-letter` | warning | S6 |
 | `default-color` | warning | C1 |
 
-The other rules are judgement: what a colour means, which interval a panel shows, whether a
+The other rules are judgment: what a color means, which interval a panel shows, whether a
 legend covers data. Check those by reading the rule and looking at the saved PNG at print size.
 
 ```python
@@ -338,11 +339,11 @@ plt.close(fig)
 
 ## A project palette
 
-A project keeps its colours in one module (C1), with neutral role names and at most two
+A project keeps its colors in one module (C1), with neutral role names and at most two
 lightness levels per hue (C4):
 
 ```python
-"""Colours for every figure of the project: one fill and edge pair per role."""
+"""Colors for every figure of the project: one fill and edge pair per role."""
 
 from mplplots import ColorPair
 
@@ -383,14 +384,14 @@ test_palette_is_sound()
 ## Checklist
 
 - `mpp.use()` runs before the first figure; no `fontsize` or `fontweight` in figure code (T1).
-- Greek letters in names and Å are escaped upright characters; variables are math text (T3, T4).
+- Greek letters in names and the angstrom sign are escaped upright characters; variables are math text (T3, T4).
 - Exponents and subscripts are math text, and minus signs are ASCII hyphen-minus (T5, T6).
 - Curves sharing a panel have explicit widths, bars explicit edges; proxies copy them (L4, L8).
 - Reference lines use `REFERENCE_LINE`, and the reference series has the highest `zorder` (L5, L6).
-- Colours come from the tested project palette; series on one axis differ without colour (C1-C7).
+- Colors come from the tested project palette; series on one axis differ without color (C1-C7).
 - Figure size, axis lengths and margins are named inch constants on the grid (S1, S2).
 - No panel letters, no `supxlabel`, and a shared y label from `add_shared_ylabel` (S6, S7).
-- Intervals are 95 % BCa over replicates, or a SEM band that the caption names (E1 to E3).
+- Intervals are 95% BCa over replicates, or a SEM band that the caption names (E1 to E3).
 - Few replicates are shown individually; stars come from corrected values (E4, E5).
 - Distributions use `plot_distribution`, and the caption gives the bin width and denominator (E7).
 - `mpp.assert_figure(fig)` passes, and each `ignore` has a stated reason.

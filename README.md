@@ -41,7 +41,7 @@ TREATED = mpp.ColorPair(fill="#c7e9c0", edge="#4f9d58")  # one role of a project
 t = np.linspace(0, 10, 101)
 mean, sem = 1 - np.exp(-t / 2), np.full_like(t, 0.05)
 
-fig, (ax,) = mpp.grid_inches(width=2.5, height=1.5)  # 2.5 × 1.5 in axes in a 3.3 × 2 in figure
+fig, (ax,) = mpp.grid_inches(width=2.5, height=1.5)  # 2.5 by 1.5 in axes in a 3.3 by 2 in figure
 mpp.plot_mean_sem(ax, t, mean, sem, fill=TREATED.fill, edge=TREATED.edge, label="Treated")
 ax.set(xlim=(0, 10), ylim=(0, 1.2), xlabel="Time (s)", ylabel="Signal (a.u.)")
 ax.legend()
@@ -50,7 +50,7 @@ mpp.assert_figure(fig)  # raises StyleError if the figure breaks a rule of the s
 mpp.save_figure(fig, "figures/signal", caption="Mean of n = 6 replicates; the band is 1 SEM.")
 ```
 
-`save_figure` writes `figures/signal.png` (600 dpi), `.pdf` and `.svg`, each exactly 3.3 × 2 in,
+`save_figure` writes `figures/signal.png` (600 dpi), `.pdf` and `.svg`, each exactly 3.3 by 2 in,
 and the caption draft `figures/signal_caption.txt`. The functions and constants of the styles and
 the toolkit are all importable from the top-level package, as `mpp.<name>`; the palettes live in
 `mplplots.palettes`.
@@ -316,7 +316,7 @@ mpp.contrast_ratio("#4f9d58", alpha=mpp.LINE_ALPHA)  # 3.11: WCAG contrast on wh
 | Constant | Value | Use |
 | --- | --- | --- |
 | `SCATTER_ALPHA` | `0.6` | Scatter dots, histogram and density fills |
-| `BAND_ALPHA` | `0.5` | Mean ± SEM bands and confidence bands |
+| `BAND_ALPHA` | `0.5` | Mean +/- SEM bands and confidence bands |
 | `LINE_ALPHA` | `0.95` | Curves |
 | `REFERENCE_LINE` | `{"color": "0.55", "linestyle": "--", "linewidth": 0.8}` | Reference and threshold lines: `ax.axhline(1.0, **mpp.REFERENCE_LINE)` |
 | `SECONDARY_LINESTYLE` | `(0, (4, 2))` | The dash pattern of a second variable within one hue |
@@ -355,7 +355,7 @@ linear axis of numbers:
 Other axes keep Matplotlib's own tick positions:
 
 - **Log and other non-linear scales, dates, and other units:** unset limits also move out to the
-  nearest major tick, so a log axis runs from one labelled decade to another.
+  nearest major tick, so a log axis runs from one labeled decade to another.
 - **Categorical axes** (string data, such as the `"A"`, `"B"`, `"C"` above) keep one tick per
   category and lose their minor ticks. Their limits are not changed, so the axis line extends
   half a category past the outer bars.
@@ -386,8 +386,8 @@ from mplplots.palettes import BLUES, REDS
 mpp.use()
 
 x = np.linspace(0, 10, 50)
-fig = plt.figure(figsize=(3, 2.25))  # the saved file is 3 × 2.25 in
-ax = mpp.add_axes_inches(fig, left=0.5, bottom=0.4, width=2.25, height=1.5)  # 2.25 × 1.5 in axes
+fig = plt.figure(figsize=(3, 2.25))  # the saved file is 3 by 2.25 in
+ax = mpp.add_axes_inches(fig, left=0.5, bottom=0.4, width=2.25, height=1.5)  # 2.25 by 1.5 in axes
 ax.plot(x, np.sin(x), color=BLUES[4], linewidth=1.2, label=r"$\sin(x)$")
 ax.plot(x, np.cos(x), color=REDS[4], linewidth=1.2, label=r"$\cos(x)$")
 mpp.auto_ticks(ax, left=0, right=10)
@@ -418,8 +418,8 @@ import mplplots as mpp
 
 mpp.use()
 
-# Three stacked panels with 2.5 × 0.8 in axes, 0.2 in apart and sharing both axes:
-# a 3.3 × 3.3 in figure.
+# Three stacked panels with 2.5 by 0.8 in axes, 0.2 in apart and sharing both axes:
+# a 3.3 by 3.3 in figure.
 fig, axes = mpp.grid_inches(3, 1, width=2.5, height=0.8, hspace=0.2, sharex=True, sharey=True)
 t = np.linspace(0, 10, 201)
 series = [("Slow", 1, "#7a7a7a"), ("Intermediate", 2, "#4f9d58"), ("Fast", 4, "#3182bd")]
@@ -462,10 +462,10 @@ colorbar, add its axes with `add_axes_inches` and pass them as `cax`.
 `mplplots.plots` draws the elements that the Personal style guide asks for in a fixed form:
 
 - `plot_mean_sem(ax, x, mean, sem, *, fill, edge, label=None, linewidth=1.2, linestyle="-", ...)`
-  draws a borderless `mean ± sem` band in `fill` under the mean curve in `edge`, and returns the
+  draws a borderless `mean +/- sem` band in `fill` under the mean curve in `edge`, and returns the
   curve. A second state of the same role takes `linestyle=mpp.SECONDARY_LINESTYLE`.
 - `plot_distribution(ax, edges, counts, n_total, *, fill, edge, ...)` draws pre-binned counts as a
-  curve through the bin centres, filled to zero, in percent of all `n_total` samples per bin. It
+  curve through the bin centers, filled to zero, in percent of all `n_total` samples per bin. It
   returns a legend proxy with the same face, edge, and line width.
 - `significance_stars(p)` returns `"***"` below 0.001, `"**"` below 0.01, `"*"` below 0.05, and
   `"n.s."` otherwise, also for NaN. Pass the multiplicity-corrected value.
@@ -492,7 +492,7 @@ for loc, n, pair, zorder in [(2.2, 5000, REFERENCE, 4), (3.6, 4000, TREATED, 2)]
         mpp.plot_distribution(ax, edges, counts, n, fill=pair.fill, edge=pair.edge, zorder=zorder)
     )
 ax.legend(proxies, ["Reference", "Treated"])
-ax.set(xlim=(0, 6), ylim=(0, 20), xlabel="Distance (Å)", ylabel="Percent of samples")
+ax.set(xlim=(0, 6), ylim=(0, 20), xlabel="Distance (\u00c5)", ylabel="Percent of samples")
 ```
 
 ## Saving figures
@@ -520,7 +520,7 @@ paths = mpp.save_figure(fig, "figures/fig01", caption="Signal after the pulse.")
   `formats` also accepts, record the time of the save.
 - SVG stores text as paths, so it looks the same on a machine without Arial;
   `editable_svg_text=True` keeps it as text. The PDF keeps text editable (TrueType).
-- A non-empty `caption` is written to `<path>_caption.txt`. The figure is closed afterwards unless
+- A non-empty `caption` is written to `<path>_caption.txt`. The figure is closed afterward unless
   `close=False`. It returns the written paths, in the order of `formats`, then the caption file.
 
 ## Checking a figure
@@ -560,7 +560,7 @@ description.
 | `font-weight` | error | Text whose weight is not regular |
 | `font-family` | error | Text that resolves to a font outside the style's `font.sans-serif` list |
 | `font-fallback` | warning | The style's first-choice font is not installed, so text renders in a fallback (once per figure) |
-| `script-glyph` | error | Text with a precomposed superscript or subscript character, such as `²`; write `$^2$` |
+| `script-glyph` | error | Text with a precomposed superscript or subscript character, such as U+00B2; write `$^2$` |
 | `unicode-minus` | warning | Text with the Unicode minus sign (U+2212) when the style uses the ASCII hyphen-minus |
 | `spine-width` | error | A visible spine whose width differs from the style's `axes.linewidth` |
 | `open-spines` | warning | A visible top or right spine where the style hides it |
@@ -571,7 +571,7 @@ description.
 | `panel-letter` | warning | Text other than a tick label that is a single letter, such as `a`, `B`, or `(c)` |
 | `default-color` | warning | A line, patch, or collection in one of Matplotlib's ten default-cycle colors |
 
-The other rules of the style guide are judgement, such as what a color means or whether a legend
+The other rules of the style guide are judgment, such as what a color means or whether a legend
 covers data. Check those by looking at the saved PNG at print size.
 
 ## For coding agents
@@ -620,8 +620,8 @@ Personal image at the top of this README. Every figure passes `assert_figure`:
     <td><img src="examples/personal_bars.png" alt="Grouped bars with replicate dots, confidence intervals, and significance stars" width="360"></td>
   </tr>
   <tr>
-    <td>A 2 × 2 <code>grid_inches</code> layout with shared axes and <code>add_shared_ylabel</code></td>
-    <td>Filled and hollow bars, 95 % confidence intervals, replicates, and <code>significance_stars</code></td>
+    <td>A 2 by 2 <code>grid_inches</code> layout with shared axes and <code>add_shared_ylabel</code></td>
+    <td>Filled and hollow bars, 95% confidence intervals, replicates, and <code>significance_stars</code></td>
   </tr>
 </table>
 
