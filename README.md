@@ -456,7 +456,8 @@ tick at the end of the x-axis, and 0.35 in above fits an axes title. These are t
 
 The axes keep their position through an axes locator, so `tight_layout`, constrained layout,
 `ax.set_position`, and the space `fig.colorbar(..., ax=ax)` takes do not move them. For a
-colorbar, add its axes with `add_axes_inches` and pass them as `cax`.
+colorbar, add its axes with `add_axes_inches` and pass them as `cax`, and give its outline the
+minor tick width (`colorbar.outline.set_linewidth(0.6)` in the Personal style).
 
 ## Plot helpers
 
@@ -564,7 +565,7 @@ description.
 | `font-fallback` | warning | The style's first-choice font is not installed, so text renders in a fallback (once per figure) |
 | `script-glyph` | error | Text with a precomposed superscript or subscript character, such as U+00B2; write `$^2$` |
 | `unicode-minus` | warning | Text with the Unicode minus sign (U+2212) when the style uses the ASCII hyphen-minus |
-| `spine-width` | error | A visible spine whose width differs from the style's `axes.linewidth` |
+| `spine-width` | error | A visible spine whose width differs from the style's `axes.linewidth`, or a colorbar outline whose width differs from the minor tick width |
 | `open-spines` | warning | A visible top or right spine where the style hides it |
 | `legend-frame` | error | A legend with a frame when the style has none |
 | `layout-engine` | error | A figure with a layout engine (tight or constrained) |

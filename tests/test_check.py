@@ -295,7 +295,10 @@ def test_figure_labels_legend_titles_and_colorbar_labels_pass_at_the_style_size(
     cax = fig.add_axes((2.4 / 3.0, 0.4 / 2.0, 0.1 / 3.0, 1.4 / 2.0))
     ax.plot([0, 1], [0, 1], color="#4f9d58", label="series")
     ax.legend(title="Group")
-    fig.colorbar(ax.imshow([[0, 1], [1, 0]], extent=(0, 1, 0, 1)), cax=cax, label="Level")
+    colorbar = fig.colorbar(
+        ax.imshow([[0, 1], [1, 0]], extent=(0, 1, 0, 1)), cax=cax, label="Level"
+    )
+    colorbar.outline.set_linewidth(0.6)
     fig.supxlabel("Time (s)", y=0.0, va="bottom")
     fig.suptitle("Overview", y=1.0, va="top")
     checked = {"font-size", "font-weight", "font-family", "spine-width", "open-spines"}
@@ -581,6 +584,31 @@ def test_a_color_bar_with_extensions_placed_off_the_grid_is_reported() -> None:
     fig.colorbar(ax.imshow(np.zeros((3, 7)), aspect="auto"), cax=cax, extend="both")
     (issue,) = found(fig, "round-inches")
     assert "position (2.53, 0.4) in and size 0.1 x 1.4 in" in issue.message
+
+
+def test_a_color_bar_outline_is_as_wide_as_a_minor_tick() -> None:
+    mplplots.use()
+    fig, (ax, cax) = mplplots.grid_inches(
+        1, 2, width=[2.0, 0.1], height=1.5, wspace=0.15, right=0.6
+    )
+    colorbar = fig.colorbar(ax.imshow(np.zeros((3, 7)), aspect="auto"), cax=cax)
+    (issue,) = found(fig, "spine-width")
+    assert issue.message == (
+        "axes 1 (color bar) outline spine: line width 0.8 pt, expected 0.6 pt, the minor tick width"
+    )
+    colorbar.outline.set_linewidth(0.6)
+    assert not found(fig, "spine-width")
+
+
+def test_a_color_bar_outline_follows_the_style_that_is_checked() -> None:
+    # GraphPadPrism draws axis lines and minor ticks at 1 pt, so the default outline passes.
+    with mplplots.context("GraphPadPrism"):
+        fig = plt.figure(figsize=(3.0, 2.0))
+        ax = mplplots.add_axes_inches(fig, 0.6, 0.4, 1.8, 1.4)
+        cax = mplplots.add_axes_inches(fig, 2.55, 0.4, 0.1, 1.4)
+        fig.colorbar(ax.imshow(np.zeros((3, 7)), aspect="auto"), cax=cax)
+        issues = check_figure(fig, style="GraphPadPrism")
+    assert "spine-width" not in rules(issues)
 
 
 def test_a_fixed_aspect_axes_placed_off_the_grid_is_reported() -> None:

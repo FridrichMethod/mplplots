@@ -92,7 +92,12 @@ _RULE_TABLE: tuple[tuple[str, Severity, str], ...] = (
     ),
     ("script-glyph", "error", "Text with a precomposed superscript or subscript character."),
     ("unicode-minus", "warning", "Text with U+2212 when the style sets axes.unicode_minus: False."),
-    ("spine-width", "error", "A drawn spine whose line width differs from axes.linewidth."),
+    (
+        "spine-width",
+        "error",
+        "A drawn spine whose line width differs from axes.linewidth, or a color bar outline whose"
+        " width differs from the minor tick width.",
+    ),
     ("open-spines", "warning", "A drawn top or right spine where the style hides it."),
     ("legend-frame", "error", "A legend with a frame when the style sets legend.frameon: False."),
     ("layout-engine", "error", "A figure with a layout engine (tight or constrained)."),
@@ -142,6 +147,7 @@ class _Expected:
     font_list: tuple[str, ...]
     unicode_minus: bool
     spine_width: float
+    colorbar_outline_width: float
     hide_top: bool
     hide_right: bool
     legend_frame: bool
@@ -160,6 +166,7 @@ class _Expected:
             font_list=tuple(value("font.sans-serif")),
             unicode_minus=bool(value("axes.unicode_minus")),
             spine_width=float(value("axes.linewidth")),
+            colorbar_outline_width=float(value("xtick.minor.width")),
             hide_top=not value("axes.spines.top"),
             hide_right=not value("axes.spines.right"),
             legend_frame=bool(value("legend.frameon")),
@@ -584,12 +591,22 @@ def _check_unicode_minus(context: _Context) -> Iterator[tuple[str, str]]:
 
 
 def _check_spine_width(context: _Context) -> Iterator[tuple[str, str]]:
-    """Report each drawn spine whose line width differs from the style's."""
-    expected = context.expected.spine_width
-    for owner, name, spine, _ in context.scene.spines:
+    """Report each drawn spine whose line width differs from the style's.
+
+    The outline of a color bar is as wide as a minor tick, lighter than the axis lines of the
+    panel it belongs to; every other spine has the width of the axis lines.
+    """
+    for owner, name, spine, ax in context.scene.spines:
+        if name == "outline" and hasattr(ax, "_colorbar"):
+            expected, note = context.expected.colorbar_outline_width, ", the minor tick width"
+        else:
+            expected, note = context.expected.spine_width, ""
         width = spine.get_linewidth()
         if not math.isclose(width, expected, abs_tol=_SIZE_TOLERANCE_POINTS):
-            yield f"{owner} {name} spine", f"line width {width:g} pt, expected {expected:g} pt"
+            yield (
+                f"{owner} {name} spine",
+                f"line width {width:g} pt, expected {expected:g} pt{note}",
+            )
 
 
 def _carries_axis(ax: _AxesBase, side: str) -> bool:

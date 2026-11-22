@@ -101,6 +101,12 @@ ax.set_ylabel("Area (\u00c5\u00b2)")  # a precomposed superscript two (T5)
 - **L9.** Legends have no frame and sit in the upper right by default. `mpp.legend_inches`
   anchors one in inches, for example beside the axes; `mpp.align_legends_left` gives a stack of
   panel legends one left edge.
+- **L10.** A color bar has its own axes, placed in inches and passed as `cax`, not space taken
+  from the panel (`fig.colorbar(ax=...)`). Its outline is 0.6 pt, the minor tick width, and its
+  ticks are 2.5 pt long, so it reads lighter than the panel's axis lines.
+- **L11.** An artist with thousands of marks (an embedding, a dense scatter) is drawn with
+  `rasterized=True`: the PDF and SVG hold it as a 600 dpi image, and the axes and text stay
+  vector. Data are never thinned to shrink a file.
 
 ```python
 from matplotlib.ticker import MultipleLocator
@@ -116,6 +122,18 @@ ax.scatter(measured, predicted, facecolor=GREEN.fill, edgecolor=GREEN.edge, **do
 ax.plot(x, slope * x + intercept, color=GREEN.edge, linewidth=1.4, alpha=mpp.LINE_ALPHA)
 ax.set(xlim=(0.0, 10.0), ylim=(0.0, 12.0), xlabel="Measured (a.u.)", ylabel="Predicted (a.u.)")
 ax.yaxis.set_major_locator(MultipleLocator(4.0))  # tick spacing set per figure (L2)
+mpp.assert_figure(fig)
+plt.close(fig)
+
+fig, (ax, cax) = mpp.grid_inches(1, 2, width=[2.0, 0.1], height=2.0, wspace=0.1, right=0.6)
+cloud = rng.normal(0.0, 1.0, (2, 5000))
+dense = {"s": 4, "linewidths": 0, "rasterized": True}  # one image in the PDF and SVG (L11)
+points = ax.scatter(*cloud, c=np.hypot(*cloud), **dense)
+ax.set(xlim=(-4.0, 4.0), ylim=(-4.0, 4.0), xlabel="Component 1", ylabel="Component 2")
+colorbar = fig.colorbar(points, cax=cax)  # in its own 0.1 in wide axes (L10)
+colorbar.set_label("Distance from the center")
+colorbar.outline.set_linewidth(0.6)
+colorbar.ax.tick_params(length=2.5)
 mpp.assert_figure(fig)
 plt.close(fig)
 ```
@@ -315,7 +333,7 @@ figure emphasizes on purpose) only with the reason in a comment.
 | `font-fallback` | warning | T1 (Arial is not installed; reported once per figure) |
 | `script-glyph` | error | T5 |
 | `unicode-minus` | warning | T6 |
-| `spine-width` | error | L1 |
+| `spine-width` | error | L1, L10 (a color bar outline) |
 | `open-spines` | warning | L1 |
 | `legend-frame` | error | L9 |
 | `layout-engine` | error | S2 |
