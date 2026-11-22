@@ -1,7 +1,8 @@
 # Personal: the default mplplots style, for publication figures.
 # Every text element is Arial Regular 8 pt: the base font, axis labels, axes and figure
 # titles, figure-level axis labels, tick labels, and the legend and its title. Axis lines and
-# major ticks are 0.8 pt, minor ticks are on, and the top and right spines are hidden.
+# major ticks are 0.8 pt, minor ticks are on (one between each pair of major ticks), and the top
+# and right spines are hidden.
 
 axes.autolimit_mode: round_numbers
 axes.labelpad: 3
@@ -81,9 +82,12 @@ savefig.transparent: False
 # SVG stores glyphs as paths, so it looks the same on machines without Arial.
 svg.fonttype: path
 
+# Minor ticks split each major interval in two: one minor tick halfway between major ticks,
+# where Matplotlib's default puts three or four. mplplots.auto_ticks sets its own minor ticks.
 xtick.labelsize: 8
 xtick.major.size: 3.5
 xtick.major.width: 0.8
+xtick.minor.ndivs: 2
 xtick.minor.size: 2.0
 xtick.minor.visible: True
 xtick.minor.width: 0.6
@@ -91,6 +95,7 @@ xtick.minor.width: 0.6
 ytick.labelsize: 8
 ytick.major.size: 3.5
 ytick.major.width: 0.8
+ytick.minor.ndivs: 2
 ytick.minor.size: 2.0
 ytick.minor.visible: True
 ytick.minor.width: 0.6

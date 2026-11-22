@@ -18,6 +18,11 @@ All notable changes to mplplots are recorded here. The format follows
   6.48 pt long; symbols are 5.76 pt across; bars given an edge color get a 2.16 pt border; tick
   labels, axis labels, the title, and legend rows sit at Prism's distances. The README lists
   where the style departs from Prism, such as Prism's legend outside the plot on the right.
+- Personal style: minor ticks split each major interval in two (`xtick.minor.ndivs` and
+  `ytick.minor.ndivs` 2), one minor tick between major ticks instead of Matplotlib's three or
+  four. `auto_ticks` sets its own minor ticks on linear numeric axes as before. Other axes in the
+  Personal style look different, including axes that do not use `auto_ticks` and date or other
+  unit axes.
 - `check_figure` and `assert_figure` read every text size and weight from the style file: the
   `font-size` rule accepts each size the style sets for a kind of text (`font.size`,
   `axes.labelsize`, `axes.titlesize`, the tick label, legend, and figure text sizes), and

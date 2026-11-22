@@ -20,6 +20,7 @@ import pytest
 from matplotlib import rc_params_from_file
 from matplotlib.font_manager import FontProperties
 from matplotlib.text import Text
+from matplotlib.ticker import MultipleLocator
 
 import mplplots
 
@@ -82,12 +83,14 @@ PERSONAL_RC: dict[RcKeyType, Any] = {
     "xtick.labelsize": 8.0,
     "xtick.major.size": 3.5,
     "xtick.major.width": 0.8,
+    "xtick.minor.ndivs": 2,
     "xtick.minor.size": 2.0,
     "xtick.minor.visible": True,
     "xtick.minor.width": 0.6,
     "ytick.labelsize": 8.0,
     "ytick.major.size": 3.5,
     "ytick.major.width": 0.8,
+    "ytick.minor.ndivs": 2,
     "ytick.minor.size": 2.0,
     "ytick.minor.visible": True,
     "ytick.minor.width": 0.6,
@@ -432,6 +435,34 @@ class TestPersonalStyle:
         buffer.seek(0)
         height, width = plt.imread(buffer).shape[:2]
         assert (width, height) == (200, 150)
+
+    def test_one_minor_tick_between_major_ticks(self) -> None:
+        # Matplotlib's default would put three minor ticks between 0 and 20 (every 5).
+        with plt.style.context(PERSONAL_STYLE):
+            fig, ax = plt.subplots()
+            ax.set(xlim=(0, 60), ylim=(0, 1))
+            ax.xaxis.set_major_locator(MultipleLocator(20))
+            fig.canvas.draw()
+            x_minor = list(ax.xaxis.get_minorticklocs())
+            y_major = list(ax.yaxis.get_majorticklocs())
+            y_minor = list(ax.yaxis.get_minorticklocs())
+            plt.close(fig)
+        assert x_minor == pytest.approx([10, 30, 50])
+        midpoints = [(low + high) / 2 for low, high in itertools.pairwise(y_major)]
+        assert y_minor == pytest.approx([m for m in midpoints if 0 <= m <= 1])
+
+    def test_auto_ticks_keeps_its_own_minor_ticks(self) -> None:
+        # Four major ticks (0 to 0.75, every 0.25) get fifths from auto_ticks, not halves.
+        with plt.style.context(PERSONAL_STYLE):
+            fig, ax = plt.subplots()
+            ax.plot([0, 60], [0, 0.7])
+            mplplots.auto_ticks(ax, bottom=0, top=0.75)
+            fig.canvas.draw()
+            y_major = list(ax.yaxis.get_majorticklocs())
+            y_minor = list(ax.yaxis.get_minorticklocs())
+            plt.close(fig)
+        assert [t for t in y_major if 0 <= t <= 0.75] == pytest.approx([0, 0.25, 0.5, 0.75])
+        assert len([t for t in y_minor if 0 < t < 0.25]) == 4  # fifths of a 0.25 spacing
 
     def test_negative_tick_labels_use_hyphen_minus(self) -> None:
         with plt.style.context(PERSONAL_STYLE):

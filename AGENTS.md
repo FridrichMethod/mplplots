@@ -81,7 +81,8 @@ Do not commit or push if either fails. Fix issues first.
   figure-level axis labels, and the legend and its title. Do not give any of them another size
   or weight.
 - Axis lines and major ticks are 0.8 pt wide (major ticks 3.5 pt long); minor ticks are on, 0.6
-  pt wide and 2 pt long. The top and right spines are hidden. A bare data line is 2 pt.
+  pt wide and 2 pt long, and split each major interval in two (`xtick.minor.ndivs` and
+  `ytick.minor.ndivs` 2). The top and right spines are hidden. A bare data line is 2 pt.
 - It saves uncropped at 600 dpi, with TrueType fonts in PDF and PostScript and SVG text as paths.
 
 ### GraphPadPrism
