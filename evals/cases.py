@@ -178,8 +178,15 @@ def score(project: Path) -> int:
         source = script.read_text(encoding="utf-8")
         print(f"== {script.relative_to(project)}")
         uses = {
-            name: name in source
-            for name in ("mpp.use(", "assert_figure", "save_figure", "check_palette", "rasterized")
+            name.rstrip("("): name in source
+            for name in (
+                "mpp.use(",
+                "auto_ticks",
+                "assert_figure",
+                "save_figure",
+                "check_palette",
+                "rasterized",
+            )
         }
         print("   uses:", ", ".join(f"{name}={found}" for name, found in uses.items()))
         for pattern, meaning in PATTERNS.items():

@@ -22,7 +22,8 @@ GRAY = mpp.ColorPair(fill="#cccccc", edge="#7a7a7a")
 x = np.linspace(0.0, 10.0, 101)
 fig, (ax,) = mpp.grid_inches(width=2.5, height=1.5)
 ax.plot(x, np.exp(-x / 4.0), color=GREEN.edge, linewidth=1.2, label="Treated")
-ax.set(xlim=(0.0, 10.0), xlabel="Time (s)", ylabel="Signal (a.u.)")
+mpp.auto_ticks(ax, left=0.0, right=10.0, bottom=0.0)  # after plotting (L2)
+ax.set(xlabel="Time (s)", ylabel="Signal (a.u.)")
 ax.legend()
 mpp.assert_figure(fig)
 mpp.save_figure(fig, "quick_start", caption="Signal after the pulse.")
@@ -62,7 +63,8 @@ d, n = 0.82, 6
 fig, (ax,) = mpp.grid_inches(width=2.5, height=1.5, top=0.35)  # 0.35 in above for the title
 ax.plot(x, 40.0 * np.exp(-x / 3.0), color=GREEN.edge, linewidth=1.2)
 ax.set_title("Energy after the pulse")
-ax.set(xlim=(0.0, 10.0), ylim=(0.0, 40.0), xlabel="Time $t$ (s)", ylabel="Energy (kJ mol$^{-1}$)")
+mpp.auto_ticks(ax, left=0.0, right=10.0, bottom=0.0, top=50.0)  # five intervals of 10 (L2)
+ax.set(xlabel="Time $t$ (s)", ylabel="Energy (kJ mol$^{-1}$)")
 stats = "\n".join([rf"$\mathrm{{Cohen's}}\ d = {d:.2f}$", rf"$n = {n}$"])
 ax.text(0.97, 0.95, stats, transform=ax.transAxes, ha="right", va="top", linespacing=1.35)
 mpp.assert_figure(fig)
@@ -83,9 +85,19 @@ ax.set_ylabel("Area (\u00c5\u00b2)")  # a precomposed superscript two (T5)
   0.6 pt and 2 pt. The top and right spines are off. The style sets all of this, so figure code
   leaves spines and ticks alone. A marginal or strip panel shows only its bottom spine. A full
   box is an explicit exception: `mpp.box_axes(ax)`.
-- **L2.** Minor ticks are on by default. Turn them off on dense and categorical axes
-  (`ax.xaxis.set_minor_locator(NullLocator())`). Set the tick spacing per figure with
-  `MultipleLocator` or `mpp.auto_ticks(ax)`; the style sets only visibility, size and width.
+- **L2.** Minor ticks are on, one halfway between each pair of major ticks. Call
+  `mpp.auto_ticks(ax)` on each panel after plotting, so each axis starts and ends on a major tick.
+  Pass a limit when the figure needs its value (a zero baseline, a range shared by panels) or when
+  the axis comes out with fewer than five major intervals: `auto_ticks` keeps a passed limit, puts a
+  major tick on it, and gives an axis with five or fewer major ticks three or four minor ticks per
+  interval. Data from 0 to 35 with `bottom=0.0` come out as 0 to 40 every 10 (four intervals);
+  `top=35.0` gives seven intervals of 5, and `top=50.0` five of 10. Up to about eight intervals is
+  fine while the labels keep clear (S8). A marker on a limit, such as the first or last time point,
+  is cut in half by the axes unless drawn with `clip_on=False`. A panel with an axis shorter than
+  about 1 in skips `auto_ticks`, which sets both axes: it sets round limits with `ax.set` and keeps
+  the style's ticks, which follow the length of each axis, or a `MultipleLocator` spacing. A color
+  bar keeps Matplotlib's ticks (L10). Turn minor ticks off on dense and categorical axes
+  (`ax.xaxis.set_minor_locator(NullLocator())`).
 - **L3.** No grid. If one is needed: alpha 0.18, 0.4 pt, `zorder=0`.
 - **L4.** Give a line width when several curves share a panel: 1.2 pt for mean curves, 1.8 pt
   for the one emphasized state, 1.0 pt for distribution outlines, 1.4 pt for regression lines.
@@ -103,16 +115,15 @@ ax.set_ylabel("Area (\u00c5\u00b2)")  # a precomposed superscript two (T5)
   panel legends one left edge.
 - **L10.** A color bar has its own axes, placed in inches and passed as `cax`, not space taken
   from the panel (`fig.colorbar(ax=...)`). Its outline is 0.6 pt, the minor tick width, and its
-  ticks are 2.5 pt long, so it reads lighter than the panel's axis lines.
+  major ticks are 2.5 pt long, so it reads lighter than the panel's axis lines; its minor ticks
+  keep the style's length and spacing.
 - **L11.** An artist with thousands of marks (an embedding, a dense scatter) is drawn with
   `rasterized=True`: the PDF and SVG hold it as a 600 dpi image, and the axes and text stay
   vector. Data are never thinned to shrink a file.
 
 ```python
-from matplotlib.ticker import MultipleLocator
-
 rng = np.random.default_rng(0)
-measured = rng.uniform(0.5, 9.5, 40)
+measured = rng.uniform(1.0, 9.5, 40)
 predicted = measured + rng.normal(0.0, 0.6, 40)
 slope, intercept = np.polyfit(measured, predicted, 1)
 dots = {"s": 22, "linewidths": 0.5, "alpha": mpp.SCATTER_ALPHA}  # the scatter recipe (L7)
@@ -120,20 +131,21 @@ fig, (ax,) = mpp.grid_inches(width=2.0, height=2.0)
 ax.axline((0.0, 0.0), slope=1.0, zorder=0, **mpp.REFERENCE_LINE)  # under the data
 ax.scatter(measured, predicted, facecolor=GREEN.fill, edgecolor=GREEN.edge, **dots)
 ax.plot(x, slope * x + intercept, color=GREEN.edge, linewidth=1.4, alpha=mpp.LINE_ALPHA)
-ax.set(xlim=(0.0, 10.0), ylim=(0.0, 12.0), xlabel="Measured (a.u.)", ylabel="Predicted (a.u.)")
-ax.yaxis.set_major_locator(MultipleLocator(4.0))  # tick spacing set per figure (L2)
+mpp.auto_ticks(ax, left=0.0, right=10.0, bottom=0.0, top=12.0)  # after plotting (L2)
+ax.set(xlabel="Measured (a.u.)", ylabel="Predicted (a.u.)")
 mpp.assert_figure(fig)
 plt.close(fig)
 
 fig, (ax, cax) = mpp.grid_inches(1, 2, width=[2.0, 0.1], height=2.0, wspace=0.1, right=0.6)
-cloud = rng.normal(0.0, 1.0, (2, 5000))
+cloud = rng.normal(0.0, 1.5, (2, 5000))
 dense = {"s": 4, "linewidths": 0, "rasterized": True}  # one image in the PDF and SVG (L11)
 points = ax.scatter(*cloud, c=np.hypot(*cloud), **dense)
-ax.set(xlim=(-4.0, 4.0), ylim=(-4.0, 4.0), xlabel="Component 1", ylabel="Component 2")
+mpp.auto_ticks(ax, left=-6.0, right=6.0, bottom=-6.0, top=6.0)
+ax.set(xlabel="Component 1", ylabel="Component 2")
 colorbar = fig.colorbar(points, cax=cax)  # in its own 0.1 in wide axes (L10)
 colorbar.set_label("Distance from the center")
 colorbar.outline.set_linewidth(0.6)
-colorbar.ax.tick_params(length=2.5)
+colorbar.ax.tick_params(length=2.5)  # the major ticks; the minor ones keep the style's
 mpp.assert_figure(fig)
 plt.close(fig)
 ```
@@ -177,7 +189,8 @@ mpp.plot_mean_sem(
 mpp.plot_mean_sem(
     ax, x, mean - 0.4, sem, fill=GRAY.fill, edge=GRAY.edge, label="Reference", zorder=5.0
 )  # the reference on top (L6)
-ax.set(xlim=(0.0, 10.0), xlabel="Time (s)", ylabel="Signal (a.u.)")
+mpp.auto_ticks(ax, left=0.0, right=10.0)
+ax.set(xlabel="Time (s)", ylabel="Signal (a.u.)")
 mpp.legend_inches(ax, 3.2, 1.9)  # beside the axes, level with their top
 mpp.assert_figure(fig)
 plt.close(fig)
@@ -220,7 +233,7 @@ fig, axes = mpp.grid_inches(3, 1, width=3.0, height=0.8, hspace=0.2, sharex=True
 rows = [(GRAY, "-", "Reference", 2), (GREEN, "-", "Resting", 3), (GREEN, dashed, "Stimulated", 4)]
 for ax, (pair, linestyle, label, tau) in zip(axes, rows):
     ax.plot(x, np.exp(-x / tau), color=pair.edge, linestyle=linestyle, linewidth=1.2, label=label)
-    ax.set_ylim(0.0, 1.0)
+    ax.set_ylim(0.0, 1.0)  # 0.8 in tall: the style's ticks, which follow the length (L2)
     ax.legend()
 axes[-1].set(xlim=(0.0, 10.0), xlabel="Time (s)")  # the shared x label (S7)
 mpp.add_shared_ylabel(fig, axes, "Signal (a.u.)")
@@ -275,9 +288,10 @@ for position, values, pair in zip(positions, replicates, pairs):  # the replicat
     ax.scatter(np.full(values.size, position), values, edgecolor=pair.edge, **hollow)
 ax.plot([0.0, 0.0, 1.0, 1.0], [2.4, 2.45, 2.45, 2.4], color="black", linewidth=0.8)
 ax.text(0.5, 2.48, mpp.significance_stars(q), ha="center", va="bottom")
+mpp.auto_ticks(ax, bottom=0.0, top=3.0)  # before the group labels, which it would replace
 ax.set_xticks(positions, groups)
 ax.xaxis.set_minor_locator(NullLocator())  # a categorical axis has no minor ticks (L2)
-ax.set(ylim=(0.0, 3.0), ylabel="Activity (a.u.)")
+ax.set(xlim=(-0.6, 1.6), ylabel="Activity (a.u.)")
 mpp.assert_figure(fig)
 plt.close(fig)
 
@@ -291,7 +305,8 @@ handles = [
     mpp.plot_distribution(ax, edges, counts_b, sample_b.size, fill=GREEN.fill, edge=GREEN.edge),
 ]
 ax.legend(handles, ["Reference", "Treated"])
-ax.set(xlim=(0.0, 6.0), ylim=(0.0, 15.0), xlabel="Distance (\u00c5)", ylabel="Percent of samples")
+mpp.auto_ticks(ax, left=0.0, right=6.0, bottom=0.0)
+ax.set(xlabel="Distance (\u00c5)", ylabel="Percent of samples")
 mpp.assert_figure(fig)
 plt.close(fig)
 ```
@@ -312,7 +327,8 @@ plt.close(fig)
 ```python
 fig, (ax,) = mpp.grid_inches(width=2.5, height=1.5)
 mpp.plot_mean_sem(ax, x, mean, sem, fill=GREEN.fill, edge=GREEN.edge)
-ax.set(xlim=(0.0, 10.0), xlabel="Time (s)", ylabel="Signal (a.u.)")
+mpp.auto_ticks(ax, left=0.0, right=10.0)
+ax.set(xlabel="Time (s)", ylabel="Signal (a.u.)")
 mpp.assert_figure(fig)
 caption = "Mean of n = 6 replicates; the band is 1 SEM either side, not a confidence interval."
 paths = mpp.save_figure(fig, "figures/signal", caption=caption)  # creates figures/
@@ -411,6 +427,8 @@ test_palette_is_sound()
 - `mpp.use()` runs before the first figure; no `fontsize` or `fontweight` in figure code (T1).
 - Greek letters in names and the angstrom sign are escaped upright characters; variables are math text (T3, T4).
 - Exponents and subscripts are math text, and minus signs are ASCII hyphen-minus (T5, T6).
+- Panels take their ticks from `auto_ticks`, with five or more major intervals per axis; a panel
+  with an axis shorter than about 1 in, and a color bar, keep Matplotlib's ticks (L2).
 - Curves sharing a panel have explicit widths, bars explicit edges; proxies copy them (L4, L8).
 - Reference lines use `REFERENCE_LINE`, and the reference series has the highest `zorder` (L5, L6).
 - Colors come from the tested project palette; series on one axis differ without color (C1-C7).

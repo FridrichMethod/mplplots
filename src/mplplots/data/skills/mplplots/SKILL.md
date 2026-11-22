@@ -42,6 +42,8 @@ Matplotlib's cache directory (`matplotlib.get_cachedir()`) so it finds them.
 3. Lay the figure out in round inches with `mpp.grid_inches` or `mpp.add_axes_inches`.
 4. Draw, following the text and mark rules: no `fontsize` or `fontweight`, variables as math
    text, explicit line widths when curves share a panel, reference lines with `REFERENCE_LINE`.
+   Then call `mpp.auto_ticks(ax)` on each panel, with limits that leave five or more major
+   intervals (L2).
 5. `mpp.assert_figure(fig)`; fix what it reports, and pass `ignore` only with a stated reason.
 6. `mpp.save_figure(fig, path, caption=...)`, then look at the PNG.
 
@@ -63,12 +65,14 @@ reference, treated = PALETTE["reference"], PALETTE["treated"]
 fig, (ax,) = mpp.grid_inches(width=2.5, height=1.5)  # 3: 2.5 by 1.5 in axes, default margins
 
 t = np.linspace(0.0, 10.0, 101)  # 4
-slow, fast, sem = np.exp(-t / 4.0), np.exp(-t / 2.0), np.full_like(t, 0.04)
-mpp.plot_mean_sem(ax, t, slow, sem, fill=treated.fill, edge=treated.edge, label="Treated")
+slow, fast = np.exp(-t / 4.0), np.exp(-t / 2.0)
+slow_sem, fast_sem = 0.04 * slow, 0.04 * fast
+mpp.plot_mean_sem(ax, t, slow, slow_sem, fill=treated.fill, edge=treated.edge, label="Treated")
 mpp.plot_mean_sem(
-    ax, t, fast, sem, fill=reference.fill, edge=reference.edge, label="Reference", zorder=5.0
+    ax, t, fast, fast_sem, fill=reference.fill, edge=reference.edge, label="Reference", zorder=5.0
 )  # the reference series last and on top (L6)
-ax.set(xlim=(0.0, 10.0), ylim=(0.0, 1.0), xlabel="Time $t$ (s)", ylabel="Signal (a.u.)")
+mpp.auto_ticks(ax, left=0.0, right=10.0, bottom=0.0, top=1.2)  # after plotting (L2)
+ax.set(xlabel="Time $t$ (s)", ylabel="Signal (a.u.)")
 ax.legend()
 
 mpp.assert_figure(fig)  # 5

@@ -32,6 +32,12 @@ All notable changes to mplplots are recorded here. The format follows
 - The `graphpadprism_*` README images use Prism's 3 by 2 in plot area (2 by 2 in for the bar
   chart) and black bar borders, and pass `assert_figure` against the style; the ocean, grouped
   bar, and error bar images place their legend beside the plot, close to where Prism puts it.
+- Style guide: rule L2 asks for `auto_ticks` on each panel after plotting, with limits that leave
+  five or more major intervals, so one minor tick falls between major ticks; a panel with an axis
+  shorter than about 1 in, and a color bar, keep Matplotlib's ticks. Rule L10 gives a color bar's
+  major ticks the 2.5 pt length and leaves its minor ticks as the style draws them. Step 4 of the
+  skill's workflow and of the rules snippet calls `auto_ticks`, and so do the examples of the
+  style guide and the skill.
 
 ### Fixed
 
