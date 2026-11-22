@@ -450,8 +450,9 @@ mpp.align_legends_left(axes)  # the three legends start at the same x
   left edge, so legends of different widths line up. Call it after the legends are drawn.
 
 With 8 pt text, 0.5 to 0.6 in to the left of the axes fits the tick labels and a y-axis label,
-0.4 in below fits the tick labels and an x-axis label, and 0.35 in above fits an axes title. These
-are the defaults of `grid_inches`, apart from the title space (`top=0.35`).
+0.4 in below fits the tick labels and an x-axis label, 0.2 in to the right holds the label of a
+tick at the end of the x-axis, and 0.35 in above fits an axes title. These are the defaults of
+`grid_inches`, apart from the title space (`top=0.35`).
 
 The axes keep their position through an axes locator, so `tight_layout`, constrained layout,
 `ax.set_position`, and the space `fig.colorbar(..., ax=ax)` takes do not move them. For a
