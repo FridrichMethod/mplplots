@@ -23,7 +23,7 @@ pip install git+https://github.com/FridrichMethod/mplplots.git
 ```
 
 mplplots is not on PyPI. It needs Python 3.12 or newer and Matplotlib 3.8 or newer. To install a
-release, append its tag, such as `...mplplots.git@v0.3.0`; [`CHANGELOG.md`](CHANGELOG.md) lists
+release, append its tag, such as `...mplplots.git@v0.4.0`; [`CHANGELOG.md`](CHANGELOG.md) lists
 what each release changed. Installing mplplots also installs the `mplplots` command (see
 [For coding agents](#for-coding-agents)).
 

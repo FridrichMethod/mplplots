@@ -6,6 +6,30 @@ All notable changes to mplplots are recorded here. The format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-21
+
+The style checker reports overlapping texts, accepts text that a figure emphasizes on purpose, and
+checks the outline of a color bar; the style guide gains rules for color bars, dense marks, and
+overlapping text. Figures look the same as in 0.3.0, but `check_figure` now reports a color bar
+with Matplotlib's default 0.8 pt outline and texts that overlap.
+
+### Added
+
+- `check_figure` and `assert_figure` take `allow_font_weights`: the font weights accepted besides
+  regular, as names or numbers, for text that a figure emphasizes on purpose.
+- The `text-overlap` rule, a warning: texts whose drawn boxes overlap each other, such as crowded
+  tick labels or an annotation over a legend entry. An annotation counts by its text without its
+  arrow, and a text at an angle other than a multiple of 90 degrees is not compared.
+- Style guide rules for color bars (L10: their own axes passed as `cax`, a 0.6 pt outline, 2.5 pt
+  ticks), for artists with thousands of marks (L11: rasterized, never thinned), and against
+  overlapping text (S8).
+
+### Changed
+
+- `spine-width` checks the outline of a color bar against the style's minor tick width, 0.6 pt in
+  the Personal style, in place of the axis line width: a 0.6 pt outline passes, and Matplotlib's
+  default 0.8 pt outline is reported.
+
 ## [0.3.0] - 2026-11-21
 
 Adds the Personal style as the default of `mplplots.use()`, a figure toolkit (layout in inches,
@@ -87,6 +111,7 @@ Untagged initial version: the GraphPadPrism style (`STYLE_PATH`, `prism_style`),
 in `mplplots.palettes` (`PALETTES`, `set_palette`, `get_colors`), `auto_ticks`, and
 `add_custom_fonts`.
 
-[Unreleased]: https://github.com/FridrichMethod/mplplots/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/FridrichMethod/mplplots/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/FridrichMethod/mplplots/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/FridrichMethod/mplplots/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/FridrichMethod/mplplots/releases/tag/v0.2.0
